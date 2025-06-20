@@ -4,7 +4,7 @@ This is a Python widget for [CellPop](https://github.com/hms-dbmi/cellpop/), a s
 ## Using the Cellpop Widget
 Install CellPop as 
 ```python
-!pip install cellpop==0.1.0
+!pip install cellpop==0.1.1
 ```
 
 Example usage is shown in [example.ipynb](./example.ipynb).
