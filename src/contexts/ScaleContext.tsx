@@ -65,8 +65,8 @@ export function ScaleProvider({ children }: PropsWithChildren) {
     if (
       // if no rows are selected/all rows are selected
       [0, rows.length].includes(expandedRows.size) ||
-      // if all selected rows are hidden
-      [...expandedRows].every((row) => !rows.includes(row))
+      // if there are very few rows
+      rows.length < 5
     ) {
       const scale = scaleBand<string>({
         range: [height, 0],

@@ -152,13 +152,27 @@ function NormalizationControl() {
   });
 
   const id = useId();
+
+  const currentTheme = useSetTheme((state) => state.currentTheme);
+
   if (normalizationIsDisabled) {
     return null;
   }
 
   return (
     <FormControl sx={{ maxWidth: 300 }}>
-      <InputLabel id={id}>Heatmap Normalization</InputLabel>
+      <InputLabel
+        id={id}
+        sx={(theme) => ({
+          background:
+            currentTheme === "dark"
+              ? theme.palette.background.default
+              : theme.palette.grey[100],
+          paddingRight: 2,
+        })}
+      >
+        Heatmap&nbsp;Normalization
+      </InputLabel>
       <Select
         labelId={id}
         id={`${id}-select`}
@@ -185,12 +199,7 @@ function NormalizationControl() {
 export default function Controls() {
   const currentTheme = useSetTheme((state) => state.currentTheme);
   return (
-    <AppBar
-      position="static"
-      elevation={0}
-      color={currentTheme === "dark" ? "default" : "default"}
-      sx={{ pt: 2 }}
-    >
+    <AppBar position="static" elevation={0} color={"default"} sx={{ pt: 2 }}>
       <Stack direction="row" spacing={5} p={1}>
         <HeatmapThemeControl />
         <NormalizationControl />

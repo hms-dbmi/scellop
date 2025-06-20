@@ -9,7 +9,7 @@ import {
 import { scaleLinear } from "@visx/scale";
 import { Text } from "@visx/text";
 import React, { useId } from "react";
-import { AxisConfig, useRowConfig } from "../../contexts/AxisConfigContext";
+import { useRowConfig } from "../../contexts/AxisConfigContext";
 import {
   useData,
   useRowCounts,
@@ -18,6 +18,7 @@ import {
 } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
+import { useNormalization } from "../../contexts/NormalizationContext";
 import { EXPANDED_ROW_PADDING, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import { LEFT_MULTIPLIER } from "../side-graphs/constants";
@@ -72,17 +73,18 @@ export default function HeatmapYAxis() {
         left={tickLabelSize * LEFT_MULTIPLIER}
         stroke={theme.palette.text.primary}
         tickStroke={theme.palette.text.primary}
-        tickComponent={
-          selectedValues.size > 0
-            ? (props) =>
-                ExpandedRowTick({
-                  ...props,
-                  axisConfig,
-                  openInNewTab,
-                  tickTitle,
-                  tickLabelStyle,
-                })
-            : undefined
+        tickComponent={(tickLabelProps: TickRendererProps) =>
+          selectedValues.has(tickLabelProps?.formattedValue as string) ? (
+            <ExpandedRowTick {...tickLabelProps} />
+          ) : (
+            <Text
+              {...tickLabelProps}
+              // @ts-expect-error Visx types are slightly incorrect
+              x={(tickLabelProps?.to?.x ?? 0) - tickLabelProps.fontSize}
+            >
+              {tickLabelProps?.formattedValue}
+            </Text>
+          )
         }
         tickLabelProps={(t) =>
           ({
@@ -118,6 +120,7 @@ export default function HeatmapYAxis() {
           fill: theme.palette.text.primary,
           pointerEvents: "none",
           className: "y-axis-label text",
+          dy: `${TICK_TEXT_SIZE * LEFT_MULTIPLIER}px`,
         }}
         hideTicks={selectedValues.size > 0}
       />
@@ -129,18 +132,17 @@ function ExpandedRowTick({
   x,
   y,
   formattedValue: row,
-  axisConfig,
-  openInNewTab,
-  tickTitle,
-  tickLabelStyle,
   ...tickLabelProps
-}: TickRendererProps & {
-  axisConfig: AxisConfig;
-} & ReturnType<typeof useHeatmapAxis>) {
-  const { expandedSize } = useYScale();
+}: TickRendererProps) {
+  const { expandedSize, nonExpandedSize } = useYScale();
   const selectedValues = useSelectedValues((s) => s.selectedValues);
-  const { flipAxisPosition } = axisConfig;
   const rowMaxes = useRowMaxes();
+  const axisConfig = useRowConfig();
+  const rows = useRows();
+  const { flipAxisPosition } = axisConfig;
+
+  const { openInNewTab, tickTitle, tickLabelStyle } =
+    useHeatmapAxis(axisConfig);
 
   const panelSize = usePanelDimensions(
     flipAxisPosition ? "left_middle" : "right_middle",
@@ -155,19 +157,39 @@ function ExpandedRowTick({
     // Use the tick label as the axis label
     const Axis = flipAxisPosition ? AxisLeft : AxisRight;
     const max = rowMaxes[row!];
+    const range =
+      expandedSize > nonExpandedSize
+        ? [EXPANDED_ROW_PADDING, expandedSize - EXPANDED_ROW_PADDING / 2]
+        : [EXPANDED_ROW_PADDING, nonExpandedSize];
+
+    const normalizationIsNotNone = useNormalization(
+      (s) => s.normalization !== "None",
+    );
+
+    const domain = normalizationIsNotNone ? [1, 0] : [max, 0];
+
     const yScale = scaleLinear({
-      domain: [max, 0],
-      range: [EXPANDED_ROW_PADDING, expandedSize - EXPANDED_ROW_PADDING],
+      domain,
+      range,
       nice: true,
     });
+
+    const top =
+      expandedSize > nonExpandedSize
+        ? y - nonExpandedSize / 2 - EXPANDED_ROW_PADDING * 2
+        : y - expandedSize / 2;
+
     return (
       <Axis
-        top={y - EXPANDED_ROW_PADDING * 2}
+        top={top}
         orientation="left"
         left={panelSize.width - tickLabelSize * LEFT_MULTIPLIER}
         scale={yScale}
         label={row}
         labelOffset={expandedSize / 2}
+        tickFormat={
+          normalizationIsNotNone ? (v) => `${(v as number) * 100}%` : undefined
+        }
         tickLabelProps={{
           fill: theme.palette.text.primary,
           style: tickLabelStyle,

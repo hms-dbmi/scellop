@@ -36,7 +36,6 @@ export function ColorScaleProvider({ children }: PropsWithChildren) {
 
     const range = colorThresholds.map((_, idx) => idx / 255);
 
-    console.log({ range });
     const scale = scaleLinear<string>({
       range: range.map((t) => theme(t)),
       domain: range.map((r) => r * maxCount),

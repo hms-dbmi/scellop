@@ -53,8 +53,10 @@ function CanvasHeatmapRenderer() {
         // draw bar graph
         const max = rowMaxes[row];
 
+        const domain = normalization === "None" ? [0, max] : [0, 1];
+
         const inlineYScale = scaleLinear({
-          domain: [0, max],
+          domain,
           range: [0, cellHeight],
           nice: true,
         });

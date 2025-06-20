@@ -8,6 +8,7 @@ import {
   Divider,
   IconButton,
   Stack,
+  styled,
   Tab,
   Tabs,
   Typography,
@@ -121,13 +122,17 @@ function PlotControls({ onClose }: PlotControlsProps) {
   );
 }
 
+const StyledDrawer = styled(Drawer)(() => ({
+  position: "absolute",
+  top: 0,
+  zIndex: 1099,
+}));
+
 export function PlotControlsButton() {
   const parentRef = useOuterContainerRef();
   const [showDrawer, setShowDrawer] = useState(false);
   const closeDrawer = useEventCallback(() => setShowDrawer(false));
   const openDrawer = useEventCallback(() => setShowDrawer(true));
-  const parentBoundingBox = parentRef.current?.getBoundingClientRect();
-  const windowBoundingBox = window.document.body.getBoundingClientRect();
 
   return (
     <>
@@ -139,29 +144,22 @@ export function PlotControlsButton() {
       >
         Plot Controls
       </Button>
-      <Drawer
+      <StyledDrawer
         container={parentRef.current}
         open={showDrawer}
         onClose={closeDrawer}
         anchor="right"
-        SlideProps={{
-          container: parentRef.current,
+        transitionDuration={{
+          enter: 0,
+          exit: 300,
         }}
         ModalProps={{
           sx: {
-            top: parentBoundingBox?.top,
-            height: parentBoundingBox?.height,
-            right: windowBoundingBox.right - (parentBoundingBox?.right ?? 0),
+            position: "absolute",
           },
         }}
         slotProps={{
           backdrop: {
-            sx: {
-              top: parentBoundingBox?.top,
-              height: parentBoundingBox?.height,
-              left: parentBoundingBox?.left,
-              width: parentBoundingBox?.width,
-            },
             invisible: true,
           },
         }}
@@ -171,15 +169,15 @@ export function PlotControlsButton() {
               xs: "100%",
               md: 450,
             },
-            top: parentBoundingBox?.top,
-            height: parentBoundingBox?.height,
-            right: windowBoundingBox.right - (parentBoundingBox?.right ?? 0),
+            position: "absolute",
+            top: 0,
+            right: 0,
             scrollBehavior: "smooth",
           },
         }}
       >
         <PlotControls onClose={closeDrawer} />
-      </Drawer>
+      </StyledDrawer>
     </>
   );
 }

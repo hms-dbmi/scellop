@@ -135,7 +135,7 @@ export default function MetadataValueBar({
   const cellWidth = x.bandwidth();
 
   const axisLabelX = axis === "X" ? width / 2 : width / 3;
-  const axisLabelY = axis === "X" ? height / 3 : height / 2;
+  const axisLabelY = axis === "X" ? height - 16 : height / 2;
 
   const onMouseMove = useCallback((e: React.MouseEvent<SVGRectElement>) => {
     const target = e.target as SVGRectElement;
