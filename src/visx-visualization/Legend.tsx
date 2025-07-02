@@ -5,6 +5,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 
 import {
+  useIsLogTransformed,
   useIsNormalized,
   useNormalization,
 } from "../contexts/NormalizationContext";
@@ -14,7 +15,7 @@ import { TemporalControls } from "./TemporalControls";
 const legendThresholds = new Array(100).fill(0).map((_, i) => i / 100);
 
 export default function Legend() {
-  const { scale: colors, maxValue } = useColorScale();
+  const { scale: colors, maxValue, maxLogValue } = useColorScale();
   const id = useId() + "-legend";
 
   const minColor = colors(0);
@@ -24,13 +25,16 @@ export default function Legend() {
   ]);
   const maxColor = colors(maxValue);
   const isNormalized = useIsNormalized();
-  const normalization = useNormalization((state) => state.normalization);
+  const isLogTransformed = useIsLogTransformed();
+  const normalization = useNormalization((state) => state.normalization);  
 
   const legendLabel = isNormalized
     ? `Percent of all cells in ${normalization}`
-    : "Counts";
+    : isLogTransformed 
+      ? "Log Counts"
+      : "Counts";
   const minValueLabel = isNormalized ? "0%" : "0";
-  const maxValueLabel = isNormalized ? "100%" : maxValue;
+  const maxValueLabel = isNormalized ? "100%" : isLogTransformed ? maxLogValue.toFixed(2) : maxValue;
 
   return (
     <Stack height="100%" gap="1rem" paddingX={1}>

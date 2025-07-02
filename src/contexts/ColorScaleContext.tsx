@@ -13,7 +13,9 @@ import { ScaleLinear } from "./ScaleContext";
 interface ColorScaleContext {
   scale: ScaleLinear<string>;
   percentageScale: ScaleLinear<string>;
+  logScale: ScaleLinear<string>;
   maxValue: number;
+  maxLogValue: number;
   heatmapTheme: HeatmapTheme;
   setHeatmapTheme: (theme: HeatmapTheme) => void;
 }
@@ -27,6 +29,7 @@ const colorThresholds = new Array(256).fill(0);
  */
 export function ColorScaleProvider({ children }: PropsWithChildren) {
   const maxCount = useMaxCount();
+  const maxLogCount = Math.log(maxCount + 1);
   const [heatmapTheme, setHeatmapTheme] = useState<HeatmapTheme>(
     HEATMAP_THEMES_LIST[0],
   );
@@ -46,10 +49,17 @@ export function ColorScaleProvider({ children }: PropsWithChildren) {
       domain: range,
     });
 
+    const logScale = scaleLinear<string>({
+      range: range.map((t) => theme(t)),
+      domain: range.map((r) => r * maxLogCount),
+    });
+
     return {
       scale,
       percentageScale,
+      logScale,
       maxValue: maxCount,
+      maxLogValue: maxLogCount,
       heatmapTheme,
       setHeatmapTheme,
     };

@@ -28,7 +28,7 @@ function CanvasHeatmapRenderer() {
   const yScale = useYScale();
   const selectedValues = useSelectedValues((s) => s.selectedValues);
 
-  const { scale: globalScale, percentageScale, heatmapTheme } = useColorScale();
+  const { scale: globalScale, percentageScale, logScale, heatmapTheme } = useColorScale();
   const normalization = useNormalization((s) => s.normalization);
   const dataMap = useFractionDataMap(normalization);
   const rowMaxes = useRowMaxes();
@@ -74,7 +74,11 @@ function CanvasHeatmapRenderer() {
         // draw heatmap cells
         columns.forEach((col) => {
           const colors =
-            normalization !== "None" ? percentageScale : globalScale;
+            normalization === "None"
+              ? globalScale
+              : normalization === "Log"
+                ? logScale
+                : percentageScale;
           const value = dataMap[`${row}-${col}` as keyof typeof dataMap];
           ctx.fillStyle =
             value !== 0 ? colors(value) : theme.palette.background.default;

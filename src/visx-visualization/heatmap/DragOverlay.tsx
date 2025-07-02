@@ -261,12 +261,14 @@ function DragIndicator({
     const key = `${rowKey}-${columnKey}` as keyof typeof dataMap;
 
     const normalizationInfo =
-      normalization !== "None"
-        ? {
-            [`Percentage of total cells in ${normalization}`]:
-              (normalizedDataMap[key] * 100).toFixed(2) + "%",
-          }
-        : {};
+      normalization === "None"
+      ? {}
+      : normalization === "Log"
+      ? { "Log count": normalizedDataMap[key].toFixed(2) }
+      : {
+          [`Percentage of total cells in ${normalization}`]:
+            (normalizedDataMap[key] * 100).toFixed(2) + "%",
+        };
 
     const columnMetadata = lookupMetadata(
       columnKey,

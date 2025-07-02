@@ -6,14 +6,15 @@ interface NormalizationProps {
   initialNormalization?: Normalization;
 }
 
-export type Normalization = "None" | "Row" | "Column";
+export type Normalization = "None" | "Row" | "Column" | "Log";
 
-export const NORMALIZATIONS = ["None", "Row", "Column"] as const;
+export const NORMALIZATIONS = ["None", "Row", "Column", "Log"] as const;
 
 interface NormalizationStore {
   normalization: Normalization;
   normalizeByRow: () => void;
   normalizeByColumn: () => void;
+  normalizeByLog: () => void;
   removeNormalization: () => void;
   setNormalization: (normalization: Normalization) => void;
 }
@@ -26,6 +27,7 @@ const createNormalizationStore = ({
       normalization: initialNormalization,
       normalizeByRow: () => set({ normalization: "Row" }),
       normalizeByColumn: () => set({ normalization: "Column" }),
+      normalizeByLog: () => set({ normalization: "Log" }),
       removeNormalization: () => set({ normalization: "None" }),
       setNormalization: (normalization: Normalization) =>
         set({ normalization }),
@@ -45,5 +47,10 @@ export const [
 
 export const useIsNormalized = () => {
   const normalization = useNormalization((state) => state.normalization);
-  return normalization !== "None";
+  return normalization !== "None" && normalization !== "Log";
+};
+
+export const useIsLogTransformed = () => {
+  const normalization = useNormalization((state) => state.normalization);
+  return normalization === "Log";
 };
