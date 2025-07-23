@@ -66,6 +66,10 @@ function PlotControls({ onClose }: PlotControlsProps) {
   const rowLabel = useRowConfig((s) => s.label);
   const rowIcon = useRowConfig((s) => s.icon);
 
+  const safeRowLabel = rowLabel === "Row" ? "Row" : `Row: ${rowLabel}`;
+  const safeColumnLabel =
+    columnLabel === "Column" ? "Column" : `Column: ${columnLabel}`;
+
   return (
     <Stack spacing={2} paddingY={2} direction="column" position="relative">
       <Box
@@ -102,13 +106,13 @@ function PlotControls({ onClose }: PlotControlsProps) {
           }}
         >
           <Tab
-            label={`Row: ${rowLabel}`}
+            label={safeRowLabel}
             value="Row"
             icon={rowIcon}
             iconPosition="start"
           />
           <Tab
-            label={`Column: ${columnLabel}`}
+            label={safeColumnLabel}
             value="Column"
             icon={columnIcon}
             iconPosition="start"
