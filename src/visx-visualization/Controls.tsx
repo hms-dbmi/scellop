@@ -17,11 +17,9 @@ import {
 } from "../contexts/DisabledControlProvider";
 import { useTrackEvent } from "../contexts/EventTrackerProvider";
 import { useFraction } from "../contexts/FractionContext";
-import {
-  NORMALIZATIONS,
-  useNormalization,
-} from "../contexts/NormalizationContext";
+import { useNormalization } from "../contexts/NormalizationContext";
 import { useSelectedDimension } from "../contexts/SelectedDimensionContext";
+import { NORMALIZATIONS } from "../utils/normalizations";
 import LabelledSwitch from "./LabelledSwitch";
 
 function HeatmapThemeControl() {

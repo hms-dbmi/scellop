@@ -1,14 +1,11 @@
 import { temporal } from "zundo";
 import { createStore } from "zustand";
+import { Normalization } from "../utils/normalizations";
 import { createTemporalStoreContext } from "../utils/zustand";
 
 interface NormalizationProps {
   initialNormalization?: Normalization;
 }
-
-export type Normalization = "None" | "Row" | "Column" | "Log";
-
-export const NORMALIZATIONS = ["None", "Row", "Column", "Log"] as const;
 
 interface NormalizationStore {
   normalization: Normalization;
@@ -45,7 +42,7 @@ export const [
   "NormalizationStore",
 );
 
-export const useIsNormalized = () => {
+export const useIsNormalizedByRowOrColumn = () => {
   const normalization = useNormalization((state) => state.normalization);
   return normalization !== "None" && normalization !== "Log";
 };

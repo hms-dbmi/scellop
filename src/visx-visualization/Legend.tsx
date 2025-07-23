@@ -6,7 +6,7 @@ import InputLabel from "@mui/material/InputLabel";
 
 import {
   useIsLogTransformed,
-  useIsNormalized,
+  useIsNormalizedByRowOrColumn,
   useNormalization,
 } from "../contexts/NormalizationContext";
 import { PlotControlsButton } from "./plot-controls.tsx/PlotControls";
@@ -14,8 +14,41 @@ import { TemporalControls } from "./TemporalControls";
 
 const legendThresholds = new Array(100).fill(0).map((_, i) => i / 100);
 
+const useLegendLabel = () => {
+  const isNormalized = useIsNormalizedByRowOrColumn();
+  const isLogTransformed = useIsLogTransformed();
+  const normalization = useNormalization((state) => state.normalization);
+
+  if (isNormalized) {
+    return `Percent of all cells in ${normalization}`;
+  }
+  if (isLogTransformed) {
+    return "Log Counts";
+  }
+  return "Counts";
+};
+
+const useMinValueLabel = () => {
+  const isNormalized = useIsNormalizedByRowOrColumn();
+  return isNormalized ? "0%" : "0";
+};
+
+const useMaxValueLabel = () => {
+  const isNormalized = useIsNormalizedByRowOrColumn();
+  const isLogTransformed = useIsLogTransformed();
+  const { maxValue, maxLogValue } = useColorScale();
+
+  if (isNormalized) {
+    return "100%";
+  }
+  if (isLogTransformed) {
+    return maxLogValue.toFixed(2);
+  }
+  return maxValue;
+};
+
 export default function Legend() {
-  const { scale: colors, maxValue, maxLogValue } = useColorScale();
+  const { countsScale: colors, maxValue } = useColorScale();
   const id = useId() + "-legend";
 
   const minColor = colors(0);
@@ -24,17 +57,10 @@ export default function Legend() {
     `${value * 100}%`,
   ]);
   const maxColor = colors(maxValue);
-  const isNormalized = useIsNormalized();
-  const isLogTransformed = useIsLogTransformed();
-  const normalization = useNormalization((state) => state.normalization);  
 
-  const legendLabel = isNormalized
-    ? `Percent of all cells in ${normalization}`
-    : isLogTransformed 
-      ? "Log Counts"
-      : "Counts";
-  const minValueLabel = isNormalized ? "0%" : "0";
-  const maxValueLabel = isNormalized ? "100%" : isLogTransformed ? maxLogValue.toFixed(2) : maxValue;
+  const legendLabel = useLegendLabel();
+  const minValueLabel = useMinValueLabel();
+  const maxValueLabel = useMaxValueLabel();
 
   return (
     <Stack height="100%" gap="1rem" paddingX={1}>
