@@ -22,8 +22,8 @@ import {
   Close,
   DragHandle,
   ExpandMoreRounded,
+  FilterAlt,
   Restore,
-  Sort,
 } from "@mui/icons-material";
 import {
   Accordion,
@@ -90,7 +90,7 @@ function AddSort() {
       disabled={disabled}
       onClick={onClick}
     >
-      Add Sort
+      Add Filter
     </LeftAlignedButton>
   );
 }
@@ -150,7 +150,7 @@ function InvalidationAlert() {
   );
 }
 
-export function SortControls() {
+export function FilterControls() {
   const section = usePlotControlsContext();
   const { sorts, setSorts } = useData((s) => ({
     sorts: section === "Column" ? s.columnSortOrder : s.rowSortOrder,
@@ -191,7 +191,7 @@ export function SortControls() {
 
   return (
     <Accordion
-      id={`sort-options-${usePlotControlsContext()}`}
+      id={`filter-options-${usePlotControlsContext()}`}
       defaultExpanded
       elevation={0}
       disableGutters
@@ -209,8 +209,8 @@ export function SortControls() {
           },
         }}
       >
-        <Sort />
-        <Typography variant="subtitle1">Sorts</Typography>
+        <FilterAlt />
+        <Typography variant="subtitle1">Filters</Typography>
       </AccordionSummary>
 
       <AccordionDetails>
@@ -218,8 +218,7 @@ export function SortControls() {
           <InvalidationAlert />
         ) : (
           <Typography variant="body2">
-            Customize how columns are sorted by selecting the primary sorting
-            field. Drag and reorder sorting fields to adjust their priority.
+            Filter columns by selecting which fields to show from the metadata fields.
           </Typography>
         )}
         <DndContext
@@ -245,7 +244,7 @@ export function SortControls() {
             startIcon={<Restore />}
             {...useResetSorts()}
           >
-            Reset Sort
+            Reset Filter
           </LeftAlignedButton>
         </Stack>
       </AccordionDetails>
