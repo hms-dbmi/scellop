@@ -40,30 +40,30 @@ const render = createRender(() => {
   React.useEffect(() => {
     const widgetNode = ref.current?.parentNode as HTMLDivElement;
 
-    if (widgetNode) {
-      widgetNode.addEventListener("resize", () => {
-        if (widgetNode) {
-          setDimensions({
-            width: widgetNode.clientWidth,
-            height: 800,
-          });
-        }
-      });
-
+    const handleResize = () => {
       if (widgetNode) {
         setDimensions({
           width: widgetNode.clientWidth,
           height: 800,
         });
       }
+    };
+
+    if (widgetNode) {
+      widgetNode.addEventListener("resize", handleResize);
+      setDimensions({
+        width: widgetNode.clientWidth,
+        height: 800,
+      });
     }
+
     return () => {
-      widgetNode?.removeEventListener("resize", () => {});
+      widgetNode?.removeEventListener("resize", handleResize);
       setDimensions({ width: 1000, height: 800 });
     };
   }, []);
 
-  console.log("Dimensions", dimensions);
+// Removed the debug console.log statement.
 
   return (
     <div className="cellpop" style={{ position: "relative" }} ref={ref}>
