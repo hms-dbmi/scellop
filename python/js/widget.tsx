@@ -63,8 +63,6 @@ const render = createRender(() => {
     };
   }, []);
 
-// Removed the debug console.log statement.
-
   return (
     <div className="cellpop" style={{ position: "relative" }} ref={ref}>
       {data ? (
