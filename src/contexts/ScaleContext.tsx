@@ -1,20 +1,13 @@
-import { scaleBand, scaleLinear, StringLike } from "@visx/scale";
+import { scaleBand } from "@visx/scale";
 import React, { PropsWithChildren, useMemo } from "react";
 import { useSet } from "../hooks/useSet";
 import { createContext, useContext } from "../utils/context";
 import { useColumns, useRows } from "./DataContext";
 import { useHeatmapDimensions } from "./DimensionsContext";
 import { useSelectedValues } from "./ExpandedValuesContext";
+import { ScaleBand } from "./types";
 
 const SCALES = ["X", "Y"] as const;
-
-export type ScaleLinear<T> = ReturnType<typeof scaleLinear<T>>;
-export type ScaleBand<T extends StringLike> = ReturnType<
-  typeof scaleBand<T>
-> & {
-  lookup: (num: number) => string;
-  bandwidth: (item?: string) => number;
-};
 
 interface DimensionScaleContext {
   scale: ScaleBand<string>;

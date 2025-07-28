@@ -1,7 +1,28 @@
 import React from "react";
 
+import { ControlsModal } from "../controls-modal/ControlsModal";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
-export default function BottomRightPanel({ id }: VisualizationPanelProps) {
-  return <VisualizationPanel id={id}></VisualizationPanel>;
+function BottomRightPanel(
+  { id }: VisualizationPanelProps,
+  ref: React.ForwardedRef<HTMLDivElement>,
+) {
+  return (
+    <VisualizationPanel
+      id={id}
+      ref={ref}
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <ControlsModal />
+    </VisualizationPanel>
+  );
 }
+
+export default React.forwardRef(
+  BottomRightPanel,
+) as React.ForwardRefExoticComponent<
+  VisualizationPanelProps & React.RefAttributes<HTMLDivElement>
+>;

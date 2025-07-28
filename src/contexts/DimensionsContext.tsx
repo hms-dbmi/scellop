@@ -1,4 +1,3 @@
-import { useTheme } from "@mui/material";
 import React, {
   PropsWithChildren,
   useCallback,
@@ -8,15 +7,16 @@ import React, {
 } from "react";
 import { createContext, useContext } from "../utils/context";
 import { Setter } from "../utils/types";
+import {
+  HorizontalPanelSection,
+  MappedPanelSection,
+  VerticalPanelSection,
+} from "./types";
 
 export interface Dimensions {
   width: number;
   height: number;
 }
-
-type VerticalPanelSection = "top" | "middle" | "bottom";
-type HorizontalPanelSection = "left" | "center" | "right";
-type MappedPanelSection = `${HorizontalPanelSection}_${VerticalPanelSection}`;
 
 interface DimensionsContextType extends Dimensions {
   columnSizes: GridSizeTuple;
@@ -56,21 +56,12 @@ interface DimensionsProviderProps extends PropsWithChildren {
  */
 export function DimensionsProvider({
   children,
-  dimensions: { width, height: unadjustedHeight },
+  dimensions: { width, height },
   initialProportions: [initialColumnProportions, initialRowProportions] = [
     INITIAL_PROPORTIONS,
     INITIAL_PROPORTIONS,
   ],
 }: DimensionsProviderProps) {
-  const theme = useTheme();
-  const toolbarHeight = theme.mixins.toolbar.minHeight ?? 0;
-  const height =
-    unadjustedHeight -
-    (typeof toolbarHeight === "number"
-      ? toolbarHeight
-      : parseInt(toolbarHeight)) -
-    parseInt(theme.spacing(4));
-
   const [columnSizes, setColumnSizes] = useState<GridSizeTuple>(
     getInitialSize(width, initialColumnProportions),
   );

@@ -1,30 +1,29 @@
 import React, { ChangeEvent, useId } from "react";
-import { useColorScale } from "../contexts/ColorScaleContext";
-import { HEATMAP_THEMES_LIST, HeatmapTheme } from "../utils/heatmap-themes";
+import { useColorScale } from "../../contexts/ColorScaleContext";
+import { HEATMAP_THEMES_LIST, HeatmapTheme } from "../../utils/heatmap-themes";
 
-import { AppBar, Stack } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { useEventCallback } from "@mui/material/utils";
 
-import { useSetTheme } from "../contexts/CellPopThemeContext";
+import { useSetTheme } from "../../contexts/CellPopThemeContext";
 import {
   useFractionControlIsDisabled,
   useNormalizationControlIsDisabled,
   useThemeControlIsDisabled,
-} from "../contexts/DisabledControlProvider";
-import { useTrackEvent } from "../contexts/EventTrackerProvider";
-import { useFraction } from "../contexts/FractionContext";
+} from "../../contexts/DisabledControlProvider";
+import { useTrackEvent } from "../../contexts/EventTrackerProvider";
+import { useFraction } from "../../contexts/FractionContext";
 import {
   NORMALIZATIONS,
   useNormalization,
-} from "../contexts/NormalizationContext";
-import { useSelectedDimension } from "../contexts/SelectedDimensionContext";
-import LabelledSwitch from "./LabelledSwitch";
+} from "../../contexts/NormalizationContext";
+import { useSelectedDimension } from "../../contexts/SelectedDimensionContext";
+import LabelledSwitch from "../LabelledSwitch";
 
-function HeatmapThemeControl() {
+export function HeatmapThemeControl() {
   const { setHeatmapTheme, heatmapTheme } = useColorScale();
   const trackEvent = useTrackEvent();
 
@@ -33,7 +32,7 @@ function HeatmapThemeControl() {
     trackEvent("Change Heatmap Theme", e.target.value);
   });
   return (
-    <FormControl sx={{ maxWidth: 300 }}>
+    <FormControl sx={{ maxWidth: 300, flexShrink: 0 }}>
       <InputLabel id="heatmap-theme-select-label">Heatmap Themes</InputLabel>
       <Select
         labelId="heatmap-theme-select-label"
@@ -58,7 +57,7 @@ function HeatmapThemeControl() {
   );
 }
 
-function ThemeControl() {
+export function ThemeControl() {
   const themeIsDisabled = useThemeControlIsDisabled();
 
   const { currentTheme, setTheme } = useSetTheme();
@@ -86,7 +85,7 @@ function ThemeControl() {
   );
 }
 
-function FractionControl() {
+export function FractionControl() {
   const { fraction, setFraction } = useFraction();
   const trackEvent = useTrackEvent();
   const changeFraction = useEventCallback(
@@ -116,7 +115,7 @@ function FractionControl() {
   );
 }
 
-function SelectedDimensionControl() {
+export function SelectedDimensionControl() {
   const selectedDimensionIsDisabled = useFractionControlIsDisabled();
   const { selectedDimension, setSelectedDimension } = useSelectedDimension();
   const trackEvent = useTrackEvent();
@@ -144,7 +143,7 @@ function SelectedDimensionControl() {
   );
 }
 
-function NormalizationControl() {
+export function NormalizationControl() {
   const normalizationIsDisabled = useNormalizationControlIsDisabled();
   const { normalization, setNormalization } = useNormalization();
   const changeNormalization = useEventCallback((event: SelectChangeEvent) => {
@@ -160,7 +159,7 @@ function NormalizationControl() {
   }
 
   return (
-    <FormControl sx={{ maxWidth: 300 }}>
+    <FormControl sx={{ maxWidth: 300, flexShrink: 0 }}>
       <InputLabel
         id={id}
         sx={(theme) => ({
@@ -193,20 +192,5 @@ function NormalizationControl() {
         ))}
       </Select>
     </FormControl>
-  );
-}
-
-export default function Controls() {
-  const currentTheme = useSetTheme((state) => state.currentTheme);
-  return (
-    <AppBar position="static" elevation={0} color={"default"} sx={{ pt: 2 }}>
-      <Stack direction="row" spacing={5} p={1}>
-        <HeatmapThemeControl />
-        <NormalizationControl />
-        <FractionControl />
-        <SelectedDimensionControl />
-        <ThemeControl />
-      </Stack>
-    </AppBar>
   );
 }

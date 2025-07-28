@@ -7,7 +7,7 @@ import {
   heatmapThemes,
 } from "../utils/heatmap-themes";
 import { useMaxCount } from "./DataContext";
-import { ScaleLinear } from "./ScaleContext";
+import { ScaleLinear } from "./types";
 
 // Color context does not have selection
 interface ColorScaleContext {

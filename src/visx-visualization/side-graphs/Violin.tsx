@@ -12,8 +12,9 @@ import {
 } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
-import { ScaleBand, useXScale, useYScale } from "../../contexts/ScaleContext";
+import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
+import { ScaleBand } from "../../contexts/types";
 import { BackgroundStripe } from "./BackgroundStripe";
 import {
   LEFT_MARGIN,

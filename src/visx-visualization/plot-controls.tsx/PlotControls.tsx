@@ -32,29 +32,16 @@ interface PlotControlsProps {
 }
 
 interface PlotControlSectionProps extends PropsWithChildren {
-  selectedValue: PlotControlsSection;
   value: PlotControlsSection;
 }
 
-function PlotControlSection({
-  value,
-  selectedValue,
-  ...other
-}: PlotControlSectionProps) {
+export function PlotControlSection({ value }: PlotControlSectionProps) {
   return (
     <PlotControlsSectionProvider value={value}>
-      <div
-        role="tabpanel"
-        hidden={value !== selectedValue}
-        id={`tabpanel-${value}`}
-        aria-labelledby={`simple-tab-${value}`}
-        {...other}
-      >
-        <Divider />
-        <SortControls />
-        <Divider />
-        <DisplayControls />
-      </div>
+      <Divider />
+      <SortControls />
+      <Divider />
+      <DisplayControls />
     </PlotControlsSectionProvider>
   );
 }

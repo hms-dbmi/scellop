@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useCallback, useRef, useState } from "react";
+import React, { MouseEventHandler, useCallback, useRef } from "react";
 
 import Box from "@mui/material/Box";
 import { useParentRef } from "../../contexts/ContainerRefContext";
@@ -35,7 +35,6 @@ export default function VisualizationPanelResizer({
   const position = positionValues
     .slice(0, index + 1)
     .reduce((acc, size) => acc + size, 0);
-  const [active, setActive] = useState(false);
 
   const onMouseDown: MouseEventHandler = useCallback(
     (e) => {
@@ -82,7 +81,6 @@ export default function VisualizationPanelResizer({
         },
         [positionKey]: `${position - 3}px`,
       })}
-      className={active ? "active" : ""}
       data-orientation={orientation}
       onMouseDown={onMouseDown}
     />

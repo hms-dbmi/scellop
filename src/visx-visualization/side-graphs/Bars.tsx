@@ -68,30 +68,25 @@ export default function Bars({
           return null;
         }
 
-        const barWidth = nonExpandedSize;
         const scaledKey = categoricalScale(key);
         const scaledValue = numericalScale(value);
-        const x =
-          orientation === "vertical"
-            ? (scaledKey ?? 0)
-            : domainLimit - scaledValue;
-        const y =
-          orientation === "vertical"
-            ? domainLimit - scaledValue
-            : (scaledKey ?? 0);
-        const barHeight = scaledValue;
-        const height = orientation === "vertical" ? barHeight : barWidth;
-        const width = orientation === "vertical" ? barWidth : barHeight;
-
+        const isVertical = orientation === "vertical";
+        const barSize = nonExpandedSize;
+        const scaledPosition = scaledKey ?? 0;
+        const barLength = scaledValue;
         const [rangeStart, rangeEnd] = numericalScale.range();
-        const backgroundX =
-          orientation === "vertical" ? x : domainLimit - rangeEnd;
-        const backgroundY =
-          orientation === "vertical" ? domainLimit - rangeStart : y;
-        const backgroundHeight =
-          orientation === "vertical" ? rangeStart : barWidth;
-        const backgroundWidth =
-          orientation === "vertical" ? barWidth : rangeEnd;
+
+        // Bar dimensions and position
+        const x = isVertical ? scaledPosition : domainLimit - scaledValue;
+        const y = isVertical ? domainLimit - scaledValue : scaledPosition;
+        const width = isVertical ? barSize : barLength;
+        const height = isVertical ? barLength : barSize;
+
+        // Background dimensions and position
+        const backgroundX = isVertical ? x : domainLimit - rangeEnd;
+        const backgroundY = isVertical ? domainLimit - rangeStart : y;
+        const backgroundWidth = isVertical ? barSize : rangeEnd;
+        const backgroundHeight = isVertical ? rangeStart : barSize;
         return {
           x,
           y,

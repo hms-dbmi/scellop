@@ -364,7 +364,11 @@ export default function MetadataValueBar({
         <Text
           x={axisLabelX}
           y={axisLabelY}
-          transform={axis === "Y" ? `rotate(-90, ${axisLabelX}, ${axisLabelY})` : undefined}
+          transform={
+            axis === "Y"
+              ? `rotate(-90, ${axisLabelX}, ${axisLabelY})`
+              : undefined
+          }
           verticalAnchor="middle"
           textAnchor="middle"
           orientation={axis === "X" ? "horizontal" : "vertical"}

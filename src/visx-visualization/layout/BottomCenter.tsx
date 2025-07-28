@@ -6,11 +6,14 @@ import HeatmapXAxis from "../heatmap/HeatmapXAxis";
 import MetadataValueBar from "../heatmap/MetadataValueBar";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
-export default function BottomCenterPanel({ id }: VisualizationPanelProps) {
+function BottomCenterPanel(
+  { id }: VisualizationPanelProps,
+  ref: React.ForwardedRef<HTMLDivElement>,
+) {
   const flipAxisPosition = useColumnConfig((store) => store.flipAxisPosition);
   const { width, height } = usePanelDimensions("center_bottom");
   return (
-    <VisualizationPanel id={id}>
+    <VisualizationPanel id={id} ref={ref}>
       {flipAxisPosition ? (
         <MetadataValueBar axis="X" width={width} height={height} />
       ) : (
@@ -21,3 +24,9 @@ export default function BottomCenterPanel({ id }: VisualizationPanelProps) {
     </VisualizationPanel>
   );
 }
+
+export default React.forwardRef(
+  BottomCenterPanel,
+) as React.ForwardRefExoticComponent<
+  VisualizationPanelProps & React.RefAttributes<HTMLDivElement>
+>;

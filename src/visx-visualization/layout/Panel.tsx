@@ -1,19 +1,24 @@
-import React, { PropsWithChildren } from "react";
+import Box, { BoxProps } from "@mui/material/Box";
+import { styled } from "@mui/material/styles";
+import React, { ForwardedRef, PropsWithChildren } from "react";
 
-export interface VisualizationPanelProps extends PropsWithChildren {
-  id: string;
-}
+export interface VisualizationPanelProps extends PropsWithChildren, BoxProps {}
 
-export default function VisualizationPanel({
-  children,
-  id,
-}: VisualizationPanelProps) {
+const VisualizationPanelComponent = styled(Box)({
+  position: "relative",
+  width: "100%",
+  height: "100%",
+});
+
+export function VisualizationPanel(
+  { children, ...rest }: VisualizationPanelProps,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
   return (
-    <div
-      id={id}
-      style={{ position: "relative", width: "100%", height: "100%" }}
-    >
+    <VisualizationPanelComponent ref={ref} {...rest}>
       {children}
-    </div>
+    </VisualizationPanelComponent>
   );
 }
+
+export default React.forwardRef(VisualizationPanel);
