@@ -13,7 +13,7 @@ import {
   useTooltipData,
 } from "../../contexts/TooltipDataContext";
 import { MappedPanelSection } from "../../contexts/types";
-import { ControlsModal } from "../controls-modal/ControlsModal";
+import { ControlsModal } from "../controls/ControlsModal";
 import ContextMenuComponent from "../heatmap/ContextMenu";
 import BottomCenterPanel from "./BottomCenter";
 import BottomLeftPanel from "./BottomLeft";

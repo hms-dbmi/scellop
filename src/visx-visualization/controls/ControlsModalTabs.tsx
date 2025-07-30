@@ -3,19 +3,19 @@ import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import React, { useCallback, useState } from "react";
+import { PlotControlSection } from ".";
 import {
   useColumnConfig,
   useRowConfig,
 } from "../../contexts/AxisConfigContext";
 import { useIsMobile } from "../../hooks/useIsMobile";
-import { PlotControlSection } from "../plot-controls.tsx";
 import {
   FractionControl,
   HeatmapThemeControl,
   NormalizationControl,
   SelectedDimensionControl,
   ThemeControl,
-} from "../plot-controls.tsx/Controls";
+} from "./Controls";
 
 interface TabPanelProps extends BoxProps {
   index: number;
@@ -49,7 +49,9 @@ function TabPanel(props: TabPanelProps) {
  */
 export default function ControlsModalTabs() {
   const isMobile = useIsMobile();
-  const orientation = isMobile ? "horizontal" : "vertical"; // Horizontal tabs work best for mobile
+  // Horizontal tabs work best for mobile
+  const orientation = isMobile ? "horizontal" : "vertical";
+  const variant = isMobile ? "fullWidth" : "standard";
   const [value, setValue] = useState(0);
   const handleChange = useCallback(
     (_event: React.SyntheticEvent, newValue: number) => {
@@ -65,7 +67,7 @@ export default function ControlsModalTabs() {
     <Stack direction={isMobile ? "column" : "row"} flexGrow={1} height="100%">
       <Tabs
         orientation={orientation}
-        variant="fullWidth"
+        variant={variant}
         value={value}
         onChange={handleChange}
         sx={{

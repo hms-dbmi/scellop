@@ -20,6 +20,7 @@ import {
   ExpandMoreRounded,
   Restore,
   Search,
+  UnfoldLess,
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
@@ -37,7 +38,7 @@ import {
   Typography,
   useEventCallback,
 } from "@mui/material";
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import {
   useColumnConfig,
   useRowConfig,
@@ -47,13 +48,26 @@ import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import InfoTooltip from "../InfoTooltip";
 import { usePlotControlsContext } from "./PlotControlsContext";
-import { LeftAlignedButton } from "./style";
 
 function useItems() {
   const rows = useData((s) => s.rowOrder);
   const columns = useData((s) => s.columnOrder);
   const section = usePlotControlsContext();
   return section === "Column" ? columns : rows;
+}
+
+function useItemLabel() {
+  const section = usePlotControlsContext();
+  return section === "Column"
+    ? useColumnConfig((s) => s.label)
+    : useRowConfig((s) => s.label);
+}
+
+function usePluralItemLabel() {
+  const section = usePlotControlsContext();
+  return section === "Column"
+    ? useColumnConfig((s) => s.pluralLabel)
+    : useRowConfig((s) => s.pluralLabel);
 }
 
 function useItemMetadata() {
@@ -83,12 +97,14 @@ function useRestoreItems() {
   return useData((s) =>
     section === "Column"
       ? {
-          restoreItems: s.resetRemovedColumns,
+          displayItems: s.resetRemovedColumns,
           hasHiddenItems: s.removedColumns.size > 0,
+          hiddenItemsCount: s.removedColumns.size,
         }
       : {
-          restoreItems: s.resetRemovedRows,
+          displayItems: s.resetRemovedRows,
           hasHiddenItems: s.removedRows.size > 0,
+          hiddenItemsCount: s.removedRows.size,
         },
   );
 }
@@ -96,6 +112,49 @@ function useRestoreItems() {
 function useCanBeExpanded() {
   const section = usePlotControlsContext();
   return section === "Row";
+}
+
+interface StickyColumnHeaderProps {
+  gridRow: number;
+  gridColumn: number;
+  ariaLabel: string;
+  topOffset: number;
+  children: React.ReactNode;
+}
+
+function StickyColumnHeader({
+  gridRow,
+  gridColumn,
+  ariaLabel,
+  topOffset,
+  children,
+}: StickyColumnHeaderProps) {
+  return (
+    <Box
+      gridRow={gridRow}
+      gridColumn={gridColumn}
+      aria-label={ariaLabel}
+      position="sticky"
+      top={topOffset}
+      sx={(theme) => ({
+        background: `linear-gradient(to bottom, ${theme.palette.background.paper} 75%, transparent 100%)`,
+        backdropFilter: "blur(10px)",
+        pb: 1,
+      })}
+      zIndex={1}
+    >
+      <Typography
+        component="label"
+        variant="subtitle1"
+        role="columnheader"
+        display="flex"
+        alignItems="center"
+        gap={1}
+      >
+        {children}
+      </Typography>
+    </Box>
+  );
 }
 
 const ColumnDescription = "Toggle to show or hide a column from view.";
@@ -150,15 +209,44 @@ export function DisplayControls() {
 
   const section = usePlotControlsContext();
 
+  const removeItems = useRemoveItems();
+  const {
+    displayItems: restoreItems,
+    hasHiddenItems,
+    hiddenItemsCount,
+  } = useRestoreItems();
+
   const itemsAreFiltered =
     items.length !== filteredItems.length && filteredItems.length > 0;
-  const removeItems = useRemoveItems();
-  const { restoreItems, hasHiddenItems } = useRestoreItems();
+  const moreItemsCanBeFiltered = filteredItems.length < hiddenItemsCount;
+
+  const deselectValues = useSelectedValues((s) => s.deselectValues);
+
+  const trackEvent = useTrackEvent();
 
   const hideFilteredItems = useEventCallback(() => {
     const hiddenItems = items.filter((item) => !filteredItems.includes(item));
     removeItems(hiddenItems);
+    deselectValues(hiddenItems);
+    trackEvent(`Hide filtered ${section}`, hiddenItems.join(", "));
   });
+
+  const hasSelectedItems = useSelectedValues((s) => s.selectedValues.size > 0);
+
+  const collapseAllItems = useCollapseAllItems();
+
+  const itemLabel = useItemLabel();
+  const pluralItemLabel = usePluralItemLabel();
+
+  const [topStickySectionHeight, setTopStickySectionHeight] = useState(0);
+  const topStickySectionRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (topStickySectionRef.current) {
+      setTopStickySectionHeight(
+        topStickySectionRef.current.getBoundingClientRect().height,
+      );
+    }
+  }, []);
 
   return (
     <Accordion
@@ -184,33 +272,72 @@ export function DisplayControls() {
         <Typography variant="subtitle1">Display Options</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Typography variant="body2" mb={2}>
-          {description}
-        </Typography>
-        <FormControl fullWidth>
-          <TextField
-            placeholder="Search"
-            aria-label="Search items"
-            value={search}
-            onChange={updateSearch}
-            slotProps={{
-              input: {
-                startAdornment: <Icon component={Search} />,
-              },
-            }}
-          />
-        </FormControl>
-        <LeftAlignedButton
-          variant="text"
-          startIcon={<Restore />}
-          onClick={restoreItems}
-          sx={{
-            visibility: hasHiddenItems ? "visible" : "hidden",
-          }}
-          fullWidth
+        <Box
+          ref={topStickySectionRef}
+          position="sticky"
+          top={0}
+          zIndex={1}
+          sx={(theme) => ({
+            backgroundColor: theme.palette.background.paper,
+          })}
         >
-          Set all to visible
-        </LeftAlignedButton>
+          <Typography variant="body2" mb={2}>
+            {description}
+          </Typography>
+          <FormControl fullWidth>
+            <TextField
+              placeholder="Search"
+              aria-label="Search items"
+              value={search}
+              onChange={updateSearch}
+              slotProps={{
+                input: {
+                  startAdornment: <Icon component={Search} />,
+                },
+              }}
+            />
+          </FormControl>
+          <Stack direction="row">
+            <Button
+              variant="text"
+              startIcon={<Restore />}
+              onClick={restoreItems}
+              sx={{
+                opacity: hasHiddenItems ? 1 : 0,
+                transition: "opacity 0.2s ease-out",
+              }}
+              disabled={!hasHiddenItems}
+            >
+              Set all to visible
+            </Button>
+            <Button
+              variant="text"
+              endIcon={<UnfoldLess />}
+              onClick={collapseAllItems}
+              sx={{
+                opacity: hasSelectedItems ? 1 : 0,
+                transition: "opacity 0.2s ease-out",
+                ml: "auto",
+              }}
+              disabled={!hasSelectedItems}
+            >
+              Collapse all expanded {pluralItemLabel}
+            </Button>
+            <Button
+              variant="text"
+              endIcon={<VisibilityOff />}
+              onClick={hideFilteredItems}
+              sx={{
+                opacity: itemsAreFiltered || moreItemsCanBeFiltered ? 1 : 0,
+                transition: "opacity 0.2s ease-out",
+                ml: "auto",
+              }}
+              disabled={!itemsAreFiltered && moreItemsCanBeFiltered}
+            >
+              Hide all filtered {pluralItemLabel}
+            </Button>
+          </Stack>
+        </Box>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -225,53 +352,40 @@ export function DisplayControls() {
                   ? "1fr auto auto"
                   : "1fr auto",
                 gridTemplateRows: "auto",
+                position: "relative",
               }}
               role="list"
             >
-              <Typography
-                component="label"
+              <StickyColumnHeader
                 gridRow={1}
                 gridColumn={1}
-                aria-label={`${section} name and description`}
-                role="columnheader"
-              />
-              <Typography
-                component="label"
-                variant="subtitle1"
+                ariaLabel={`${section} name and description`}
+                topOffset={topStickySectionHeight}
+              >
+                {itemLabel}
+              </StickyColumnHeader>
+              <StickyColumnHeader
                 gridRow={1}
                 gridColumn={2}
-                role="columnheader"
+                ariaLabel={`Toggle visibility of ${section} items`}
+                topOffset={topStickySectionHeight}
               >
                 Visible
-              </Typography>
+              </StickyColumnHeader>
               {canBeExpanded && (
-                <Typography
-                  component="label"
-                  variant="subtitle1"
+                <StickyColumnHeader
                   gridRow={1}
                   gridColumn={3}
-                  role="columnheader"
-                  display="flex"
-                  alignItems="center"
-                  gap={1}
+                  ariaLabel={`Toggle between displaying ${section} items as heatmap cells or a bar plot.`}
+                  topOffset={topStickySectionHeight}
                 >
                   Expanded
                   <InfoTooltip title="Toggle between displaying row as heatmap cells or a bar plot." />
-                </Typography>
+                </StickyColumnHeader>
               )}
               {filteredItems.map((item) => (
                 <DisplayItem key={item} item={item} />
               ))}
-              {itemsAreFiltered && (
-                <Box gridRow="auto" gridColumn="span 3">
-                  <Button
-                    onClick={hideFilteredItems}
-                    startIcon={<VisibilityOff />}
-                  >
-                    Hide all other results
-                  </Button>
-                </Box>
-              )}
             </Box>
           </SortableContext>
         </DndContext>
@@ -333,6 +447,18 @@ const useToggleExpansion = () => {
   });
   return handleChange;
 };
+
+function useCollapseAllItems() {
+  const deselectValues = useSelectedValues((s) => s.deselectValues);
+  const items = useItems();
+  const trackEvent = useTrackEvent();
+  const label = usePluralItemLabel();
+
+  return useEventCallback(() => {
+    deselectValues(items);
+    trackEvent(`Collapse all ${label}`, `${items.length} ${label}`);
+  });
+}
 
 const useSubtitleFunction = () => {
   const rowSubtitle = useRowConfig((s) => s.createSubtitle) ?? (() => "");

@@ -11,6 +11,8 @@ interface SelectedValuesStore {
   selectValue: (value: string) => void;
   deselectValue: (value: string) => void;
   reset: () => void;
+  deselectValues: (values: string[]) => void;
+  selectValues: (values: string[]) => void;
 }
 
 const createSelectedValuesContext = ({
@@ -42,6 +44,20 @@ const createSelectedValuesContext = ({
         set((state) => {
           const selectedValues = new Set(state.selectedValues);
           selectedValues.delete(value);
+          return { selectedValues };
+        });
+      },
+      deselectValues: (values: string[]) => {
+        set((state) => {
+          const selectedValues = new Set(state.selectedValues);
+          values.forEach((value) => selectedValues.delete(value));
+          return { selectedValues };
+        });
+      },
+      selectValues: (values: string[]) => {
+        set((state) => {
+          const selectedValues = new Set(state.selectedValues);
+          values.forEach((value) => selectedValues.add(value));
           return { selectedValues };
         });
       },
