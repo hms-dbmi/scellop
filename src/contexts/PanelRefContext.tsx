@@ -2,9 +2,9 @@ import { createContext, useContext } from "../utils/context";
 import { MappedPanelSection } from "./types";
 
 const PanelRefContext =
-  createContext<Record<MappedPanelSection, React.RefObject<HTMLDivElement> | null>>(
-    "Panel Ref Context",
-  ); 
+  createContext<
+    Record<MappedPanelSection, React.RefObject<HTMLDivElement> | null>
+  >("Panel Ref Context");
 
 export function usePanelRefContext() {
   return useContext(PanelRefContext);

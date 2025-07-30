@@ -11,6 +11,7 @@ export interface AxisConfig {
     metadataValues?: Record<string, string | number>,
   ) => string;
   icon?: React.ReactElement<unknown>;
+  pluralLabel: string;
 }
 
 interface AxisConfigActions {
@@ -32,6 +33,9 @@ const createAxisConfigStore =
           set({ createHref }),
         setFlipAxisPosition: (flipAxisPosition: boolean) =>
           set({ flipAxisPosition }),
+        get pluralLabel() {
+          return `${this.label}s`;
+        },
       })),
     );
   };

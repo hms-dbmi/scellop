@@ -1,4 +1,4 @@
-import React, { RefObject, useId, useMemo, useRef } from "react";
+import React, { RefObject, useCallback, useId, useMemo, useRef } from "react";
 
 import { useDimensions } from "../../contexts/DimensionsContext";
 import Tooltip from "../Tooltip";
@@ -139,19 +139,22 @@ export default function VizContainerGrid() {
 
   const { panelPropList, panelRefMap } = usePanelProps(id);
 
+  const onContextMenuOpenChange = useCallback(
+    (open: boolean) => {
+      if (open && tooltipData) {
+        openContextMenu();
+        return;
+      }
+      closeContextMenu();
+      closeTooltip();
+    },
+    [openContextMenu, closeContextMenu, closeTooltip, tooltipData],
+  );
+
   return (
     <ParentRefProvider value={parentRef}>
       <PanelRefProvider value={panelRefMap}>
-        <ContextMenuRoot
-          onOpenChange={(open) => {
-            if (open && tooltipData) {
-              openContextMenu();
-              return;
-            }
-            closeContextMenu();
-            closeTooltip();
-          }}
-        >
+        <ContextMenuRoot onOpenChange={onContextMenuOpenChange}>
           <Trigger asChild>
             <div
               style={{ position: "relative" }}
@@ -197,6 +200,7 @@ export default function VizContainerGrid() {
           </Trigger>
           <ContextMenuComponent />
         </ContextMenuRoot>
+        <ControlsModal />
       </PanelRefProvider>
     </ParentRefProvider>
   );

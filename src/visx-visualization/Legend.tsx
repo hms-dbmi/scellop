@@ -8,8 +8,6 @@ import {
   useIsNormalized,
   useNormalization,
 } from "../contexts/NormalizationContext";
-import { PlotControlsButton } from "./plot-controls.tsx/PlotControls";
-import { TemporalControls } from "./TemporalControls";
 
 const legendThresholds = new Array(100).fill(0).map((_, i) => i / 100);
 
@@ -38,7 +36,7 @@ export default function Legend() {
         <InputLabel id="heatmap-legend-label">{legendLabel}</InputLabel>
         <Box
           id={id}
-          data-testId="heatmap-legend"
+          data-testid="heatmap-legend"
           sx={{
             width: "100%",
             display: "flex",
@@ -62,10 +60,6 @@ export default function Legend() {
             </Typography>
           </Stack>
         </Box>
-      </Stack>
-      <Stack direction="row" gap={2} flexWrap="wrap">
-        <PlotControlsButton />
-        <TemporalControls />
       </Stack>
     </Stack>
   );

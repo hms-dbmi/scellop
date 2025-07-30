@@ -8,6 +8,7 @@ import {
 } from "./AxisConfigContext";
 import { CellPopThemeProvider } from "./CellPopThemeContext";
 import { ColorScaleProvider } from "./ColorScaleContext";
+import ControlsVisibilityProvider from "./ControlsVisibilityContext";
 import { DataProvider } from "./DataContext";
 import {
   Dimensions,
@@ -26,6 +27,7 @@ import { MetadataConfigProvider } from "./MetadataConfigContext";
 import { NormalizationProvider } from "./NormalizationContext";
 import { ScaleProvider } from "./ScaleContext";
 import { SelectedDimensionProvider } from "./SelectedDimensionContext";
+import TemporalControlsProvider from "./TemporalControlsContext";
 import { TooltipDataProvider } from "./TooltipDataContext";
 
 interface CellPopConfigProps extends PropsWithChildren {
@@ -97,7 +99,11 @@ export function Providers({
                                   sortableFields={sortableFields}
                                   tooltipFields={tooltipFields}
                                 >
-                                  {children}
+                                  <ControlsVisibilityProvider>
+                                    <TemporalControlsProvider>
+                                      {children}
+                                    </TemporalControlsProvider>
+                                  </ControlsVisibilityProvider>
                                 </MetadataConfigProvider>
                               </SelectedDimensionProvider>
                             </ColorScaleProvider>

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ControlsModal } from "../controls-modal/ControlsModal";
+import ControlsModalTrigger from "../controls-modal/ControlsModalTrigger";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function BottomRightPanel(
@@ -16,7 +16,7 @@ function BottomRightPanel(
       alignItems="center"
       justifyContent="center"
     >
-      <ControlsModal />
+      <ControlsModalTrigger />
     </VisualizationPanel>
   );
 }

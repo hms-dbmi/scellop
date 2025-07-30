@@ -8,6 +8,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { useEventCallback } from "@mui/material/utils";
 
+import { FormHelperText } from "@mui/material";
 import { useSetTheme } from "../../contexts/CellPopThemeContext";
 import {
   useFractionControlIsDisabled,
@@ -32,7 +33,7 @@ export function HeatmapThemeControl() {
     trackEvent("Change Heatmap Theme", e.target.value);
   });
   return (
-    <FormControl sx={{ maxWidth: 300, flexShrink: 0 }}>
+    <FormControl fullWidth>
       <InputLabel id="heatmap-theme-select-label">Heatmap Themes</InputLabel>
       <Select
         labelId="heatmap-theme-select-label"
@@ -53,6 +54,10 @@ export function HeatmapThemeControl() {
           </MenuItem>
         ))}
       </Select>
+      <FormHelperText>
+        Select a theme for the heatmap visualization. This will change the color
+        scale used to represent data values.
+      </FormHelperText>
     </FormControl>
   );
 }
@@ -81,6 +86,8 @@ export function ThemeControl() {
       rightLabel="Dark"
       onChange={changeVisTheme}
       checked={currentTheme === "dark"}
+      tooltip="Toggle between light and dark themes for the visualization."
+      tooltipIsHelper
     />
   );
 }
@@ -111,6 +118,7 @@ export function FractionControl() {
       tooltip={
         "Toggle between displaying bars representing total cell counts, or violins representing fractions of data in the plot."
       }
+      tooltipIsHelper
     />
   );
 }
@@ -139,6 +147,7 @@ export function SelectedDimensionControl() {
       onChange={changeSelectedDimension}
       checked={selectedDimension === "X"}
       tooltip="Toggle to choose rows or columns for selection within the plot."
+      tooltipIsHelper
     />
   );
 }
@@ -152,33 +161,20 @@ export function NormalizationControl() {
 
   const id = useId();
 
-  const currentTheme = useSetTheme((state) => state.currentTheme);
-
   if (normalizationIsDisabled) {
     return null;
   }
 
   return (
-    <FormControl sx={{ maxWidth: 300, flexShrink: 0 }}>
-      <InputLabel
-        id={id}
-        sx={(theme) => ({
-          background:
-            currentTheme === "dark"
-              ? theme.palette.background.default
-              : theme.palette.grey[100],
-          paddingRight: 2,
-        })}
-      >
-        Heatmap&nbsp;Normalization
-      </InputLabel>
+    <FormControl fullWidth>
+      <InputLabel id={id}>Heatmap Normalization</InputLabel>
       <Select
         labelId={id}
         id={`${id}-select`}
         value={normalization}
         onChange={changeNormalization}
         variant="outlined"
-        label="Heatmap Themes"
+        label="Heatmap Normalization"
         sx={{ textTransform: "capitalize", minWidth: 200 }}
       >
         {NORMALIZATIONS.map((normalization) => (
@@ -191,6 +187,10 @@ export function NormalizationControl() {
           </MenuItem>
         ))}
       </Select>
+      <FormHelperText>
+        Select a normalization method for the heatmap. This will affect how data
+        values are scaled and displayed.
+      </FormHelperText>
     </FormControl>
   );
 }

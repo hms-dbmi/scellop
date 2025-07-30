@@ -1,85 +1,50 @@
-import { DndContext, useDraggable } from "@dnd-kit/core";
 import ControlsModalTabs from "./ControlsModalTabs";
-import ControlsModalTrigger from "./ControlsModalTrigger";
 
-import { CSS } from "@dnd-kit/utilities";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogTitle from "@mui/material/DialogTitle";
+import Stack from "@mui/material/Stack";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
+import React from "react";
 import {
-  Dialog,
-  DialogActions,
-  DialogTitle,
-  DialogTitleProps,
-  Paper,
-  PaperProps,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import React, { useCallback, useState } from "react";
+  useControlsVisibility,
+  useControlsVisibilityActions,
+} from "../../contexts/ControlsVisibilityContext";
 import { TemporalControls } from "../TemporalControls";
 
-const useBoolean = (initialValue: boolean = false) => {
-  const [state, setState] = useState(initialValue);
-  const toggle = useCallback(() => setState((prev) => !prev), []);
-  const setTrue = useCallback(() => setState(true), []);
-  const setFalse = useCallback(() => setState(false), []);
-  return [state, setTrue, setFalse, toggle] as const;
-};
-
-function DraggablePaper(props: PaperProps) {
-  const { children, ...other } = props;
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: "dialog-title",
-  });
-  const [style, setStyle] = useState<React.CSSProperties>({
-    transform: CSS.Translate.toString(transform),
-    cursor: "move",
-    ...other.style,
-  });
-
-  const onDragEnd = useCallback(() => {
-    setStyle((prev) => ({
-      ...prev,
-      transform: CSS.Translate.toString(transform),
-    }));
-  }, [transform]);
-
-  return (
-    <Paper
-      {...other}
-      {...listeners}
-      {...attributes}
-      style={style}
-      ref={setNodeRef}
-      onDragEnd={onDragEnd}
-    >
-      {children}
-    </Paper>
-  );
-}
-
 export function ControlsModal() {
-  const [isOpen, open, close] = useBoolean(false);
+  const { isControlsVisible } = useControlsVisibility();
+  const { hideControls } = useControlsVisibilityActions();
   const theme = useTheme();
+  // Use fullScreen view for smaller screens
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   return (
-    <DndContext>
-      <Dialog
-        open={isOpen}
-        onClose={close}
-        fullWidth
-        maxWidth="md" // Adjust maxWidth as needed
-        fullScreen={fullScreen} // Use full screen on mobile
-        sx={{ pointerEvents: "auto" }} // Ensure pointer events are enabled
-        PaperComponent={DraggablePaper}
+    <Dialog
+      open={isControlsVisible}
+      onClose={hideControls}
+      fullWidth
+      maxWidth="md"
+      fullScreen={fullScreen}
+    >
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        pr={2}
       >
-        <DialogTitle>Plot Controls</DialogTitle>
-
-        <ControlsModalTabs />
-        <DialogActions>
-          <TemporalControls />
-        </DialogActions>
-      </Dialog>
-      <ControlsModalTrigger onClick={open} />
-    </DndContext>
+        <DialogTitle>Settings</DialogTitle>
+        <TemporalControls />
+      </Stack>
+      <ControlsModalTabs />
+      <DialogActions sx={{ mt: "auto" }}>
+        <Button onClick={hideControls} color="primary">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

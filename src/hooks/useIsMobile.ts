@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-
 /**
  * Custom hook to determine if the viewport is mobile-sized.
  * @returns {boolean} - True if the viewport is mobile-sized, false otherwise.
@@ -13,11 +12,11 @@ export function useIsMobile() {
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     handleResize(); // Initial check
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
