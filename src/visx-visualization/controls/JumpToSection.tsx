@@ -1,6 +1,47 @@
 import { Sort, Visibility } from "@mui/icons-material";
-import { Link, Typography } from "@mui/material";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import Typography from "@mui/material/Typography";
 import React from "react";
+
+function scrollToSection(section: string) {
+  document.getElementById(section)?.scrollIntoView({
+    behavior: "smooth",
+  });
+}
+
+export function SortsLink({ section }: { section: string }) {
+  return (
+    <Button
+      href={`#sort-options-${section}`}
+      startIcon={<Sort />}
+      variant="text"
+      onClick={(e) => {
+        e.preventDefault();
+        scrollToSection(`sort-options-${section}`);
+      }}
+    >
+      Sorts
+    </Button>
+  );
+}
+
+export function DisplayOptionsLink({ section }: { section: string }) {
+  return (
+    <Button
+      href={`#display-options-${section}`}
+      startIcon={<Visibility />}
+      variant="text"
+      onClick={(e) => {
+        e.preventDefault();
+        scrollToSection(`display-options-${section}`);
+      }}
+    >
+      Display Options
+    </Button>
+  );
+}
+
 export function JumpToSection({ section }: { section: string }) {
   return (
     <Typography
@@ -13,39 +54,9 @@ export function JumpToSection({ section }: { section: string }) {
       px={2}
     >
       Jump to Section:
-      <Link
-        href={`#sort-options-${section}`}
-        display="flex"
-        alignItems="center"
-        underline="none"
-        gap={1}
-        onClick={(e) => {
-          e.preventDefault();
-          document.getElementById(`sort-options-${section}`)?.scrollIntoView({
-            behavior: "smooth",
-          });
-        }}
-      >
-        <Sort /> Sorts
-      </Link>
-      {" | "}
-      <Link
-        href={`#display-options-${section}`}
-        display="flex"
-        alignItems="center"
-        underline="none"
-        gap={1}
-        onClick={(e) => {
-          e.preventDefault();
-          document
-            .getElementById(`display-options-${section}`)
-            ?.scrollIntoView({
-              behavior: "smooth",
-            });
-        }}
-      >
-        <Visibility /> Display Options
-      </Link>
+      <SortsLink section={section} />
+      <Divider orientation="vertical" flexItem />
+      <DisplayOptionsLink section={section} />
     </Typography>
   );
 }

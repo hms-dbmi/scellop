@@ -8,7 +8,7 @@ import {
   useColumnConfig,
   useRowConfig,
 } from "../../contexts/AxisConfigContext";
-import { useIsMobile } from "../../hooks/useIsMobile";
+import { useIsMobile } from "../../hooks/useMediaQueries";
 import {
   FractionControl,
   HeatmapThemeControl,
@@ -36,7 +36,7 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box p={2} flexGrow={1}>
+        <Box p={2} pl={0} flexGrow={1}>
           {children}
         </Box>
       )}
@@ -120,7 +120,13 @@ export default function ControlsModalTabs() {
           id="plot-settings-panel"
           aria-labelledby="plot-settings-tab"
         >
-          <Stack spacing={2} alignItems="start" flexGrow={1} width="100%">
+          <Stack
+            pl={2}
+            spacing={2}
+            alignItems="start"
+            flexGrow={1}
+            width="100%"
+          >
             <HeatmapThemeControl />
             <NormalizationControl />
             <ThemeControl />

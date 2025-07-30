@@ -16,6 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  Close,
   DragHandle,
   ExpandMoreRounded,
   Restore,
@@ -30,8 +31,10 @@ import {
   AccordionSummary,
   Box,
   Button,
+  Divider,
   FormControl,
   Icon,
+  IconButton,
   Stack,
   Switch,
   TextField,
@@ -92,7 +95,7 @@ function useRemoveItems() {
   );
 }
 
-function useRestoreItems() {
+function useDisplayItems() {
   const section = usePlotControlsContext();
   return useData((s) =>
     section === "Column"
@@ -199,6 +202,9 @@ export function DisplayControls() {
   });
   const createSubtitle = useSubtitleFunction();
 
+  // Filter items based on search input
+  // It checks both the item name and its metadata subtitle
+  // to see if they include the search term (case-insensitive).
   const filteredItems = items.filter(
     (item) =>
       item.toLowerCase().includes(search.toLowerCase()) ||
@@ -207,18 +213,21 @@ export function DisplayControls() {
         .includes(search.toLowerCase()),
   );
 
+  // Row or Column
   const section = usePlotControlsContext();
 
   const removeItems = useRemoveItems();
-  const {
-    displayItems: restoreItems,
-    hasHiddenItems,
-    hiddenItemsCount,
-  } = useRestoreItems();
+  const { displayItems, hasHiddenItems, hiddenItemsCount } = useDisplayItems();
 
   const itemsAreFiltered =
     items.length !== filteredItems.length && filteredItems.length > 0;
-  const moreItemsCanBeFiltered = filteredItems.length < hiddenItemsCount;
+  const excludedItems = items.length - filteredItems.length;
+  const moreItemsCanBeFiltered = hiddenItemsCount >= excludedItems;
+
+  console.log({
+    excludedItems,
+    hiddenItemsCount,
+  });
 
   const deselectValues = useSelectedValues((s) => s.deselectValues);
 
@@ -241,12 +250,27 @@ export function DisplayControls() {
   const [topStickySectionHeight, setTopStickySectionHeight] = useState(0);
   const topStickySectionRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    const updateHeight = () => {
+      if (topStickySectionRef.current) {
+        setTopStickySectionHeight(
+          topStickySectionRef.current.getBoundingClientRect().height,
+        );
+      }
+    };
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
     if (topStickySectionRef.current) {
-      setTopStickySectionHeight(
-        topStickySectionRef.current.getBoundingClientRect().height,
-      );
+      resizeObserver.observe(topStickySectionRef.current);
     }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, []);
+
+  const displayHideFiltered = itemsAreFiltered && !moreItemsCanBeFiltered;
 
   return (
     <Accordion
@@ -263,6 +287,7 @@ export function DisplayControls() {
         expandIcon={<ExpandMoreRounded />}
         sx={{
           "& .MuiAccordionSummary-content": {
+            display: "flex",
             alignItems: "center",
             gap: 1,
           },
@@ -290,26 +315,52 @@ export function DisplayControls() {
               aria-label="Search items"
               value={search}
               onChange={updateSearch}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setSearch("");
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              }}
               slotProps={{
                 input: {
-                  startAdornment: <Icon component={Search} />,
+                  startAdornment: <Icon component={Search} sx={{ pr: 1 }} />,
+                  endAdornment: search ? (
+                    <IconButton onClick={() => setSearch("")} size="small">
+                      <Close />
+                    </IconButton>
+                  ) : null,
                 },
               }}
             />
           </FormControl>
-          <Stack direction="row">
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            mt={2}
+            useFlexGap
+          >
             <Button
               variant="text"
               startIcon={<Restore />}
-              onClick={restoreItems}
+              onClick={displayItems}
               sx={{
                 opacity: hasHiddenItems ? 1 : 0,
                 transition: "opacity 0.2s ease-out",
               }}
               disabled={!hasHiddenItems}
+              size="small"
             >
               Set all to visible
             </Button>
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{
+                visibility:
+                  hasHiddenItems || hasSelectedItems ? "visible" : "hidden",
+              }}
+            />
             <Button
               variant="text"
               endIcon={<UnfoldLess />}
@@ -317,22 +368,32 @@ export function DisplayControls() {
               sx={{
                 opacity: hasSelectedItems ? 1 : 0,
                 transition: "opacity 0.2s ease-out",
-                ml: "auto",
               }}
               disabled={!hasSelectedItems}
+              size="small"
             >
               Collapse all expanded {pluralItemLabel}
             </Button>
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{
+                visibility:
+                  displayHideFiltered || hasSelectedItems
+                    ? "visible"
+                    : "hidden",
+              }}
+            />
             <Button
               variant="text"
               endIcon={<VisibilityOff />}
               onClick={hideFilteredItems}
               sx={{
-                opacity: itemsAreFiltered || moreItemsCanBeFiltered ? 1 : 0,
+                opacity: displayHideFiltered ? 1 : 0,
                 transition: "opacity 0.2s ease-out",
-                ml: "auto",
               }}
-              disabled={!itemsAreFiltered && moreItemsCanBeFiltered}
+              disabled={!displayHideFiltered}
+              size="small"
             >
               Hide all filtered {pluralItemLabel}
             </Button>
@@ -362,6 +423,7 @@ export function DisplayControls() {
                 ariaLabel={`${section} name and description`}
                 topOffset={topStickySectionHeight}
               >
+                <Icon sx={{ visibility: "hidden", pr: 1 }} />
                 {itemLabel}
               </StickyColumnHeader>
               <StickyColumnHeader
