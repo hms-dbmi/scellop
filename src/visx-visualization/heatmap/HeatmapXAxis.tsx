@@ -9,10 +9,25 @@ import {
 } from "../../contexts/DataContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
-import { LEFT_MULTIPLIER, TOP_MULTIPLIER } from "../side-graphs/constants";
 import SVGBackgroundColorFilter from "../SVGBackgroundColorFilter";
 import { TICK_TEXT_SIZE } from "./constants";
 import { useHeatmapAxis, useSetTickLabelSize } from "./hooks";
+
+export function useHeatmapXAxisLabel() {
+  const axisConfig = useColumnConfig();
+  const { label } = axisConfig;
+
+  const columns = useColumns();
+  const filteredColumns = columns.length;
+  const allColumns = useData((s) => s.columnOrder.length);
+
+  const labelWithCounts =
+    filteredColumns !== allColumns
+      ? `${label} (${filteredColumns}/${allColumns})`
+      : `${label} (${allColumns})`;
+
+  return labelWithCounts;
+}
 
 /**
  * Component which renders the x-axis of the heatmap.
@@ -28,13 +43,6 @@ export default function HeatmapXAxis() {
   const { openTooltip, closeTooltip } = useSetTooltipData();
 
   const columns = useColumns();
-  const filteredColumns = columns.length;
-  const allColumns = useData((s) => s.columnOrder.length);
-
-  const labelWithCounts =
-    filteredColumns !== allColumns
-      ? `${label} (${filteredColumns}/${allColumns})`
-      : `${label} (${allColumns})`;
 
   const filterId = useId();
   const { openInNewTab, tickTitle, tickLabelStyle } =
@@ -51,11 +59,10 @@ export default function HeatmapXAxis() {
       />
       <Axis
         scale={x}
-        label={labelWithCounts}
         numTicks={x.domain().length}
         stroke={theme.palette.text.primary}
         tickStroke={theme.palette.text.primary}
-        top={tickLabelSize * TOP_MULTIPLIER}
+        top={tickLabelSize}
         tickLabelProps={(t) =>
           ({
             angle: -90,
@@ -86,14 +93,6 @@ export default function HeatmapXAxis() {
         }
         tickValues={columns}
         orientation={Orientation.top}
-        labelProps={{
-          fontSize: TICK_TEXT_SIZE * LEFT_MULTIPLIER,
-          fill: theme.palette.text.primary,
-          className: "x-axis-label text",
-          pointerEvents: "none",
-          fontFamily: theme.typography.fontFamily,
-        }}
-        labelOffset={tickLabelSize}
       />
     </>
   );

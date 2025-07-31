@@ -10,9 +10,9 @@ import { useFraction } from "../../contexts/FractionContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import HeatmapXAxis from "../heatmap/HeatmapXAxis";
 import Bars from "./Bars";
-import Violins from "./Violin";
-import { TOP_MULTIPLIER } from "./constants";
 import { useCountsScale } from "./hooks";
+import Violins from "./Violin";
+import XAxisLabel from "./XAxisLabel";
 
 const useColumnCountsScale = () => {
   const { height } = usePanelDimensions("center_top");
@@ -20,10 +20,7 @@ const useColumnCountsScale = () => {
   const { tickLabelSize } = useXScale();
   const fraction = useFraction((s) => s.fraction);
   const domainMax = fraction ? 100 : (max(Object.values(columnCounts)) ?? 0);
-  return useCountsScale(
-    [domainMax, 0],
-    [height - tickLabelSize * TOP_MULTIPLIER, 0],
-  );
+  return useCountsScale([domainMax, 0], [height - tickLabelSize, 0]);
 };
 
 function TopBar() {
@@ -50,11 +47,9 @@ export function TopGraphScale() {
   const yScale = useColumnCountsScale();
   const { tickLabelSize } = useXScale();
 
-  const axisScale = yScale
-    .copy()
-    .range([tickLabelSize * TOP_MULTIPLIER, height]);
+  const axisScale = yScale.copy().range([tickLabelSize, height]);
 
-  const axisTotalHeight = height - tickLabelSize * TOP_MULTIPLIER;
+  const axisTotalHeight = height - tickLabelSize;
 
   const theme = useTheme();
 
@@ -100,10 +95,14 @@ export default function TopGraph() {
   const flipAxisPosition = useColumnConfig((store) => store.flipAxisPosition);
 
   const { fraction } = useFraction();
+
   return (
-    <svg className="top-graph-container" height={height} width={width}>
-      {fraction ? <TopViolin /> : <TopBar />}
-      {flipAxisPosition && <HeatmapXAxis />}
-    </svg>
+    <>
+      <svg className="top-graph-container" height={height} width={width}>
+        {fraction ? <TopViolin /> : <TopBar />}
+        {flipAxisPosition && <HeatmapXAxis />}
+      </svg>
+      {flipAxisPosition && <XAxisLabel />}
+    </>
   );
 }

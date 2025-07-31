@@ -10,18 +10,12 @@ import { scaleLinear } from "@visx/scale";
 import { Text } from "@visx/text";
 import React, { useId } from "react";
 import { useRowConfig } from "../../contexts/AxisConfigContext";
-import {
-  useData,
-  useRowCounts,
-  useRowMaxes,
-  useRows,
-} from "../../contexts/DataContext";
+import { useRowCounts, useRowMaxes, useRows } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { EXPANDED_ROW_PADDING, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
-import { LEFT_MULTIPLIER } from "../side-graphs/constants";
 import SVGBackgroundColorFilter from "../SVGBackgroundColorFilter";
 import { TICK_TEXT_SIZE } from "./constants";
 import { useHeatmapAxis, useSetTickLabelSize } from "./hooks";
@@ -39,13 +33,6 @@ export default function HeatmapYAxis() {
 
   const rows = useRows();
   const rowCounts = useRowCounts();
-  const filteredRowsCount = rows.length;
-  const allColumnsCount = useData((s) => s.rowOrder.length);
-
-  const labelWithCounts =
-    filteredRowsCount !== allColumnsCount
-      ? `${label} (${filteredRowsCount}/${allColumnsCount})`
-      : `${label} (${allColumnsCount})`;
 
   const filterId = useId();
   const { openInNewTab, tickTitle, tickLabelStyle } =
@@ -69,20 +56,25 @@ export default function HeatmapYAxis() {
       />
       <Axis
         scale={y}
-        label={labelWithCounts}
-        left={tickLabelSize * LEFT_MULTIPLIER}
+        left={tickLabelSize}
         stroke={theme.palette.text.primary}
         tickStroke={theme.palette.text.primary}
-        tickComponent={(tickLabelProps: TickRendererProps) =>
-          selectedValues.has(tickLabelProps?.formattedValue as string) ? (
-            <ExpandedRowTick {...tickLabelProps} />
+        tickComponent={({
+          formattedValue,
+          ...tickLabelProps
+        }: TickRendererProps) =>
+          selectedValues.has(formattedValue as string) ? (
+            <ExpandedRowTick
+              formattedValue={formattedValue}
+              {...tickLabelProps}
+            />
           ) : (
             <Text
               {...tickLabelProps}
               // @ts-expect-error Visx types are slightly incorrect
               x={(tickLabelProps?.to?.x ?? 0) - tickLabelProps.fontSize}
             >
-              {tickLabelProps?.formattedValue}
+              {formattedValue}
             </Text>
           )
         }
@@ -91,7 +83,7 @@ export default function HeatmapYAxis() {
             fontSize,
             textAnchor: "end",
             fill: theme.palette.text.primary,
-            className: "y-axis-tick-label text",
+            className: "y-axis-tick-label",
             fontFamily: theme.typography.fontFamily,
             style: tickLabelStyle,
             dy: "0.25em",
@@ -114,14 +106,6 @@ export default function HeatmapYAxis() {
         }
         tickValues={rows}
         orientation={Orientation.left}
-        labelOffset={tickLabelSize}
-        labelProps={{
-          fontSize: TICK_TEXT_SIZE * LEFT_MULTIPLIER,
-          fill: theme.palette.text.primary,
-          pointerEvents: "none",
-          className: "y-axis-label text",
-          dy: `${TICK_TEXT_SIZE * LEFT_MULTIPLIER}px`,
-        }}
         hideTicks={selectedValues.size > 0}
       />
     </>
@@ -138,7 +122,6 @@ function ExpandedRowTick({
   const selectedValues = useSelectedValues((s) => s.selectedValues);
   const rowMaxes = useRowMaxes();
   const axisConfig = useRowConfig();
-  const rows = useRows();
   const { flipAxisPosition } = axisConfig;
 
   const { openInNewTab, tickTitle, tickLabelStyle } =
@@ -183,7 +166,7 @@ function ExpandedRowTick({
       <Axis
         top={top}
         orientation="left"
-        left={panelSize.width - tickLabelSize * LEFT_MULTIPLIER}
+        left={panelSize.width - tickLabelSize}
         scale={yScale}
         label={row}
         labelOffset={expandedSize / 2}

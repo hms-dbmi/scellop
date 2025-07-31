@@ -59,7 +59,8 @@ export function useSetTickLabelSize(
         const maxSize = Math.max(
           ...tickBounds.map((b) => (orientation === "x" ? b.height : b.width)),
         );
-        setTickLabelSize(maxSize);
+        // add 16 to maxSize to account for the axis label
+        setTickLabelSize(maxSize + 32);
       }
     } else {
       setTickLabelSize(0);

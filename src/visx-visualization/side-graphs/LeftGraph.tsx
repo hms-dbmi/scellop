@@ -11,7 +11,7 @@ import { useYScale } from "../../contexts/ScaleContext";
 import HeatmapYAxis from "../heatmap/HeatmapYAxis";
 import Bars from "./Bars";
 import Violins from "./Violin";
-import { LEFT_MULTIPLIER } from "./constants";
+import YAxisLabel from "./YAxisLabel";
 import { useCountsScale } from "./hooks";
 
 const useXAxisCountsScale = () => {
@@ -20,10 +20,7 @@ const useXAxisCountsScale = () => {
   const fraction = useFraction((s) => s.fraction);
   const { tickLabelSize } = useYScale();
   const domainMax = fraction ? 100 : (max(Object.values(rowCounts)) ?? 0);
-  return useCountsScale(
-    [0, domainMax],
-    [0, width - tickLabelSize * LEFT_MULTIPLIER],
-  );
+  return useCountsScale([0, domainMax], [0, width - tickLabelSize]);
 };
 
 function LeftBar() {
@@ -53,7 +50,7 @@ export function LeftGraphScale() {
   const { tickLabelSize } = useYScale();
 
   const axisScale = xScale.copy().range([width, tickLabelSize * 1.25]);
-  const axisTotalWidth = width - tickLabelSize * LEFT_MULTIPLIER;
+  const axisTotalWidth = width - tickLabelSize;
 
   const fraction = useFraction((s) => s.fraction);
   const theme = useTheme();
@@ -95,9 +92,12 @@ export default function LeftGraph() {
   const { fraction } = useFraction();
   const flipAxisPosition = useRowConfig((store) => store.flipAxisPosition);
   return (
-    <svg className="left-graph-container" height={height} width={width}>
-      {fraction ? <LeftViolin /> : <LeftBar />}
-      {flipAxisPosition && <HeatmapYAxis />}
-    </svg>
+    <div>
+      <svg className="left-graph-container" height={height} width={width}>
+        {fraction ? <LeftViolin /> : <LeftBar />}
+        {flipAxisPosition && <HeatmapYAxis />}
+      </svg>
+      {flipAxisPosition && <YAxisLabel height={height} side="left" />}
+    </div>
   );
 }

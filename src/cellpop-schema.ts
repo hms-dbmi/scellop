@@ -1,45 +1,61 @@
-/** COMPONENT */
-export type CellPopProps = {
-  data: CellPopData;
-  theme: CellPopTheme;
-  dimensions: CellPopDimensions;
-};
-
 /** DATA */
+/**
+ * CellPopData represents the data structure used in the CellPop visualization.
+ * It includes row and column names, a counts matrix, and metadata.
+ */
 export type CellPopData = {
+  /**
+   * The names of the rows in the counts matrix.
+   */
   rowNames: string[];
-  rowNamesRaw: string[];
-  rowNamesWrapped: RowNamesWrapped[];
+  /**
+   * The names of the columns in the counts matrix.
+   */
   colNames: string[];
-  colNamesRaw: string[];
-  colNamesWrapped: ColNamesWrapped[];
+  /**
+   * The order of the items in each CountsMatrixValue entry
+   */
   countsMatrixOrder: string[];
+  /**
+   * The counts matrix, which is an array of tuples.
+   * Each tuple contains a row name, a column name, and a count value.
+   */
   countsMatrix: CountsMatrixValue[];
-  metadata: MetaData;
+  /**
+   * Metadata associated with the rows and columns.
+   * It can include additional information about each row and column.
+   */
+  metadata: Metadata;
 };
 
-export type RowNamesWrapped = { row: string };
-
-export type ColNamesWrapped = { col: string };
-
+/**
+ * CountsMatrixValue represents a single entry in the counts matrix,
+ * as used within the CellPopData structure.
+ */
 export type CountsMatrixValue = [string, string, number];
 
-export type CountsTotalRowValue = {
-  row: string;
-  countTotal: number;
-};
-
-export type CountsTotalColValue = {
-  col: string;
-  countTotal: number;
-};
-
-export type MetaData = {
+/**
+ * MetaData represents additional information associated with the rows and columns
+ * in the CellPopData structure.
+ * It can include various attributes for each row and column.
+ * The attributes are keyed by row or column names,
+ * and the values can be strings or numbers.
+ * @example
+ * {
+ *  rows: {
+ *    "row1": { "attribute1": "value1", "attribute2": 42 },
+ *  }
+ *  cols: {
+ *    "col1": { "attribute1": "value1", "attribute2": 42 },
+ *  }
+ * }
+ */
+export type Metadata = {
   rows?: Record<string, Record<string, string | number>>;
   cols?: Record<string, Record<string, string | number>>;
 };
 
-export type dataOrdering = {
+export type DataOrdering = {
   rowNamesOrder?: string[];
   colNamesOrder?: string[];
 };
@@ -92,120 +108,4 @@ export type HuBMAPSearchHit = {
   _source: HuBMAPSearchSource;
 };
 
-/** OPTIONS */
-export type CellPopOptions = {
-  dimensions: CellPopDimensions;
-  fraction: boolean;
-  theme: CellPopTheme;
-  themeColors: CellPopThemeColors;
-  metadataOptions: string[];
-  metadataField: string;
-  boundKeys: CellPopKeys;
-};
-
-export type CellPopDimensions = {
-  global: CellPopDimensionsGlobal;
-  heatmap: CellPopDimensionsValue;
-  heatmapLegend: CellPopDimensionsValue;
-  barTop: CellPopDimensionsValue;
-  violinTop: CellPopDimensionsValue;
-  barLeft: CellPopDimensionsValue;
-  violinLeft: CellPopDimensionsValue;
-  graph: CellPopDimensionsValue;
-  detailBar: CellPopDimensionsValue;
-  textSize: {
-    global: {
-      title: string;
-      label: string;
-      labelSmall: string;
-      tick: string;
-    };
-    ind: {
-      title: string;
-      labelX: string;
-      labelY: string;
-      labelColor: string;
-      labelXSide: string;
-      labelYSide: string;
-      tickX: string;
-      tickY: string;
-      tickColor: string;
-      tickXSide: string;
-      tickYSide: string;
-    };
-  };
-};
-
-export type CellPopDimensionsValue = {
-  offsetWidth: number;
-  offsetHeight: number;
-  width: number;
-  height: number;
-  margin: { top: number; right: number; bottom: number; left: number };
-};
-
-export type CellPopDimensionsGlobal = {
-  width: CellPopDimensionsGlobalInner;
-  height: CellPopDimensionsGlobalInner;
-  extension: CellPopDimensionsGlobalInner;
-};
-
-export type CellPopDimensionsGlobalInner = {
-  total: number;
-  parts: {
-    lengths: number[];
-    offsets: number[];
-  };
-  margins: {
-    lengths: number[];
-    offsets: number[];
-  };
-  border: number;
-};
-
 export type CellPopTheme = "light" | "dark";
-
-export type CellPopThemeColors = {
-  background: string;
-  heatmapZero: string;
-  heatmapMax: string;
-  heatmapGrid: string;
-  heatmapHighlight: string;
-  sideCharts: string;
-  text: string;
-  extensionDefault: string;
-  extensionRange: string[];
-};
-
-export type CellPopKeys = {
-  tooltip: "ctrlKey" | "shiftKey" | "altKey";
-  rows: "ctrlKey" | "shiftKey" | "altKey";
-  cols: "ctrlKey" | "shiftKey" | "altKey";
-};
-
-// options
-// dimensions: object
-// fraction: boolean
-// theme: string
-// themeColors: object
-// metadataOptions: array
-// metadataField: string
-// boundsKeys: object
-
-/** Animation */
-export type CountsMatrixValueAnimation = {
-  row: string;
-  col: string;
-  value: number;
-  start?: number;
-  end?: number;
-};
-
-export type AnimationDimensions = {
-  width: number;
-  height: number;
-  marginLeft: number;
-  marginTop: number;
-  moveWidth: number;
-  moveTop: number;
-};

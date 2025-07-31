@@ -11,7 +11,10 @@ export interface AxisConfig {
     metadataValues?: Record<string, string | number>,
   ) => string;
   icon?: React.ReactElement<unknown>;
-  pluralLabel: string;
+  // Plural label for the axis, used in tooltips and other places
+  // where the axis label is used in plural form.
+  // If not provided, defaults to `${label}s`.
+  pluralLabel?: string;
 }
 
 interface AxisConfigActions {
@@ -34,7 +37,7 @@ const createAxisConfigStore =
         setFlipAxisPosition: (flipAxisPosition: boolean) =>
           set({ flipAxisPosition }),
         get pluralLabel() {
-          return `${this.label}s`;
+          return initialArgs.pluralLabel ?? `${this.label}s`;
         },
       })),
     );

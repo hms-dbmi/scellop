@@ -5,6 +5,7 @@ import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import HeatmapYAxis from "../heatmap/HeatmapYAxis";
 import MetadataValueBar from "../heatmap/MetadataValueBar";
 import RowSelectionControls from "../heatmap/RowSelectionControls";
+import YAxisLabel from "../side-graphs/YAxisLabel";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function MiddleRightPanel(
@@ -19,9 +20,12 @@ function MiddleRightPanel(
       {flipAxisPosition ? (
         <MetadataValueBar axis="Y" width={width} height={height} />
       ) : (
-        <svg width={width} height={height}>
-          <HeatmapYAxis />
-        </svg>
+        <div>
+          <svg width={width} height={height}>
+            <HeatmapYAxis />
+          </svg>
+          <YAxisLabel height={height} side="right" />
+        </div>
       )}
       <RowSelectionControls />
     </VisualizationPanel>

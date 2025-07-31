@@ -16,12 +16,7 @@ import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import { ScaleBand } from "../../contexts/types";
 import { BackgroundStripe } from "./BackgroundStripe";
-import {
-  LEFT_MARGIN,
-  LEFT_MULTIPLIER,
-  TOP_MARGIN,
-  TOP_MULTIPLIER,
-} from "./constants";
+import { LEFT_MARGIN, TOP_MARGIN } from "./constants";
 
 type Side = "top" | "left";
 
@@ -41,18 +36,6 @@ function useCategoricalScale(side: Side) {
     default:
       console.error("Invalid side in Violin.useCategoricalScale: ", side);
       return x;
-  }
-}
-
-function getMultiplier(side: Side) {
-  switch (side) {
-    case "top":
-      return TOP_MULTIPLIER;
-    case "left":
-      return LEFT_MULTIPLIER;
-    default:
-      console.error("Invalid side in Violin.getMultiplier: ", side);
-      return 1;
   }
 }
 
@@ -96,8 +79,8 @@ function useViolinScale(side: Side) {
 
   return useMemo(() => {
     const topViolins = side === "top";
-    const rangeEnd = topViolins ? height * getMultiplier(side) : width;
-    const rangeStart = tickLabelSize * getMultiplier(side);
+    const rangeEnd = topViolins ? height : width;
+    const rangeStart = tickLabelSize;
     const margin = topViolins ? TOP_MARGIN : LEFT_MARGIN;
     const range: [number, number] = [rangeStart, rangeEnd + margin];
     return scaleBand({
@@ -193,8 +176,7 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
 
   const backgroundDimensions = useMemo(() => {
     const rangeStart = topViolins ? height : width;
-    const multiplier = topViolins ? TOP_MULTIPLIER : LEFT_MULTIPLIER;
-    const rangeEnd = tickLabelSize * multiplier;
+    const rangeEnd = tickLabelSize;
 
     const y = topViolins ? rangeEnd : 0;
     const x = topViolins ? 0 : rangeEnd;
