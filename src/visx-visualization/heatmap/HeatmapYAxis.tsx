@@ -16,6 +16,7 @@ import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { EXPANDED_ROW_PADDING, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
+import truncateTickLabel from "../../utils/truncate-tick-label";
 import SVGBackgroundColorFilter from "../SVGBackgroundColorFilter";
 import { TICK_TEXT_SIZE } from "./constants";
 import { useHeatmapAxis, useSetTickLabelSize } from "./hooks";
@@ -59,6 +60,7 @@ export default function HeatmapYAxis() {
         left={tickLabelSize}
         stroke={theme.palette.text.primary}
         tickStroke={theme.palette.text.primary}
+        tickFormat={(v) => truncateTickLabel(v, 20)}
         tickComponent={({
           formattedValue,
           ...tickLabelProps
@@ -71,8 +73,11 @@ export default function HeatmapYAxis() {
           ) : (
             <Text
               {...tickLabelProps}
-              // @ts-expect-error Visx types are slightly incorrect
-              x={(tickLabelProps?.to?.x ?? 0) - tickLabelProps.fontSize}
+              x={
+                // Visx types are a bit off here, so we need to cast to unknown as a workaround
+                ((tickLabelProps?.to as unknown as { x: number })?.x ?? 0) -
+                Number(tickLabelProps?.fontSize ?? 0)
+              }
             >
               {formattedValue}
             </Text>
