@@ -1,4 +1,12 @@
-import { Divider, Stack, useTheme } from "@mui/material";
+import {
+  Divider,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  useTheme,
+} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { defaultStyles, TooltipWithBounds } from "@visx/tooltip";
 import React, { useEffect } from "react";
@@ -7,6 +15,26 @@ import {
   useSetTooltipData,
   useTooltipData,
 } from "../contexts/TooltipDataContext";
+
+function formatTooltipKey(key: string): string {
+  return key.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatTooltipValue(value: unknown): React.ReactNode {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value.toLocaleString();
+  }
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+  if (value === null || value === undefined) {
+    return <>&mdash;</>;
+  }
+  return String(value);
+}
 
 /**
  * Component which renders a basic tooltip with the data set in the tooltip data context.
@@ -46,18 +74,33 @@ export default function Tooltip() {
       <Stack gap={0.25}>
         <Typography variant="subtitle1">{tooltipData?.title}</Typography>
         <Divider />
-        {tooltipData?.data &&
-          Object.entries(tooltipData.data).map(([key, value]) => (
-            <Stack direction="row" key={key} gap={0.25}>
-              <Typography
-                sx={{ textTransform: "capitalize", fontWeight: 700 }}
-                variant="caption"
-              >
-                {key.replace("_", " ")}:{" "}
-              </Typography>
-              <Typography variant="caption">{String(value)}</Typography>
-            </Stack>
-          ))}
+        {tooltipData?.data && (
+          <Table size="small" sx={{ minWidth: "auto" }}>
+            <TableBody>
+              {Object.entries(tooltipData.data).map(([key, value]) => (
+                <TableRow key={key} sx={{ "&:last-child td": { border: 0 } }}>
+                  <TableCell
+                    sx={{
+                      textTransform: "capitalize",
+                      fontWeight: 700,
+                      fontSize: "0.75rem",
+                      px: 0,
+                    }}
+                  >
+                    {formatTooltipKey(key)}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontSize: "0.75rem",
+                    }}
+                  >
+                    {formatTooltipValue(value)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </Stack>
     </TooltipWithBounds>
   );
