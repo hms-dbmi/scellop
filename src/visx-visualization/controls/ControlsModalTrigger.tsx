@@ -20,6 +20,7 @@ export default function ControlsModalTrigger() {
       sx={{
         position: "absolute",
         right: 8,
+        bottom: 8,
         padding: 1,
       }}
     >
