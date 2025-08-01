@@ -81,7 +81,28 @@ export const CellPop = withParentSize(
     const outerContainerRef = React.useRef<HTMLDivElement | null>(null);
 
     if (!data) {
-      return <Skeleton height="100%" width="100%" />;
+      return (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              initialProportions?.[0]
+                .map((size) => `${size * 100}%`)
+                .join(" ") || "repeat(3, 1fr)",
+            gridTemplateRows:
+              initialProportions?.[1]
+                .map((size) => `${size * 100}%`)
+                .join(" ") || "repeat(3, 1fr)",
+            gap: "8px",
+            height: "100%",
+            width: "100%",
+          }}
+        >
+          {Array.from({ length: 9 }).map((_, index) => (
+            <Skeleton key={index} height="100%" width="100%" />
+          ))}
+        </div>
+      );
     }
 
     return (
