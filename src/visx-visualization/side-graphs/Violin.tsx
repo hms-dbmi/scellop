@@ -192,16 +192,26 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
     return { x, y, width: w, height: h };
   }, [width, height, topViolins, categoricalScale, tickLabelSize]);
 
-  return Object.entries(entries).map(([key, entry]) => (
-    <Violin
-      key={key}
-      entries={entry}
-      group={key}
-      areaGenerator={violinAreaGenerator}
-      side={side}
-      backgroundDimensions={backgroundDimensions}
-    />
-  ));
+  return (
+    <svg
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "absolute",
+      }}
+    >
+      {Object.entries(entries).map(([key, entry]) => (
+        <Violin
+          key={key}
+          entries={entry}
+          group={key}
+          areaGenerator={violinAreaGenerator}
+          side={side}
+          backgroundDimensions={backgroundDimensions}
+        />
+      ))}
+    </svg>
+  );
 }
 
 interface ViolinProps {
@@ -242,12 +252,14 @@ function Violin({
         onMouseMove={(e) => {
           const tooltip = {
             title: group,
-            data: entries.reduce((acc, [key, value]) => {
-              if (value === 0) {
-                return acc;
-              }
-              return { ...acc, [key]: (value * 100).toFixed(2) + "%" };
-            }, {}),
+            data: [...entries]
+              .sort((a, b) => b[1] - a[1])
+              .reduce((acc, [key, value]) => {
+                if (value === 0) {
+                  return acc;
+                }
+                return { ...acc, [key]: (value * 100).toFixed(2) + "%" };
+              }, {}),
           };
           openTooltip(tooltip, e.clientX, e.clientY);
         }}

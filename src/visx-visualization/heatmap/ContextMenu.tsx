@@ -1,5 +1,5 @@
 import { useEventCallback } from "@mui/material";
-import * as ContextMenu from "@radix-ui/react-context-menu";
+import { Portal, Sub as SubMenu } from "@radix-ui/react-context-menu";
 import React from "react";
 import {
   useColumnConfig,
@@ -253,11 +253,11 @@ const SortDimension = ({ dimension }: { dimension: "row" | "column" }) => {
   const trackEvent = useTrackEvent();
 
   return (
-    <ContextMenu.Sub>
+    <SubMenu>
       <ContextMenuSubTrigger>
         Sort {label}s <RightSlot>&rsaquo;</RightSlot>
       </ContextMenuSubTrigger>
-      <ContextMenu.Portal>
+      <Portal>
         <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
           {sortOrders.map((order) => (
             <ContextMenuItem
@@ -274,8 +274,8 @@ const SortDimension = ({ dimension }: { dimension: "row" | "column" }) => {
             </ContextMenuItem>
           ))}
         </ContextMenuSubContent>
-      </ContextMenu.Portal>
-    </ContextMenu.Sub>
+      </Portal>
+    </SubMenu>
   );
 };
 
@@ -297,7 +297,7 @@ const ContextMenuComponent = () => {
   );
 
   return (
-    <ContextMenu.Portal>
+    <Portal>
       <ContextMenuContent>
         <ContextMenuLabel>Global Actions</ContextMenuLabel>
         <RestoreHiddenRows />
@@ -325,7 +325,7 @@ const ContextMenuComponent = () => {
           </>
         )}
       </ContextMenuContent>
-    </ContextMenu.Portal>
+    </Portal>
   );
 };
 

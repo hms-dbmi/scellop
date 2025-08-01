@@ -21,9 +21,6 @@ import SVGBackgroundColorFilter from "../SVGBackgroundColorFilter";
 import { TICK_TEXT_SIZE } from "./constants";
 import { useHeatmapAxis, useSetTickLabelSize } from "./hooks";
 
-/**
- * Component which renders the y-axis of the heatmap.
- */
 export default function HeatmapYAxis() {
   const theme = useTheme();
   const selectedValues = useSelectedValues((s) => s.selectedValues);
@@ -47,10 +44,11 @@ export default function HeatmapYAxis() {
     setTickLabelSize,
     "y",
     fontSize,
+    rows,
   );
 
   return (
-    <>
+    <svg height={y.range()[0]} style={{ zIndex: 1 }}>
       <SVGBackgroundColorFilter
         color={theme.palette.background.default}
         id={filterId}
@@ -113,7 +111,7 @@ export default function HeatmapYAxis() {
         orientation={Orientation.left}
         hideTicks={selectedValues.size > 0}
       />
-    </>
+    </svg>
   );
 }
 

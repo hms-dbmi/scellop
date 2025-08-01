@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { AxisConfig } from "../../contexts/AxisConfigContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 
@@ -38,32 +38,59 @@ export function useHeatmapAxis({ createHref }: AxisConfig) {
   return { openInNewTab, tickTitle, tickLabelStyle };
 }
 
-// Calculates the size of the tick labels if the axis is flipped,
-// so that the counts bars can be positioned correctly
+/**
+ * Estimates text dimensions using canvas measureText
+ */
+function estimateTextDimensions(
+  text: string,
+  fontSize: number,
+  fontFamily: string,
+) {
+  // Create a temporary canvas for text measurement
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return { width: text.length * fontSize * 0.6, height: fontSize };
+
+  ctx.font = `${fontSize}px ${fontFamily}`;
+  const metrics = ctx.measureText(text);
+
+  return {
+    width: metrics.width,
+    height: fontSize, // Approximate height based on font size
+  };
+}
+
+/**
+ * Calculates the estimated tick label size based on actual items and font properties
+ */
 export function useSetTickLabelSize(
   flipAxisPosition: boolean,
   setTickLabelSize: (size: number) => void,
   orientation: "x" | "y" = "x",
-  // Size is not actually used, but changes to this value let us know when to recalculate
-  size: number,
+  fontSize: number,
+  items: string[] = [],
+  fontFamily: string = "Roboto, Arial, sans-serif",
 ) {
-  useEffect(() => {
-    if (flipAxisPosition) {
-      const ticks = document.getElementsByClassName(
-        `${orientation}-axis-tick-label`,
-      );
-      if (ticks.length > 0) {
-        const tickBounds = Array.from(ticks).map((t) =>
-          t.getBoundingClientRect(),
-        );
-        const maxSize = Math.max(
-          ...tickBounds.map((b) => (orientation === "x" ? b.height : b.width)),
-        );
-        // add 16 to maxSize to account for the axis label
-        setTickLabelSize(maxSize + 32);
-      }
-    } else {
-      setTickLabelSize(0);
+  const estimatedSize = useMemo(() => {
+    if (!flipAxisPosition || items.length === 0) {
+      return 0;
     }
-  }, [flipAxisPosition, orientation, size]);
+
+    // Calculate dimensions for all tick labels
+    const dimensions = items.map((item) => {
+      // Apply same truncation as the actual component
+      const truncatedText =
+        item.length > 20 ? item.substring(0, 17) + "..." : item;
+      return estimateTextDimensions(truncatedText, fontSize, fontFamily);
+    });
+
+    const maxSize = Math.max(...dimensions.map((d) => d.width));
+
+    // Add padding for axis label and margins (same as original)
+    return maxSize + 32;
+  }, [flipAxisPosition, orientation, fontSize, items, fontFamily]);
+
+  useEffect(() => {
+    setTickLabelSize(estimatedSize);
+  }, [estimatedSize, setTickLabelSize]);
 }

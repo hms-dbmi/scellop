@@ -1,7 +1,7 @@
 import { useEventCallback } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { ScaleBand, ScaleLinear } from "d3";
-import React, { useMemo } from "react";
+import React, { useLayoutEffect, useMemo, useRef } from "react";
 import {
   useColumnConfig,
   useRowConfig,
@@ -13,7 +13,6 @@ import {
 } from "../../contexts/DataContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
-import { BackgroundStripe } from "./BackgroundStripe";
 
 interface BarsProps {
   orientation: "horizontal" | "vertical";
@@ -22,6 +21,8 @@ interface BarsProps {
   domainLimit: number;
   selectedValues?: Set<string>;
   nonExpandedSize: number;
+  width: number;
+  height: number;
 }
 
 function useCurrentCounts(orientation: string) {
@@ -42,29 +43,28 @@ function useCurrentLabel(orientation: string) {
   return orientation === "vertical" ? columnLabel : rowLabel;
 }
 
-/**
- * Helper component for rendering the bars of a bar chart
- * @param props.orientation The orientation of the bars.
- * @param props.categoricalScale The scale for the categorical axis (i.e. the x-axis if looking at a vertically oriented bar chart).
- * @param props.numericalScale The scale for the numerical axis (i.e. the y-axis if looking at a vertically oriented bar chart).
- * @param props.domainLimit The limit of the domain (i.e. the maximum height of a bar on the chart).
- * @returns
- */
 export default function Bars({
   orientation,
   categoricalScale,
   numericalScale,
   domainLimit,
   nonExpandedSize,
+  width,
+  height,
 }: BarsProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const data = useCurrentCounts(orientation);
   const selectedValues = useSelectedValues((s) => s.selectedValues);
+  const theme = useTheme();
+  const metadata = useCurrentMetadata(orientation);
+  const { openTooltip, closeTooltip } = useSetTooltipData();
+  const label = useCurrentLabel(orientation);
+
   const bars = useMemo(() => {
     const entries = Object.entries(data);
     return entries
       .map(([key, value]) => {
         if (orientation === "horizontal" && selectedValues?.has(key)) {
-          // Display an axis scaled for the selected value instead of the tick if the value is expanded
           return null;
         }
 
@@ -79,21 +79,21 @@ export default function Bars({
         // Bar dimensions and position
         const x = isVertical ? scaledPosition : domainLimit - scaledValue;
         const y = isVertical ? domainLimit - scaledValue : scaledPosition;
-        const width = isVertical ? barSize : barLength;
-        const height = isVertical ? barLength : barSize;
+        const barWidth = isVertical ? barSize : barLength;
+        const barHeight = isVertical ? barLength : barSize;
 
         // Background dimensions and position
         const backgroundX = isVertical ? x : domainLimit - rangeEnd;
         const backgroundY = isVertical ? domainLimit - rangeStart : y;
         const backgroundWidth = isVertical ? barSize : rangeEnd;
         const backgroundHeight = isVertical ? rangeStart : barSize;
+
         return {
           x,
           y,
-          width,
-          height,
+          width: barWidth,
+          height: barHeight,
           value: key,
-          orientation,
           backgroundX,
           backgroundY,
           backgroundHeight,
@@ -111,84 +111,107 @@ export default function Bars({
     nonExpandedSize,
     selectedValues,
   ]);
-  return (
-    <>
-      {bars.map((bar) => {
-        return <Bar {...bar} key={bar.key} />;
-      })}
-    </>
+
+  useLayoutEffect(() => {
+    if (!canvasRef.current) {
+      return;
+    }
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw bars
+    bars.forEach((bar, idx) => {
+      // Draw background stripe pattern (simplified - you may want to implement stripes)
+      ctx.fillStyle =
+        idx % 2 === 0
+          ? theme.palette.action.hover
+          : theme.palette.background.default;
+      ctx.fillRect(
+        bar.backgroundX,
+        bar.backgroundY,
+        bar.backgroundWidth,
+        bar.backgroundHeight,
+      );
+
+      // Draw bar
+      ctx.fillStyle = theme.palette.text.primary;
+      ctx.strokeStyle = theme.palette.background.default;
+      ctx.lineWidth = 1;
+
+      ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
+      ctx.strokeRect(bar.x, bar.y, bar.width, bar.height);
+    });
+  }, [bars, width, height, theme]);
+
+  // Hit detection for tooltips
+  const handleMouseMove = useEventCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!canvasRef.current) return;
+
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Find which bar was hit (check background area first, then actual bar)
+      const hitBar = bars.find((bar) => {
+        return (
+          x >= bar.backgroundX &&
+          x <= bar.backgroundX + bar.backgroundWidth &&
+          y >= bar.backgroundY &&
+          y <= bar.backgroundY + bar.backgroundHeight
+        );
+      });
+
+      if (hitBar) {
+        const metadataValues = metadata?.[hitBar.value];
+        openTooltip(
+          {
+            title: hitBar.value,
+            data: {
+              "Cell Count": data[hitBar.value],
+              [label]: hitBar.value,
+              ...metadataValues,
+            },
+          },
+          e.clientX,
+          e.clientY,
+        );
+      } else {
+        closeTooltip();
+      }
+    },
   );
-}
 
-interface BarProps {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  value: string;
-  orientation: "horizontal" | "vertical";
-  backgroundX: number;
-  backgroundY: number;
-  backgroundHeight: number | string;
-  backgroundWidth: number | string;
-}
-
-function Bar({
-  x,
-  y,
-  width,
-  height,
-  backgroundX,
-  backgroundY,
-  backgroundHeight,
-  backgroundWidth,
-  value,
-  orientation,
-}: BarProps) {
-  const metadata = useCurrentMetadata(orientation);
-  const data = useCurrentCounts(orientation);
-  const { openTooltip } = useSetTooltipData();
-  const label = useCurrentLabel(orientation);
-  const onMouse = useEventCallback((e: React.MouseEvent<SVGRectElement>) => {
-    const metadataValues = metadata?.[value];
-    openTooltip(
-      {
-        title: value,
-        data: {
-          "Cell Count": data[value],
-          [label]: value,
-          ...metadataValues,
-        },
-      },
-      e.clientX,
-      e.clientY,
-    );
+  const handleMouseLeave = useEventCallback(() => {
+    closeTooltip();
   });
-  const { closeTooltip } = useSetTooltipData();
-  const theme = useTheme();
+
+  const style = useMemo(() => {
+    if (orientation === "horizontal") {
+      return {
+        marginLeft: -1,
+      };
+    } else
+      return {
+        marginTop: -1,
+      };
+  }, [orientation]);
+
   return (
-    <g
-      onMouseOver={onMouse}
-      onMouseMove={onMouse}
-      onMouseOut={closeTooltip}
-      pointerEvents={"all"}
-    >
-      <BackgroundStripe
-        x={backgroundX}
-        y={backgroundY}
-        height={backgroundHeight}
-        width={backgroundWidth}
-        orientation={orientation}
-        value={value}
-      />
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        fill={theme.palette.text.primary}
-        stroke={theme.palette.background.default}
-      />
-    </g>
+    <canvas
+      ref={canvasRef}
+      width={width}
+      height={height}
+      style={style}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    />
   );
 }

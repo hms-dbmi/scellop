@@ -1,5 +1,6 @@
 import React, { PropsWithChildren, useMemo, useRef } from "react";
-import { ScaleBand, useXScale, useYScale } from "../../contexts/ScaleContext";
+import { useXScale, useYScale } from "../../contexts/ScaleContext";
+
 import { useSelectedDimension } from "../../contexts/SelectedDimensionContext";
 
 import {
@@ -45,6 +46,7 @@ import {
 import { useTooltipFields } from "../../contexts/MetadataConfigContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
+import { ScaleBand } from "../../contexts/types";
 
 interface DragOverlayContainerProps extends PropsWithChildren {
   items: string[];
@@ -311,7 +313,7 @@ function DragIndicator({
       {...listeners}
       onMouseMove={onMouseMove}
       onMouseOut={closeTooltip}
-    ></div>
+    />
   );
 }
 

@@ -48,12 +48,19 @@ export default function HeatmapXAxis() {
   const filterId = useId();
   const { openInNewTab, tickTitle, tickLabelStyle } =
     useHeatmapAxis(axisConfig);
-  const size = x.bandwidth() > TICK_TEXT_SIZE ? TICK_TEXT_SIZE : x.bandwidth();
+  const fontSize =
+    x.bandwidth() > TICK_TEXT_SIZE ? TICK_TEXT_SIZE : x.bandwidth();
 
-  useSetTickLabelSize(flipAxisPosition ?? false, setTickLabelSize, "x", size);
+  useSetTickLabelSize(
+    flipAxisPosition ?? false,
+    setTickLabelSize,
+    "x",
+    fontSize,
+    columns,
+  );
 
   return (
-    <>
+    <svg width={x.range()[1]} style={{ zIndex: 1 }}>
       <SVGBackgroundColorFilter
         color={theme.palette.background.default}
         id={filterId}
@@ -71,7 +78,7 @@ export default function HeatmapXAxis() {
             dx: "0.25em",
             dy: "-0.25em",
             textAnchor: "start",
-            fontSize: size,
+            fontSize,
             style: tickLabelStyle,
             fill: theme.palette.text.primary,
             className: "x-axis-tick-label",
@@ -96,6 +103,6 @@ export default function HeatmapXAxis() {
         tickValues={columns}
         orientation={Orientation.top}
       />
-    </>
+    </svg>
   );
 }

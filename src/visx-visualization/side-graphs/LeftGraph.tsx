@@ -1,3 +1,4 @@
+import Stack from "@mui/material/Stack";
 import { useTheme } from "@mui/material/styles";
 import { AxisBottom } from "@visx/axis";
 import { formatPrefix, max } from "d3";
@@ -15,38 +16,42 @@ import YAxisLabel from "./YAxisLabel";
 import { useCountsScale } from "./hooks";
 
 const useXAxisCountsScale = () => {
-  const { width } = usePanelDimensions("left_middle");
+  const { width, height } = usePanelDimensions("left_middle");
   const rowCounts = useRowCounts();
   const fraction = useFraction((s) => s.fraction);
   const { tickLabelSize } = useYScale();
   const domainMax = fraction ? 100 : (max(Object.values(rowCounts)) ?? 0);
-  return useCountsScale([0, domainMax], [0, width - tickLabelSize]);
+  const rangeMax = width - tickLabelSize;
+  return [
+    useCountsScale([0, domainMax], [0, rangeMax]),
+    rangeMax,
+    height,
+  ] as const;
 };
 
 function LeftBar() {
-  const { width } = usePanelDimensions("left_middle");
-  const xScale = useXAxisCountsScale();
+  const [xScale, width, height] = useXAxisCountsScale();
   // Use same y scale as the heatmap
   const { scale: yScale, nonExpandedSize } = useYScale();
   const selectedValues = useSelectedValues((s) => s.selectedValues);
 
   return (
-    <g className="bar-graph-left">
-      <Bars
-        orientation="horizontal"
-        categoricalScale={yScale}
-        numericalScale={xScale}
-        domainLimit={width}
-        selectedValues={selectedValues}
-        nonExpandedSize={nonExpandedSize}
-      />
-    </g>
+    <Bars
+      orientation="horizontal"
+      categoricalScale={yScale}
+      numericalScale={xScale}
+      domainLimit={width}
+      selectedValues={selectedValues}
+      nonExpandedSize={nonExpandedSize}
+      width={width}
+      height={height}
+    />
   );
 }
 
 export function LeftGraphScale() {
   const { width, height } = usePanelDimensions("left_bottom");
-  const xScale = useXAxisCountsScale();
+  const [xScale] = useXAxisCountsScale();
   const { tickLabelSize } = useYScale();
 
   const axisScale = xScale.copy().range([width, tickLabelSize * 1.25]);
@@ -87,17 +92,19 @@ function LeftViolin() {
  * Container component for the left graph.
  */
 export default function LeftGraph() {
-  const { width, height } = usePanelDimensions("left_middle");
+  const { height, width } = usePanelDimensions("left_middle");
 
   const { fraction } = useFraction();
   const flipAxisPosition = useRowConfig((store) => store.flipAxisPosition);
   return (
-    <div>
-      <svg className="left-graph-container" height={height} width={width}>
-        {fraction ? <LeftViolin /> : <LeftBar />}
-        {flipAxisPosition && <HeatmapYAxis />}
-      </svg>
-      {flipAxisPosition && <YAxisLabel height={height} side="left" />}
-    </div>
+    <Stack direction="row" width={width}>
+      {flipAxisPosition && (
+        <>
+          <HeatmapYAxis />
+          <YAxisLabel height={height} side="left" />
+        </>
+      )}
+      {fraction ? <LeftViolin /> : <LeftBar />}
+    </Stack>
   );
 }
