@@ -43,6 +43,12 @@ function useCurrentLabel(orientation: string) {
   return orientation === "vertical" ? columnLabel : rowLabel;
 }
 
+function useCurrentValues(orientation: string) {
+  const rows = useData((s) => s.rowOrder);
+  const columns = useData((s) => s.columnOrder);
+  return orientation === "vertical" ? columns : rows;
+}
+
 export default function Bars({
   orientation,
   categoricalScale,
@@ -59,6 +65,7 @@ export default function Bars({
   const metadata = useCurrentMetadata(orientation);
   const { openTooltip, closeTooltip } = useSetTooltipData();
   const label = useCurrentLabel(orientation);
+  const orderedValues = useCurrentValues(orientation);
 
   const bars = useMemo(() => {
     const entries = Object.entries(data);
@@ -126,10 +133,13 @@ export default function Bars({
     ctx.clearRect(0, 0, width, height);
 
     // Draw bars
-    bars.forEach((bar, idx) => {
+    bars.forEach((bar) => {
+      // Get the position of this bar in the ordered data for consistent striping
+      const barIndex = orderedValues.indexOf(bar.value);
+      
       // Draw background stripe pattern (simplified - you may want to implement stripes)
       ctx.fillStyle =
-        idx % 2 === 0
+        barIndex % 2 === 0
           ? theme.palette.action.hover
           : theme.palette.background.default;
       ctx.fillRect(
@@ -147,7 +157,7 @@ export default function Bars({
       ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
       ctx.strokeRect(bar.x, bar.y, bar.width, bar.height);
     });
-  }, [bars, width, height, theme]);
+  }, [bars, width, height, theme, orderedValues]);
 
   // Hit detection for tooltips
   const handleMouseMove = useEventCallback(
