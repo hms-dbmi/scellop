@@ -224,11 +224,6 @@ export function DisplayControls() {
   const excludedItems = items.length - filteredItems.length;
   const moreItemsCanBeFiltered = hiddenItemsCount >= excludedItems;
 
-  console.log({
-    excludedItems,
-    hiddenItemsCount,
-  });
-
   const deselectValues = useSelectedValues((s) => s.deselectValues);
 
   const trackEvent = useTrackEvent();
