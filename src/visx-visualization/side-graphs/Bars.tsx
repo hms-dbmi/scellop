@@ -1,7 +1,7 @@
 import { useEventCallback } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { ScaleBand, ScaleLinear } from "d3";
-import React, { useLayoutEffect, useMemo, useRef } from "react";
+import React, { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import {
   useColumnConfig,
   useRowConfig,
@@ -13,6 +13,7 @@ import {
 } from "../../contexts/DataContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
+import { useBarsDragHandler } from "./BarsDragHandler";
 
 interface BarsProps {
   orientation: "horizontal" | "vertical";
@@ -66,6 +67,48 @@ export default function Bars({
   const { openTooltip, closeTooltip } = useSetTooltipData();
   const label = useCurrentLabel(orientation);
   const orderedValues = useCurrentValues(orientation);
+  const { setRowOrder, setColumnOrder } = useData();
+
+  // Handle drag and drop reordering
+  const handleReorder = useCallback(
+    (draggedValue: string, targetValue: string) => {
+      if (draggedValue === targetValue) return;
+
+      if (orientation === "vertical") {
+        // Reordering columns
+        const newColumnOrder = [...orderedValues];
+        const draggedIndex = newColumnOrder.indexOf(draggedValue);
+        const targetIndex = newColumnOrder.indexOf(targetValue);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          const [removed] = newColumnOrder.splice(draggedIndex, 1);
+          newColumnOrder.splice(targetIndex, 0, removed);
+          setColumnOrder(newColumnOrder);
+        }
+      } else {
+        // Reordering rows
+        const newRowOrder = [...orderedValues];
+        const draggedIndex = newRowOrder.indexOf(draggedValue);
+        const targetIndex = newRowOrder.indexOf(targetValue);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          const [removed] = newRowOrder.splice(draggedIndex, 1);
+          newRowOrder.splice(targetIndex, 0, removed);
+          setRowOrder(newRowOrder);
+        }
+      }
+    },
+    [orientation, orderedValues, setColumnOrder, setRowOrder],
+  );
+
+  // Set up drag handling
+  const { isDragging, draggedValue } = useBarsDragHandler({
+    canvasRef,
+    scale: categoricalScale,
+    orientation,
+    onReorder: handleReorder, // Final reordering on drop (fallback)
+    onDragMove: handleReorder, // Real-time reordering during drag
+  });
 
   const bars = useMemo(() => {
     const entries = Object.entries(data);
@@ -136,7 +179,10 @@ export default function Bars({
     bars.forEach((bar) => {
       // Get the position of this bar in the ordered data for consistent striping
       const barIndex = orderedValues.indexOf(bar.value);
-      
+
+      // Highlight dragged bar
+      const isDraggedBar = isDragging && draggedValue === bar.value;
+
       // Draw background stripe pattern (simplified - you may want to implement stripes)
       ctx.fillStyle =
         barIndex % 2 === 0
@@ -149,20 +195,28 @@ export default function Bars({
         bar.backgroundHeight,
       );
 
-      // Draw bar
-      ctx.fillStyle = theme.palette.text.primary;
+      // Draw bar with drag highlight
+      ctx.fillStyle = isDraggedBar
+        ? theme.palette.primary.main
+        : theme.palette.text.primary;
       ctx.strokeStyle = theme.palette.background.default;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = isDraggedBar ? 2 : 1;
 
       ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
       ctx.strokeRect(bar.x, bar.y, bar.width, bar.height);
     });
-  }, [bars, width, height, theme, orderedValues]);
+  }, [bars, width, height, theme, orderedValues, isDragging, draggedValue]);
 
   // Hit detection for tooltips
   const handleMouseMove = useEventCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       if (!canvasRef.current) return;
+
+      // Don't show tooltip while dragging
+      if (isDragging) {
+        closeTooltip();
+        return;
+      }
 
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
@@ -219,7 +273,10 @@ export default function Bars({
       ref={canvasRef}
       width={width}
       height={height}
-      style={style}
+      style={{
+        ...style,
+        cursor: isDragging ? "grabbing" : "grab",
+      }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     />
