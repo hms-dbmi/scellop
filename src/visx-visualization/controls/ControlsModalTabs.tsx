@@ -1,4 +1,6 @@
 import Box, { BoxProps } from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import DialogActions from "@mui/material/DialogActions";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -43,10 +45,16 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+interface ControlsModalTabsProps {
+  hideControls: () => void;
+}
+
 /**
  * ControlsModalTabs component renders a set of tabs for controlling plot settings.
  */
-export default function ControlsModalTabs() {
+export default function ControlsModalTabs({
+  hideControls,
+}: ControlsModalTabsProps) {
   const isMobile = useIsMobile();
   // Horizontal tabs work best for mobile
   const orientation = isMobile ? "horizontal" : "vertical";
@@ -75,6 +83,7 @@ export default function ControlsModalTabs() {
           " & .MuiTab-root": {
             whiteSpace: "nowrap",
           },
+          minWidth: isMobile ? undefined : 120,
         }}
       >
         <Tab
@@ -95,59 +104,50 @@ export default function ControlsModalTabs() {
       </Tabs>
       <Box
         minHeight={isMobile ? "auto" : "100%"}
-        maxHeight={{
-          xs: "unset",
-          md: "70vh",
-        }}
-        height={{
-          xs: "unset",
-          md: "70vh",
-        }}
-        overflow={{
-          xs: "unset",
-          md: "auto",
-        }}
         display="flex"
+        flexDirection="column"
         flexGrow={1}
         sx={{
           transition: "height 0.3s ease-in-out",
         }}
       >
-        <TabPanel
-          value={value}
-          index={0}
-          id="plot-settings-panel"
-          aria-labelledby="plot-settings-tab"
-        >
-          <Stack
-            pl={2}
-            spacing={2}
-            alignItems="start"
-            flexGrow={1}
-            width="100%"
+        <Box flexGrow={1} overflow="auto">
+          <TabPanel
+            value={value}
+            index={0}
+            id="plot-settings-panel"
+            aria-labelledby="plot-settings-tab"
           >
-            <HeatmapThemeControl />
-            <NormalizationControl />
-            <ThemeControl />
-            <FractionControl />
-          </Stack>
-        </TabPanel>
-        <TabPanel
-          value={value}
-          index={1}
-          id="row-settings-panel"
-          aria-labelledby="row-settings-tab"
-        >
-          <PlotControlSection value="Row" />
-        </TabPanel>
-        <TabPanel
-          value={value}
-          index={2}
-          id="column-settings-panel"
-          aria-labelledby="column-settings-tab"
-        >
-          <PlotControlSection value="Column" />
-        </TabPanel>
+            <Stack px={2} spacing={2} alignItems="start" flexGrow={1}>
+              <HeatmapThemeControl />
+              <NormalizationControl />
+              <ThemeControl />
+              <FractionControl />
+            </Stack>
+          </TabPanel>
+          <TabPanel
+            value={value}
+            index={1}
+            id="row-settings-panel"
+            aria-labelledby="row-settings-tab"
+          >
+            <PlotControlSection value="Row" />
+          </TabPanel>
+          <TabPanel
+            value={value}
+            index={2}
+            id="column-settings-panel"
+            aria-labelledby="column-settings-tab"
+          >
+            <PlotControlSection value="Column" />
+          </TabPanel>
+        </Box>
+
+        <DialogActions sx={{ mt: "auto" }}>
+          <Button onClick={hideControls} color="primary">
+            Close
+          </Button>
+        </DialogActions>
       </Box>
     </Stack>
   );
