@@ -13,7 +13,6 @@ import {
   FractionControl,
   HeatmapThemeControl,
   NormalizationControl,
-  SelectedDimensionControl,
   ThemeControl,
 } from "./Controls";
 
@@ -130,7 +129,6 @@ export default function ControlsModalTabs() {
             <HeatmapThemeControl />
             <NormalizationControl />
             <ThemeControl />
-            <SelectedDimensionControl />
             <FractionControl />
           </Stack>
         </TabPanel>

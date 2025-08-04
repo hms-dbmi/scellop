@@ -21,7 +21,6 @@ import {
   NORMALIZATIONS,
   useNormalization,
 } from "../../contexts/NormalizationContext";
-import { useSelectedDimension } from "../../contexts/SelectedDimensionContext";
 import LabelledSwitch from "../LabelledSwitch";
 
 export function HeatmapThemeControl() {
@@ -118,35 +117,6 @@ export function FractionControl() {
       tooltip={
         "Toggle between displaying bars representing total cell counts, or violins representing fractions of data in the plot."
       }
-      tooltipIsHelper
-    />
-  );
-}
-
-export function SelectedDimensionControl() {
-  const selectedDimensionIsDisabled = useFractionControlIsDisabled();
-  const { selectedDimension, setSelectedDimension } = useSelectedDimension();
-  const trackEvent = useTrackEvent();
-  const changeSelectedDimension = useEventCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const newSelectedDimension = event.target.checked ? "X" : "Y";
-      setSelectedDimension(newSelectedDimension);
-      trackEvent("Change Control Orientation", newSelectedDimension);
-    },
-  );
-
-  if (selectedDimensionIsDisabled) {
-    return null;
-  }
-
-  return (
-    <LabelledSwitch
-      label="Selection Tool"
-      leftLabel="Row"
-      rightLabel="Column"
-      onChange={changeSelectedDimension}
-      checked={selectedDimension === "X"}
-      tooltip="Toggle to choose rows or columns for selection within the plot."
       tooltipIsHelper
     />
   );
