@@ -168,25 +168,17 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
   // Handle drag and drop reordering
   const handleReorder = useCallback(
     (draggedValue: string, targetValue: string) => {
-      console.log(
-        `Violin reorder - side: ${side}, dragged: ${draggedValue}, target: ${targetValue}`,
-      );
       if (draggedValue === targetValue) return;
 
       if (side === "top") {
         // Reordering columns (top violins are positioned by columns)
         const newOrder = [...orderedValues];
-        console.log("Top violins - current order:", newOrder);
         const draggedIndex = newOrder.indexOf(draggedValue);
         const targetIndex = newOrder.indexOf(targetValue);
-        console.log(
-          `Indices - dragged: ${draggedIndex}, target: ${targetIndex}`,
-        );
 
         if (draggedIndex !== -1 && targetIndex !== -1) {
           const [removed] = newOrder.splice(draggedIndex, 1);
           newOrder.splice(targetIndex, 0, removed);
-          console.log("New column order:", newOrder);
           setColumnOrder(newOrder);
         }
       } else {
@@ -195,14 +187,10 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
         console.log("Left violins - current order:", newOrder);
         const draggedIndex = newOrder.indexOf(draggedValue);
         const targetIndex = newOrder.indexOf(targetValue);
-        console.log(
-          `Indices - dragged: ${draggedIndex}, target: ${targetIndex}`,
-        );
 
         if (draggedIndex !== -1 && targetIndex !== -1) {
           const [removed] = newOrder.splice(draggedIndex, 1);
           newOrder.splice(targetIndex, 0, removed);
-          console.log("New row order:", newOrder);
           setRowOrder(newOrder);
         }
       }

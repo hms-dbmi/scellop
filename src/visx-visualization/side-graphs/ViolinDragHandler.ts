@@ -55,13 +55,6 @@ export function useViolinDragHandler({
       const bandwidth = scale.bandwidth();
       const [rangeStart, rangeEnd] = scale.range();
 
-      // Debug logging
-      console.log(
-        `ViolinDrag - side: ${side}, position: ${position}, domain:`,
-        domain,
-        `range: [${rangeStart}, ${rangeEnd}], bandwidth: ${bandwidth}`,
-      );
-
       // Calculate the index based on position
       // Handle both normal and inverted scales
       let adjustedPosition = position;
@@ -75,9 +68,7 @@ export function useViolinDragHandler({
 
       const index = Math.floor(adjustedPosition / bandwidth);
       const result = domain[index] || null;
-      console.log(
-        `ViolinDrag - adjustedPosition: ${adjustedPosition}, index: ${index}, result: ${result}`,
-      );
+
       return result;
     },
     [scale, side],
