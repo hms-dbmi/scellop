@@ -54,6 +54,9 @@ function estimateTextDimensions(
   ctx.font = `${fontSize}px ${fontFamily}`;
   const metrics = ctx.measureText(text);
 
+  // Clean up the canvas
+  canvas.remove();
+
   return {
     width: metrics.width,
     height: fontSize, // Approximate height based on font size

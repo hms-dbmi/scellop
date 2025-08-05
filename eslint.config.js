@@ -33,6 +33,12 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["node_modules", "dist", ".venv"],
+    ignores: [
+      "node_modules",
+      "dist",
+      ".venv",
+      // to prevent eslint from crashing every time this file is changed
+      "./demo/testData.ts",
+    ],
   },
 );
