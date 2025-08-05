@@ -3,6 +3,7 @@ import {
   DndContext,
   DragEndEvent,
   KeyboardSensor,
+  MeasuringStrategy,
   PointerSensor,
   useSensor,
   useSensors,
@@ -398,6 +399,9 @@ export function DisplayControls() {
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
+          measuring={{
+            droppable: { strategy: MeasuringStrategy.WhileDragging },
+          }}
         >
           <SortableContext items={items} strategy={verticalListSortingStrategy}>
             <Box
@@ -524,7 +528,11 @@ const useSubtitleFunction = () => {
   return section === "Column" ? columnSubtitle : rowSubtitle;
 };
 
-function DisplayItem({ item }: { item: string }) {
+interface DisplayItemProps {
+  item: string;
+}
+
+function DisplayItem({ item }: DisplayItemProps) {
   const section = usePlotControlsContext();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: item });
@@ -567,7 +575,7 @@ function DisplayItem({ item }: { item: string }) {
     >
       <Box
         sx={{
-          display: "inline-flex",
+          display: "flex",
           flexDirection: "row",
           alignItems: "start",
           spacing: 1,

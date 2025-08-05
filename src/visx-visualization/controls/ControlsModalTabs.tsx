@@ -71,7 +71,18 @@ export default function ControlsModalTabs({
   const columnLabel = useColumnConfig((state) => state.pluralLabel);
 
   return (
-    <Stack direction={isMobile ? "column" : "row"} flexGrow={1} height="100%">
+    <Stack
+      direction={{
+        xs: "column",
+        md: "row",
+      }}
+      flexGrow={1}
+      maxHeight={{
+        // accounting for the DialogActions and header heights
+        xs: "calc(100% - 48px)",
+        md: "calc(100% - 64px)",
+      }}
+    >
       <Tabs
         orientation={orientation}
         variant={variant}
@@ -102,15 +113,7 @@ export default function ControlsModalTabs({
           aria-controls="column-settings-panel"
         />
       </Tabs>
-      <Box
-        minHeight={isMobile ? "auto" : "100%"}
-        display="flex"
-        flexDirection="column"
-        flexGrow={1}
-        sx={{
-          transition: "height 0.3s ease-in-out",
-        }}
-      >
+      <Box display="flex" flexDirection="column" flexGrow={1} minWidth={0}>
         <Box flexGrow={1} overflow="auto">
           <TabPanel
             value={value}
@@ -118,7 +121,13 @@ export default function ControlsModalTabs({
             id="plot-settings-panel"
             aria-labelledby="plot-settings-tab"
           >
-            <Stack px={2} spacing={2} alignItems="start" flexGrow={1}>
+            <Stack
+              px={2}
+              spacing={2}
+              alignItems="start"
+              flexGrow={1}
+              height="100%"
+            >
               <HeatmapThemeControl />
               <NormalizationControl />
               <ThemeControl />
@@ -143,7 +152,7 @@ export default function ControlsModalTabs({
           </TabPanel>
         </Box>
 
-        <DialogActions sx={{ mt: "auto" }}>
+        <DialogActions sx={{ mt: "auto", flexShrink: 0 }}>
           <Button onClick={hideControls} color="primary">
             Close
           </Button>
