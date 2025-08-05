@@ -1,11 +1,5 @@
 import { useTheme } from "@mui/material/styles";
-import {
-  Axis,
-  AxisLeft,
-  AxisRight,
-  Orientation,
-  TickRendererProps,
-} from "@visx/axis";
+import { Axis, AxisLeft, Orientation, TickRendererProps } from "@visx/axis";
 import { scaleLinear } from "@visx/scale";
 import { Text } from "@visx/text";
 import React, { useId } from "react";
@@ -26,7 +20,7 @@ export default function HeatmapYAxis() {
   const selectedValues = useSelectedValues((s) => s.selectedValues);
   const { scale: y, tickLabelSize, setTickLabelSize } = useYScale();
   const axisConfig = useRowConfig();
-  const { label, flipAxisPosition } = axisConfig;
+  const { label } = axisConfig;
   const { openTooltip, closeTooltip } = useSetTooltipData();
 
   const rows = useRows();
@@ -39,13 +33,7 @@ export default function HeatmapYAxis() {
   const fontSize =
     y.bandwidth() > TICK_TEXT_SIZE ? TICK_TEXT_SIZE : y.bandwidth();
 
-  useSetTickLabelSize(
-    flipAxisPosition ?? false,
-    setTickLabelSize,
-    "y",
-    fontSize,
-    rows,
-  );
+  useSetTickLabelSize(setTickLabelSize, "y", fontSize, rows);
 
   return (
     <svg height={y.range()[0]} style={{ zIndex: 1 }}>
@@ -125,14 +113,11 @@ function ExpandedRowTick({
   const selectedValues = useSelectedValues((s) => s.selectedValues);
   const rowMaxes = useRowMaxes();
   const axisConfig = useRowConfig();
-  const { flipAxisPosition } = axisConfig;
 
   const { openInNewTab, tickTitle, tickLabelStyle } =
     useHeatmapAxis(axisConfig);
 
-  const panelSize = usePanelDimensions(
-    flipAxisPosition ? "left_middle" : "right_middle",
-  );
+  const panelSize = usePanelDimensions("left_middle");
   const { openTooltip, closeTooltip } = useSetTooltipData();
   const theme = useTheme();
 
@@ -141,7 +126,7 @@ function ExpandedRowTick({
   if (selectedValues.has(row!)) {
     // Display an axis scaled for the selected value instead of the tick if the value is expanded
     // Use the tick label as the axis label
-    const Axis = flipAxisPosition ? AxisLeft : AxisRight;
+    const Axis = AxisLeft;
     const max = rowMaxes[row!];
     const range =
       expandedSize > nonExpandedSize

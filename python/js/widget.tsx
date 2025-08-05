@@ -70,17 +70,15 @@ const render = createRender(() => {
           data={data}
           theme={"light"}
           dimensions={dimensions}
-          yAxisConfig={{
+          yAxis={{
             label: "Sample",
             createHref: (row) =>
               `https://portal.hubmapconsortium.org/browse/${row}`,
-            flipAxisPosition: true,
           }}
-          xAxisConfig={{
+          xAxis={{
             label: "Cell Type",
             createHref: (col) =>
               `https://www.ebi.ac.uk/ols4/search?q=${col}&ontology=cl`,
-            flipAxisPosition: true,
           }}
         />
       ) : (

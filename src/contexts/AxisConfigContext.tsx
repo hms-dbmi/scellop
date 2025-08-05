@@ -5,7 +5,6 @@ import { createTemporalStoreContext } from "../utils/zustand";
 export interface AxisConfig {
   label: string;
   createHref?: (tick: string) => string;
-  flipAxisPosition?: boolean;
   createSubtitle?: (
     value: string,
     metadataValues?: Record<string, string | number>,
@@ -20,7 +19,6 @@ export interface AxisConfig {
 interface AxisConfigActions {
   setLabel: (label: string) => void;
   setCreateHref: (createHref: (tick: string) => string) => void;
-  setFlipAxisPosition: (flipAxisPosition: boolean) => void;
 }
 
 type AxisConfigStore = AxisConfig & AxisConfigActions;
@@ -34,8 +32,6 @@ const createAxisConfigStore =
         setLabel: (label: string) => set({ label }),
         setCreateHref: (createHref: (tick: string) => string) =>
           set({ createHref }),
-        setFlipAxisPosition: (flipAxisPosition: boolean) =>
-          set({ flipAxisPosition }),
         get pluralLabel() {
           return initialArgs.pluralLabel ?? `${this.label}s`;
         },

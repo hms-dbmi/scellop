@@ -64,7 +64,6 @@ function estimateTextDimensions(
  * Calculates the estimated tick label size based on actual items and font properties
  */
 export function useSetTickLabelSize(
-  flipAxisPosition: boolean,
   setTickLabelSize: (size: number) => void,
   orientation: "x" | "y" = "x",
   fontSize: number,
@@ -72,7 +71,7 @@ export function useSetTickLabelSize(
   fontFamily: string = "Roboto, Arial, sans-serif",
 ) {
   const estimatedSize = useMemo(() => {
-    if (!flipAxisPosition || items.length === 0) {
+    if (items.length === 0) {
       return 0;
     }
 
@@ -88,7 +87,7 @@ export function useSetTickLabelSize(
 
     // Add padding for axis label and margins (same as original)
     return maxSize + 32;
-  }, [flipAxisPosition, orientation, fontSize, items, fontFamily]);
+  }, [orientation, fontSize, items, fontFamily]);
 
   useEffect(() => {
     setTickLabelSize(estimatedSize);

@@ -4,7 +4,6 @@ import Stack from "@mui/material/Stack";
 import { useTheme } from "@mui/material/styles";
 import { AxisRight } from "@visx/axis";
 import { formatPrefix, max } from "d3";
-import { useColumnConfig } from "../../contexts/AxisConfigContext";
 import { useColumnCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useFraction } from "../../contexts/FractionContext";
@@ -95,20 +94,14 @@ function TopViolin() {
  * Container component for the top graph.
  */
 export default function TopGraph() {
-  const flipAxisPosition = useColumnConfig((store) => store.flipAxisPosition);
-
   const { fraction } = useFraction();
 
   const { height } = usePanelDimensions("center_top");
 
   return (
     <Stack direction="column" width="100%" height={height}>
-      {flipAxisPosition && (
-        <>
-          <HeatmapXAxis />
-          <XAxisLabel />
-        </>
-      )}
+      <HeatmapXAxis />
+      <XAxisLabel />
       {fraction ? <TopViolin /> : <TopBar />}
     </Stack>
   );

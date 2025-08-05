@@ -3,7 +3,6 @@ import { useTheme } from "@mui/material/styles";
 import { AxisBottom } from "@visx/axis";
 import { formatPrefix, max } from "d3";
 import React from "react";
-import { useRowConfig } from "../../contexts/AxisConfigContext";
 import { useRowCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
@@ -95,15 +94,10 @@ export default function LeftGraph() {
   const { height, width } = usePanelDimensions("left_middle");
 
   const { fraction } = useFraction();
-  const flipAxisPosition = useRowConfig((store) => store.flipAxisPosition);
   return (
     <Stack direction="row" width={width}>
-      {flipAxisPosition && (
-        <>
-          <HeatmapYAxis />
-          <YAxisLabel height={height} side="left" />
-        </>
-      )}
+      <HeatmapYAxis />
+      <YAxisLabel height={height} side="left" />
       {fraction ? <LeftViolin /> : <LeftBar />}
     </Stack>
   );

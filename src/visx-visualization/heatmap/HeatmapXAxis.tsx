@@ -39,7 +39,7 @@ export default function HeatmapXAxis() {
   const theme = useTheme();
   const { scale: x, tickLabelSize, setTickLabelSize } = useXScale();
   const axisConfig = useColumnConfig();
-  const { label, flipAxisPosition } = axisConfig;
+  const { label } = axisConfig;
 
   const { openTooltip, closeTooltip } = useSetTooltipData();
 
@@ -51,13 +51,7 @@ export default function HeatmapXAxis() {
   const fontSize =
     x.bandwidth() > TICK_TEXT_SIZE ? TICK_TEXT_SIZE : x.bandwidth();
 
-  useSetTickLabelSize(
-    flipAxisPosition ?? false,
-    setTickLabelSize,
-    "x",
-    fontSize,
-    columns,
-  );
+  useSetTickLabelSize(setTickLabelSize, "x", fontSize, columns);
 
   return (
     <svg width={x.range()[1]} style={{ zIndex: 1 }}>

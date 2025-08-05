@@ -81,7 +81,6 @@ function Demo() {
           label: "Dataset",
           createHref: (row) =>
             `https://portal.hubmapconsortium.org/browse/${row}`,
-          flipAxisPosition: true,
           createSubtitle: (_, metadataValues) => {
             const anatomy = metadataValues?.["anatomy"];
             const assay = metadataValues?.["assay"];
@@ -93,7 +92,6 @@ function Demo() {
           label: "Cell Type",
           createHref: (col) =>
             `https://www.ebi.ac.uk/ols4/search?q=${col}&ontology=cl`,
-          flipAxisPosition: true,
           createSubtitle: (_, metadataValues) => {
             return String(metadataValues?.["Cell Ontology Label"] ?? "");
           },
