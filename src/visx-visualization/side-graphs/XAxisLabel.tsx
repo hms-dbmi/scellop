@@ -1,7 +1,10 @@
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import React from "react";
 import { useColumnConfig } from "../../contexts/AxisConfigContext";
 import { useColumns, useData } from "../../contexts/DataContext";
+import AxisZoomControl from "./AxisZoomControl";
 
 function useHeatmapXAxisLabel() {
   const axisConfig = useColumnConfig();
@@ -21,6 +24,7 @@ function useHeatmapXAxisLabel() {
 
 export default function XAxisLabel() {
   const xAxisLabel = useHeatmapXAxisLabel();
+  const axisConfig = useColumnConfig();
 
   return (
     <Typography
@@ -32,8 +36,20 @@ export default function XAxisLabel() {
       variant="caption"
       color="textSecondary"
       noWrap
+      sx={{
+        // Necessary for the axis zoom control to be positioned over the axis
+        zIndex: "100 !important",
+      }}
     >
-      {xAxisLabel}
+      <Stack
+        direction="row"
+        justifyContent="center"
+        alignItems="center"
+        spacing={1}
+      >
+        <Box>{xAxisLabel}</Box>
+        <AxisZoomControl axisConfig={axisConfig} orientation="horizontal" />
+      </Stack>
     </Typography>
   );
 }

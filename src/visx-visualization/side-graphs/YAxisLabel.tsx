@@ -2,6 +2,7 @@ import Typography from "@mui/material/Typography";
 import React from "react";
 import { useRowConfig } from "../../contexts/AxisConfigContext";
 import { useData, useRows } from "../../contexts/DataContext";
+import AxisZoomControl from "./AxisZoomControl";
 
 export function useHeatmapYAxisLabel() {
   const axisConfig = useRowConfig();
@@ -29,6 +30,7 @@ const isLeft = (side: string | undefined): boolean => {
 
 export default function YAxisLabel({ height, side = "left" }: YAxisLabelProps) {
   const yAxisLabel = useHeatmapYAxisLabel();
+  const axisConfig = useRowConfig();
 
   return (
     <Typography
@@ -42,9 +44,12 @@ export default function YAxisLabel({ height, side = "left" }: YAxisLabelProps) {
       sx={{
         writingMode: isLeft(side) ? "vertical-lr" : "vertical-rl",
         transform: "rotate(180deg) translateY(50%)",
+        // Necessary for the axis zoom control to be positioned over the axis
+        zIndex: "100 !important",
       }}
     >
       {yAxisLabel}
+      <AxisZoomControl axisConfig={axisConfig} orientation="vertical" />
     </Typography>
   );
 }

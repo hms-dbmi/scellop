@@ -89,7 +89,7 @@ export function useSetTickLabelSize(
     const maxSize = Math.max(...dimensions.map((d) => d.width));
 
     // Add padding for axis label and margins (same as original)
-    return maxSize + 32;
+    return maxSize + 48;
   }, [orientation, fontSize, items, fontFamily]);
 
   useEffect(() => {

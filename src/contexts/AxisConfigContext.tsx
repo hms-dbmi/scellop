@@ -14,14 +14,23 @@ export interface AxisConfig {
   // where the axis label is used in plural form.
   // If not provided, defaults to `${label}s`.
   pluralLabel?: string;
+
+  // Whether to expand the axis in the UI.
+  zoomed?: boolean;
+  // What size (in pixels) to set the scale bandwidth to when it is zoomed.
+  // Defaults to 32.
+  zoomedBandwidth?: number;
 }
 
 interface AxisConfigActions {
   setLabel: (label: string) => void;
   setCreateHref: (createHref: (tick: string) => string) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  setZoomBandwidth: (zoomSize: number) => void;
 }
 
-type AxisConfigStore = AxisConfig & AxisConfigActions;
+export type AxisConfigStore = AxisConfig & AxisConfigActions;
 
 const createAxisConfigStore =
   (direction: "Row" | "Column") => (initialArgs: AxisConfig) => {
@@ -29,12 +38,16 @@ const createAxisConfigStore =
       temporal((set) => ({
         ...initialArgs,
         label: initialArgs.label ?? direction,
+        zoomedBandwidth: initialArgs.zoomedBandwidth ?? 32,
         setLabel: (label: string) => set({ label }),
         setCreateHref: (createHref: (tick: string) => string) =>
           set({ createHref }),
         get pluralLabel() {
           return initialArgs.pluralLabel ?? `${this.label}s`;
         },
+        setZoomBandwidth: (zoomedBandwidth: number) => set({ zoomedBandwidth }),
+        zoomIn: () => set({ zoomed: true }),
+        zoomOut: () => set({ zoomed: false }),
       })),
     );
   };
