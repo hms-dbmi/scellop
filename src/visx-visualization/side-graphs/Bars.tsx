@@ -396,7 +396,7 @@ export default function Bars({
       };
     } else
       return {
-        marginTop: -1,
+        marginBottom: -5,
       };
   }, [orientation]);
 
