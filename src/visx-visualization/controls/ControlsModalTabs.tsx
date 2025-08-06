@@ -16,6 +16,7 @@ import {
   HeatmapThemeControl,
   NormalizationControl,
   ThemeControl,
+  ZoomBandwidthControl,
 } from "./Controls";
 
 interface TabPanelProps extends BoxProps {
@@ -132,6 +133,7 @@ export default function ControlsModalTabs({
               <NormalizationControl />
               <ThemeControl />
               <FractionControl />
+              <ZoomBandwidthControl />
             </Stack>
           </TabPanel>
           <TabPanel

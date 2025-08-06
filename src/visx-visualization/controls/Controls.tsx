@@ -8,7 +8,18 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { useEventCallback } from "@mui/material/utils";
 
-import { FormHelperText } from "@mui/material";
+import {
+  Checkbox,
+  FormHelperText,
+  Slider,
+  Stack,
+  Typography,
+} from "@mui/material";
+import {
+  AxisConfigStore,
+  useColumnConfig,
+  useRowConfig,
+} from "../../contexts/AxisConfigContext";
 import { useSetTheme } from "../../contexts/CellPopThemeContext";
 import {
   useFractionControlIsDisabled,
@@ -162,5 +173,80 @@ export function NormalizationControl() {
         values are scaled and displayed.
       </FormHelperText>
     </FormControl>
+  );
+}
+
+interface ZoomBandwidthControlProps {
+  axisConfig: AxisConfigStore;
+  label: string;
+  id?: string;
+}
+
+function ZoomBandwidthFormControl({
+  axisConfig,
+  label,
+  id = label.toLowerCase().replace(" ", "-"),
+}: ZoomBandwidthControlProps) {
+  const { zoomed, zoomedBandwidth, toggleZoom, setZoomBandwidth } = axisConfig;
+
+  const handleBandwidthChange = useEventCallback(
+    (_: Event, value: number | number[]) => {
+      if (Array.isArray(value)) {
+        return;
+      }
+      setZoomBandwidth(value);
+    },
+  );
+
+  return (
+    <FormControl fullWidth>
+      <Typography
+        id={`${id}-zoom-bandwidth-label`}
+        gutterBottom
+        component="label"
+      >
+        {label}
+      </Typography>
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Checkbox
+          checked={zoomed}
+          onChange={toggleZoom}
+          aria-label={`Enable zoom on ${axisConfig.label} axis`}
+        />
+        <Slider
+          value={zoomedBandwidth}
+          disabled={!zoomed}
+          min={5}
+          max={50}
+          step={1}
+          onChange={handleBandwidthChange}
+          aria-labelledby={`${id}-zoom-bandwidth-label`}
+          valueLabelDisplay="auto"
+        />
+      </Stack>
+    </FormControl>
+  );
+}
+
+/**
+ * Zoom Bandwidth Control
+ * This component can be used to control the size of each cell in the visualization
+ * when the user is zoomed in.
+ */
+export function ZoomBandwidthControl() {
+  const rowConfig = useRowConfig();
+  const colConfig = useColumnConfig();
+
+  return (
+    <Stack width={"100%"} spacing={2}>
+      <ZoomBandwidthFormControl
+        axisConfig={rowConfig}
+        label="Column Width Zoom"
+      />
+      <ZoomBandwidthFormControl
+        axisConfig={colConfig}
+        label="Row Height Zoom"
+      />
+    </Stack>
   );
 }

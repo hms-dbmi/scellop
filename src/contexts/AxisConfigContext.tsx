@@ -27,6 +27,7 @@ interface AxisConfigActions {
   setCreateHref: (createHref: (tick: string) => string) => void;
   zoomIn: () => void;
   zoomOut: () => void;
+  toggleZoom: () => void;
   setZoomBandwidth: (zoomSize: number) => void;
 }
 
@@ -35,7 +36,7 @@ export type AxisConfigStore = AxisConfig & AxisConfigActions;
 const createAxisConfigStore =
   (direction: "Row" | "Column") => (initialArgs: AxisConfig) => {
     return createStore<AxisConfigStore>()(
-      temporal((set) => ({
+      temporal((set, get) => ({
         ...initialArgs,
         label: initialArgs.label ?? direction,
         zoomedBandwidth: initialArgs.zoomedBandwidth ?? 32,
@@ -48,6 +49,7 @@ const createAxisConfigStore =
         setZoomBandwidth: (zoomedBandwidth: number) => set({ zoomedBandwidth }),
         zoomIn: () => set({ zoomed: true }),
         zoomOut: () => set({ zoomed: false }),
+        toggleZoom: () => set({ zoomed: !get().zoomed }),
       })),
     );
   };
