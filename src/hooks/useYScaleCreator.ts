@@ -48,7 +48,7 @@ export function useYScaleCreator(
     // Otherwise, we need to adjust the scale to account for the expanded rows
     // First, we need to determine the height of the selected rows
     // When zoomed, give more space to expanded rows to ensure visibility
-    const expansionRatio = colsZoomed ? 3 : 5; // Use smaller ratio when zoomed
+    const expansionRatio = 6;
     const expandedRowHeight =
       effectiveHeight / (expansionRatio + expandedRows.size);
     const totalExpandedHeight = expandedRows.size * expandedRowHeight;

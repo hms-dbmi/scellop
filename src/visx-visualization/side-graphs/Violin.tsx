@@ -211,7 +211,6 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
     onReorder: handleReorder, // Final reordering on drop (fallback)
     onDragMove: handleReorder, // Real-time reordering during drag
     scrollOffset: scaleContext.scroll,
-    isZoomed: scaleContext.isZoomed,
   });
 
   const violinScale = useViolinScale(side);

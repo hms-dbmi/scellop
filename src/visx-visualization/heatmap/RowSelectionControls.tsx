@@ -1,4 +1,5 @@
-import { Tooltip } from "@mui/material";
+import { BarChart, GridOn } from "@mui/icons-material";
+import { Checkbox, Tooltip } from "@mui/material";
 import React, { useCallback } from "react";
 import { useRowConfig } from "../../contexts/AxisConfigContext";
 import { useRows } from "../../contexts/DataContext";
@@ -51,18 +52,31 @@ export default function RowSelectionControls() {
       >
         {rowsToRender.map((row) => (
           <Tooltip
-            title={`Toggle ${row}`}
+            title={
+              selectedValues.has(row)
+                ? `Show heatmap for ${row}`
+                : `Show bar chart for ${row}`
+            }
             key={row}
-            // to keep the tooltip from blocking the checkbox
+            placement="top"
             slotProps={{
-              popper: { style: { pointerEvents: "none" } },
+              popper: { style: { pointerEvents: "none" }, disablePortal: true },
               tooltip: { style: { pointerEvents: "none" } },
             }}
           >
-            <input
-              type="checkbox"
+            <Checkbox
               checked={selectedValues.has(row)}
               onChange={onChange(row)}
+              icon={
+                <BarChart
+                  sx={{
+                    opacity: 0.5,
+                    "&:hover": { opacity: 1 },
+                  }}
+                />
+              }
+              checkedIcon={<GridOn />}
+              size="small"
               style={{
                 width: Math.max(
                   Math.min(Math.floor(scale.bandwidth()), 32),
@@ -75,6 +89,7 @@ export default function RowSelectionControls() {
                 left: 0,
                 top: scale(row),
                 position: "absolute",
+                padding: 0,
               }}
             />
           </Tooltip>
