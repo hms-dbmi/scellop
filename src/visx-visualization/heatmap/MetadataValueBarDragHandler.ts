@@ -45,7 +45,6 @@ export function useMetadataValueBarDragHandler({
   bars,
   axis,
   onSegmentReorder,
-  onDragMove,
   disabled = false,
   scrollOffset = 0,
   isZoomed = false,

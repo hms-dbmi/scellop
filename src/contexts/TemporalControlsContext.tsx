@@ -5,6 +5,10 @@ import { useEventCallback } from "@mui/material/utils";
 
 import { TemporalState } from "zundo";
 import { StoreApi } from "zustand";
+import {
+  useColumnConfigHistory,
+  useRowConfigHistory,
+} from "./AxisConfigContext";
 import { useThemeHistory } from "./CellPopThemeContext";
 import { useDataHistory } from "./DataContext";
 import { useThemeControlIsDisabled } from "./DisabledControlProvider";
@@ -21,6 +25,8 @@ function useTemporalActions() {
   const dataHistory = useDataHistory();
   const expandedHistory = useExpandedValuesHistory();
   const normalizationHistory = useNormalizationHistory();
+  const rowHistory = useRowConfigHistory();
+  const columnHistory = useColumnConfigHistory();
 
   const themeIsDisabled = useThemeControlIsDisabled();
   const selectedDimensionIsDisabled = useThemeControlIsDisabled();
@@ -51,6 +57,8 @@ function useTemporalActions() {
     }
     dataHistory.setOnSave(onSave(dataHistory));
     expandedHistory.setOnSave(onSave(expandedHistory));
+    rowHistory.setOnSave(onSave(rowHistory));
+    columnHistory.setOnSave(onSave(columnHistory));
     return () => {
       themeHistory.setOnSave(undefined);
       selectedDimensionHistory.setOnSave(undefined);
@@ -58,6 +66,8 @@ function useTemporalActions() {
       dataHistory.setOnSave(undefined);
       expandedHistory.setOnSave(undefined);
       normalizationHistory.setOnSave(undefined);
+      rowHistory.setOnSave(undefined);
+      columnHistory.setOnSave(undefined);
     };
   }, [themeIsDisabled, selectedDimensionIsDisabled, fractionIsDisabled]);
 
@@ -88,6 +98,8 @@ function useTemporalActions() {
     normalizationHistory.undo(normalizationHistory.pastStates.length);
     undoQueue.current = [];
     redoQueue.current = [];
+    rowHistory.undo(rowHistory.pastStates.length);
+    columnHistory.undo(columnHistory.pastStates.length);
     trackEvent("Restore to Default", "");
   });
 
