@@ -11,7 +11,7 @@ interface BackgroundStripeProps {
   onMouseOver?: (e: React.MouseEvent<SVGRectElement>) => void;
   onMouseMove?: (e: React.MouseEvent<SVGRectElement>) => void;
   onMouseOut?: (e: React.MouseEvent<SVGRectElement>) => void;
-  orientation: "horizontal" | "vertical";
+  orientation: "rows" | "columns";
 }
 
 function useStripeColor(index: number) {
@@ -32,7 +32,7 @@ function useCurrentValues(orientation: string) {
   return orientation === "vertical" ? columns : rows;
 }
 
-function useIndex(value: string, orientation: "horizontal" | "vertical") {
+function useIndex(value: string, orientation: "rows" | "columns") {
   return useCurrentValues(orientation).indexOf(value);
 }
 

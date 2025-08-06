@@ -1,5 +1,5 @@
-import { ScaleBand as D3ScaleBand } from "d3";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ScaleBand } from "../../contexts/types";
 
 export interface BarDragState {
   /**
@@ -17,11 +17,13 @@ export interface BarDragState {
 
 export interface BarsDragHandlerOptions {
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  scale: D3ScaleBand<string>;
-  orientation: "horizontal" | "vertical";
+  scale: ScaleBand<string>;
+  orientation: "rows" | "columns";
   onReorder: (draggedValue: string, targetValue: string) => void;
   onDragMove?: (draggedValue: string, targetValue: string) => void;
   disabled?: boolean;
+  scrollOffset?: number;
+  isZoomed?: boolean;
 }
 
 export function useBarsDragHandler({
@@ -31,6 +33,8 @@ export function useBarsDragHandler({
   onReorder,
   onDragMove,
   disabled = false,
+  scrollOffset = 0,
+  isZoomed = false,
 }: BarsDragHandlerOptions) {
   const [dragState, setDragState] = useState<BarDragState>({
     isDragging: false,
@@ -48,9 +52,19 @@ export function useBarsDragHandler({
   const getValueFromPosition = useCallback(
     (x: number, y: number) => {
       // For horizontal bars, we use Y position; for vertical bars, we use X position
-      const position = orientation === "horizontal" ? y : x;
+      let position = orientation === "rows" ? y : x;
 
-      // Manual lookup since D3 ScaleBand doesn't have lookup method
+      // Adjust for scroll offset when zoomed
+      if (isZoomed) {
+        position += scrollOffset;
+      }
+
+      // Use the scale's lookup method if available (for complex scales like expanded rows)
+      if (scale.lookup) {
+        return scale.lookup(position);
+      }
+
+      // Fallback: Manual lookup for simple uniform scales
       const domain = scale.domain();
       const bandwidth = scale.bandwidth();
       const [rangeStart, rangeEnd] = scale.range();
@@ -58,7 +72,7 @@ export function useBarsDragHandler({
       // For horizontal bars with inverted Y scale (range goes from height to 0)
       // we need to adjust the position calculation
       let adjustedPosition = position;
-      if (orientation === "horizontal" && rangeStart > rangeEnd) {
+      if (orientation === "rows" && rangeStart > rangeEnd) {
         // Inverted scale - adjust position relative to the start of range
         adjustedPosition = rangeStart - position;
       }
@@ -66,7 +80,7 @@ export function useBarsDragHandler({
       const index = Math.floor(adjustedPosition / bandwidth);
       return domain[index] || null;
     },
-    [scale, orientation],
+    [scale, orientation, scrollOffset, isZoomed],
   );
 
   // Get mouse position relative to canvas

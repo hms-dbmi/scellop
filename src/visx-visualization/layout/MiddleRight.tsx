@@ -12,7 +12,13 @@ function MiddleRightPanel(
   const { width, height } = usePanelDimensions("right_middle");
 
   return (
-    <VisualizationPanel id={id} ref={ref}>
+    <VisualizationPanel
+      id={id}
+      ref={ref}
+      sx={{
+        overflowY: "hidden",
+      }}
+    >
       <MetadataValueBar axis="Y" width={width} height={height} />
       <RowSelectionControls />
     </VisualizationPanel>

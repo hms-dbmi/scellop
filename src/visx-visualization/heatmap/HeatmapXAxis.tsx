@@ -1,12 +1,13 @@
 import { useTheme } from "@mui/material/styles";
 import { Axis, Orientation } from "@visx/axis";
-import React, { useId } from "react";
+import React, { useCallback, useId } from "react";
 import { useColumnConfig } from "../../contexts/AxisConfigContext";
 import {
   useColumnCounts,
   useColumns,
   useData,
 } from "../../contexts/DataContext";
+import { useHeatmapDimensions } from "../../contexts/DimensionsContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import truncateTickLabel from "../../utils/truncate-tick-label";
@@ -37,9 +38,17 @@ export function useHeatmapXAxisLabel() {
 export default function HeatmapXAxis() {
   const columnCounts = useColumnCounts();
   const theme = useTheme();
-  const { scale: x, tickLabelSize, setTickLabelSize } = useXScale();
+  const {
+    scale: x,
+    tickLabelSize,
+    setTickLabelSize,
+    scroll,
+    isZoomed,
+    setScroll,
+  } = useXScale();
   const axisConfig = useColumnConfig();
   const { label } = axisConfig;
+  const { width } = useHeatmapDimensions();
 
   const { openTooltip, closeTooltip } = useSetTooltipData();
 
@@ -51,52 +60,69 @@ export default function HeatmapXAxis() {
   const fontSize =
     x.bandwidth() > TICK_TEXT_SIZE ? TICK_TEXT_SIZE : x.bandwidth();
 
-  useSetTickLabelSize(setTickLabelSize, "x", fontSize, columns);
+  useSetTickLabelSize(setTickLabelSize, "columns", fontSize, columns);
+
+  // Handle wheel scrolling for zoomed X axis
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<SVGSVGElement>) => {
+      if (!isZoomed) return;
+
+      e.preventDefault();
+
+      setScroll((prev: number) => {
+        const maxScrollX = Math.max(0, x.range()[1] - width);
+        return Math.max(0, Math.min(maxScrollX, prev + e.deltaX));
+      });
+    },
+    [isZoomed, setScroll, x, width],
+  );
 
   return (
-    <svg width={x.range()[1]} style={{ zIndex: 1 }}>
+    <svg width={x.range()[1]} style={{ zIndex: 1 }} onWheel={handleWheel}>
       <SVGBackgroundColorFilter
         color={theme.palette.background.default}
         id={filterId}
       />
-      <Axis
-        scale={x}
-        numTicks={x.domain().length}
-        stroke={theme.palette.text.primary}
-        tickStroke={theme.palette.text.primary}
-        top={tickLabelSize}
-        tickFormat={(t) => truncateTickLabel(t, 20)}
-        tickLabelProps={(t) =>
-          ({
-            angle: -90,
-            dx: "0.25em",
-            dy: "-0.25em",
-            textAnchor: "start",
-            fontSize,
-            style: tickLabelStyle,
-            fill: theme.palette.text.primary,
-            className: "x-axis-tick-label",
-            fontFamily: theme.typography.fontFamily,
-            onMouseOver: (e) => {
-              openTooltip(
-                {
-                  title: tickTitle(t),
-                  data: {
-                    "Cell Count": columnCounts[t],
-                    [label]: t,
+      <g transform={isZoomed ? `translate(${-scroll}, 0)` : undefined}>
+        <Axis
+          scale={x}
+          numTicks={x.domain().length}
+          stroke={theme.palette.text.primary}
+          tickStroke={theme.palette.text.primary}
+          top={tickLabelSize}
+          tickFormat={(t) => truncateTickLabel(t, 20)}
+          tickLabelProps={(t) =>
+            ({
+              angle: -90,
+              dx: "0.25em",
+              dy: "-0.25em",
+              textAnchor: "start",
+              fontSize,
+              style: tickLabelStyle,
+              fill: theme.palette.text.primary,
+              className: "x-axis-tick-label",
+              fontFamily: theme.typography.fontFamily,
+              onMouseOver: (e) => {
+                openTooltip(
+                  {
+                    title: tickTitle(t),
+                    data: {
+                      "Cell Count": columnCounts[t],
+                      [label]: t,
+                    },
                   },
-                },
-                e.clientX,
-                e.clientY,
-              );
-            },
-            onMouseOut: closeTooltip,
-            onClick: () => openInNewTab(t),
-          }) as const
-        }
-        tickValues={columns}
-        orientation={Orientation.top}
-      />
+                  e.clientX,
+                  e.clientY,
+                );
+              },
+              onMouseOut: closeTooltip,
+              onClick: () => openInNewTab(t),
+            }) as const
+          }
+          tickValues={columns}
+          orientation={Orientation.top}
+        />
+      </g>
     </svg>
   );
 }

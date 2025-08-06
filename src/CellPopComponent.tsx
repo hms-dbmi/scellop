@@ -38,8 +38,6 @@ export interface CellPopProps
   data?: CellPopData;
 }
 
-const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
-
 export const CellPop = withParentSize(
   ({
     theme = "light",
@@ -72,7 +70,6 @@ export const CellPop = withParentSize(
 
     const handleClick = useCallback(
       (e: React.MouseEvent) => {
-        stopPropagation(e);
         onClick?.(e);
       },
       [onClick],

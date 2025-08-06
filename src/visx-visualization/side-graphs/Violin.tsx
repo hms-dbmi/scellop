@@ -165,6 +165,12 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
   const orderedValues = useViolinPositionValues(side); // Values that position the violins
   const { setRowOrder, setColumnOrder } = useData();
 
+  // Get the appropriate scale context based on side
+  // Top violins use X scale (positioned by columns), left violins use Y scale (positioned by rows)
+  const xScale = useXScale();
+  const yScale = useYScale();
+  const scaleContext = side === "top" ? xScale : yScale;
+
   // Handle drag and drop reordering
   const handleReorder = useCallback(
     (draggedValue: string, targetValue: string) => {
@@ -184,7 +190,6 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
       } else {
         // Reordering rows (left violins are positioned by rows)
         const newOrder = [...orderedValues];
-        console.log("Left violins - current order:", newOrder);
         const draggedIndex = newOrder.indexOf(draggedValue);
         const targetIndex = newOrder.indexOf(targetValue);
 
@@ -205,6 +210,8 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
     side,
     onReorder: handleReorder, // Final reordering on drop (fallback)
     onDragMove: handleReorder, // Real-time reordering during drag
+    scrollOffset: scaleContext.scroll,
+    isZoomed: scaleContext.isZoomed,
   });
 
   const violinScale = useViolinScale(side);
@@ -286,8 +293,24 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+    // Save the current transformation matrix
+    ctx.save();
+
+    // Apply scroll offset for zoomed axes
+    if (scaleContext.isZoomed) {
+      if (topViolins) {
+        ctx.translate(-scaleContext.scroll, 0);
+      } else {
+        ctx.translate(0, -scaleContext.scroll);
+      }
+    }
+
+    // Clear canvas with scroll offset
+    const clearX =
+      scaleContext.isZoomed && topViolins ? scaleContext.scroll : 0;
+    const clearY =
+      scaleContext.isZoomed && !topViolins ? scaleContext.scroll : 0;
+    ctx.clearRect(clearX, clearY, width, height);
 
     violinData.forEach((violin) => {
       ctx.save();
@@ -340,6 +363,9 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
 
       ctx.restore();
     });
+
+    // Restore the transformation matrix
+    ctx.restore();
   }, [
     violinData,
     width,
@@ -349,6 +375,8 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
     orderedValues,
     isDragging,
     draggedValue,
+    scaleContext.isZoomed,
+    scaleContext.scroll,
   ]);
 
   // Hit detection for tooltips
@@ -364,8 +392,17 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
 
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
+
+      // Adjust for scroll offset
+      if (scaleContext.isZoomed) {
+        if (topViolins) {
+          x += scaleContext.scroll;
+        } else {
+          y += scaleContext.scroll;
+        }
+      }
 
       // Find which violin was hit
       const hitViolin = violinData.find((violin) => {
@@ -405,6 +442,25 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
     closeTooltip();
   });
 
+  // Handle wheel scrolling for zoomed axes
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<HTMLCanvasElement>) => {
+      if (!scaleContext.isZoomed) return;
+
+      e.preventDefault();
+
+      scaleContext.setScroll((prev: number) => {
+        const maxScroll = Math.max(
+          0,
+          categoricalScale.range()[1] - (topViolins ? width : height),
+        );
+        const delta = topViolins ? e.deltaX : e.deltaY;
+        return Math.max(0, Math.min(maxScroll, prev + delta));
+      });
+    },
+    [scaleContext, categoricalScale, topViolins, width, height],
+  );
+
   return (
     <canvas
       ref={canvasRef}
@@ -418,6 +474,7 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onWheel={handleWheel}
     />
   );
 }

@@ -31,17 +31,16 @@ const useXAxisCountsScale = () => {
 function LeftBar() {
   const [xScale, width, height] = useXAxisCountsScale();
   // Use same y scale as the heatmap
-  const { scale: yScale, nonExpandedSize } = useYScale();
+  const { scale: yScale } = useYScale();
   const selectedValues = useSelectedValues((s) => s.selectedValues);
 
   return (
     <Bars
-      orientation="horizontal"
+      orientation="rows"
       categoricalScale={yScale}
       numericalScale={xScale}
       domainLimit={width}
       selectedValues={selectedValues}
-      nonExpandedSize={nonExpandedSize}
       width={width}
       height={height}
     />
@@ -95,7 +94,7 @@ export default function LeftGraph() {
 
   const { fraction } = useFraction();
   return (
-    <Stack direction="row" width={width}>
+    <Stack direction="row" width={width} height={height} overflow="hidden">
       <HeatmapYAxis />
       <YAxisLabel height={height} side="left" />
       {fraction ? <LeftViolin /> : <LeftBar />}

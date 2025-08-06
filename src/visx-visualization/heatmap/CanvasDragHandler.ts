@@ -31,6 +31,10 @@ export interface CanvasDragHandlerOptions {
     targetCell: { row: string; column: string },
   ) => void;
   disabled?: boolean;
+  xScrollOffset?: number;
+  yScrollOffset?: number;
+  xZoomed?: boolean;
+  yZoomed?: boolean;
 }
 
 export function useCanvasDragHandler({
@@ -40,6 +44,10 @@ export function useCanvasDragHandler({
   onReorder,
   onDragMove,
   disabled = false,
+  xScrollOffset = 0,
+  yScrollOffset = 0,
+  xZoomed = false,
+  yZoomed = false,
 }: CanvasDragHandlerOptions) {
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
@@ -58,11 +66,15 @@ export function useCanvasDragHandler({
   // Get cell from mouse position
   const getCellFromPosition = useCallback(
     (x: number, y: number) => {
-      const row = yScale.lookup(y);
-      const column = xScale.lookup(x);
+      // Adjust for scroll offsets when zoomed
+      const adjustedX = xZoomed ? x + xScrollOffset : x;
+      const adjustedY = yZoomed ? y + yScrollOffset : y;
+
+      const row = yScale.lookup(adjustedY);
+      const column = xScale.lookup(adjustedX);
       return row && column ? { row, column } : null;
     },
-    [xScale, yScale],
+    [xScale, yScale, xScrollOffset, yScrollOffset, xZoomed, yZoomed],
   );
 
   // Get mouse position relative to canvas

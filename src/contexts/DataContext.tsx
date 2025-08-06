@@ -532,11 +532,11 @@ export const useMetadataLookup = () => {
   );
 };
 
-const useMetadataKeys = (direction: "row" | "column") => {
-  return useData(direction === "row" ? getRowSortKeys : getColumnSortKeys);
+const useMetadataKeys = (direction: "Row" | "Column") => {
+  return useData(direction === "Row" ? getRowSortKeys : getColumnSortKeys);
 };
 
-const useSortKeys = (direction: "row" | "column") => {
+const useSortKeys = (direction: "Row" | "Column") => {
   const metadataKeys = useMetadataKeys(direction);
   return useMemo(
     () => ["count", "alphabetical", ...metadataKeys],
@@ -545,11 +545,11 @@ const useSortKeys = (direction: "row" | "column") => {
 };
 
 export const useRowSortKeys = () => {
-  return useSortKeys("row");
+  return useSortKeys("Row");
 };
 
 export const useRowMetadataKeys = () => {
-  return useMetadataKeys("row");
+  return useMetadataKeys("Row");
 };
 
 export const useRowSorts: () => SortOrder<string>[] = () => {
@@ -562,11 +562,11 @@ export const useRowSorts: () => SortOrder<string>[] = () => {
 };
 
 export const useColumnMetadataKeys = () => {
-  return useMetadataKeys("column");
+  return useMetadataKeys("Column");
 };
 
 export const useColumnSortKeys = () => {
-  return useSortKeys("column");
+  return useSortKeys("Column");
 };
 
 export const useColumnSorts: () => SortOrder<string>[] = () => {

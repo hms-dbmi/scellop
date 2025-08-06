@@ -1,5 +1,5 @@
-import { ScaleBand as D3ScaleBand } from "d3";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ScaleBand } from "../../contexts/types";
 
 export interface ViolinDragState {
   /**
@@ -17,7 +17,7 @@ export interface ViolinDragState {
 
 export interface ViolinDragHandlerOptions {
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  scale: D3ScaleBand<string>;
+  scale: ScaleBand<string>;
   side: "top" | "left";
   onReorder: (draggedValue: string, targetValue: string) => void;
   onDragMove?: (draggedValue: string, targetValue: string) => void;
@@ -50,7 +50,11 @@ export function useViolinDragHandler({
       // For top violins, we use X position; for left violins, we use Y position
       const position = side === "top" ? x : y;
 
-      // Manual lookup since D3 ScaleBand doesn't have lookup method
+      if (scale.lookup) {
+        return scale.lookup(position) || null;
+      }
+
+      // Manual lookup if ScaleBand doesn't have lookup method
       const domain = scale.domain();
       const bandwidth = scale.bandwidth();
       const [rangeStart, rangeEnd] = scale.range();

@@ -1,5 +1,6 @@
 import { useEventCallback } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { scaleLinear } from "@visx/scale";
 import { ScaleBand, ScaleLinear } from "d3";
 import React, { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import {
@@ -8,20 +9,25 @@ import {
 } from "../../contexts/AxisConfigContext";
 import {
   useColumnCounts,
+  useColumnMaxes,
   useData,
   useRowCounts,
+  useRowMaxes,
 } from "../../contexts/DataContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
+import { useNormalization } from "../../contexts/NormalizationContext";
+import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
+import { EXPANDED_ROW_PADDING } from "../../hooks/useYScaleCreator";
 import { useBarsDragHandler } from "./BarsDragHandler";
+import ExpandedAxes from "./ExpandedAxes";
 
 interface BarsProps {
-  orientation: "horizontal" | "vertical";
+  orientation: "rows" | "columns";
   categoricalScale: ScaleBand<string>;
   numericalScale: ScaleLinear<number, number>;
   domainLimit: number;
   selectedValues?: Set<string>;
-  nonExpandedSize: number;
   width: number;
   height: number;
 }
@@ -29,25 +35,37 @@ interface BarsProps {
 function useCurrentCounts(orientation: string) {
   const rowCounts = useRowCounts();
   const columnCounts = useColumnCounts();
-  return orientation === "vertical" ? columnCounts : rowCounts;
+  return orientation === "columns" ? columnCounts : rowCounts;
 }
 
 function useCurrentMetadata(orientation: string) {
   return useData((s) =>
-    orientation === "vertical" ? s.data.metadata.cols : s.data.metadata.rows,
+    orientation === "columns" ? s.data.metadata.cols : s.data.metadata.rows,
   );
 }
 
 function useCurrentLabel(orientation: string) {
   const columnLabel = useColumnConfig((store) => store.label);
   const rowLabel = useRowConfig((store) => store.label);
-  return orientation === "vertical" ? columnLabel : rowLabel;
+  return orientation === "columns" ? columnLabel : rowLabel;
 }
 
 function useCurrentValues(orientation: string) {
   const rows = useData((s) => s.rowOrder);
   const columns = useData((s) => s.columnOrder);
-  return orientation === "vertical" ? columns : rows;
+  return orientation === "columns" ? columns : rows;
+}
+
+function useCurrentMaxes(orientation: string) {
+  const rowMaxes = useRowMaxes();
+  const columnMaxes = useColumnMaxes();
+  return orientation === "columns" ? columnMaxes : rowMaxes;
+}
+
+function useExpandedSize(orientation: string) {
+  const yScale = useYScale();
+  const xScale = useXScale();
+  return orientation === "columns" ? xScale.expandedSize : yScale.expandedSize;
 }
 
 export default function Bars({
@@ -55,7 +73,6 @@ export default function Bars({
   categoricalScale,
   numericalScale,
   domainLimit,
-  nonExpandedSize,
   width,
   height,
 }: BarsProps) {
@@ -67,14 +84,22 @@ export default function Bars({
   const { openTooltip, closeTooltip } = useSetTooltipData();
   const label = useCurrentLabel(orientation);
   const orderedValues = useCurrentValues(orientation);
+  const maxes = useCurrentMaxes(orientation);
+  const expandedSize = useExpandedSize(orientation);
   const { setRowOrder, setColumnOrder } = useData();
+  const normalization = useNormalization((s) => s.normalization);
+
+  // Get the appropriate scale context based on orientation
+  const xScale = useXScale();
+  const yScale = useYScale();
+  const scaleContext = orientation === "columns" ? xScale : yScale;
 
   // Handle drag and drop reordering
   const handleReorder = useCallback(
     (draggedValue: string, targetValue: string) => {
       if (draggedValue === targetValue) return;
 
-      if (orientation === "vertical") {
+      if (orientation === "columns") {
         // Reordering columns
         const newColumnOrder = [...orderedValues];
         const draggedIndex = newColumnOrder.indexOf(draggedValue);
@@ -101,27 +126,31 @@ export default function Bars({
     [orientation, orderedValues, setColumnOrder, setRowOrder],
   );
 
-  // Set up drag handling
+  // Set up drag handling - use the scale from context to ensure lookup method is available
   const { isDragging, draggedValue } = useBarsDragHandler({
     canvasRef,
-    scale: categoricalScale,
+    scale: scaleContext.scale,
     orientation,
     onReorder: handleReorder, // Final reordering on drop (fallback)
     onDragMove: handleReorder, // Real-time reordering during drag
+    scrollOffset: scaleContext.scroll,
+    isZoomed: scaleContext.isZoomed,
   });
 
   const bars = useMemo(() => {
     const entries = Object.entries(data);
     return entries
       .map(([key, value]) => {
-        if (orientation === "horizontal" && selectedValues?.has(key)) {
+        if (orientation === "rows" && selectedValues?.has(key)) {
           return null;
         }
 
         const scaledKey = categoricalScale(key);
         const scaledValue = numericalScale(value);
-        const isVertical = orientation === "vertical";
-        const barSize = nonExpandedSize;
+        const isVertical = orientation === "columns";
+        // Use the actual bandwidth from the scale to match heatmap cells exactly
+        const barSize = categoricalScale.bandwidth();
+
         const scaledPosition = scaledKey ?? 0;
         const barLength = scaledValue;
         const [rangeStart, rangeEnd] = numericalScale.range();
@@ -158,8 +187,50 @@ export default function Bars({
     categoricalScale,
     numericalScale,
     domainLimit,
-    nonExpandedSize,
     selectedValues,
+  ]);
+
+  // Create axes for expanded values
+  const expandedAxes = useMemo(() => {
+    if (orientation !== "rows" || selectedValues.size === 0) {
+      return [];
+    }
+
+    return Array.from(selectedValues)
+      .map((key) => {
+        const max = maxes[key];
+        const scaledPosition = categoricalScale(key);
+        const bandwidth = categoricalScale.bandwidth();
+
+        if (scaledPosition == null || bandwidth == null) return null;
+
+        const normalizationIsNotNone = normalization !== "None";
+        const domain = normalizationIsNotNone ? [1, 0] : [max, 0];
+        const range = [0, expandedSize - EXPANDED_ROW_PADDING * 3];
+
+        const axisScale = scaleLinear({
+          domain,
+          range,
+          nice: true,
+        });
+
+        return {
+          key,
+          scale: axisScale,
+          position: scaledPosition,
+          bandwidth,
+          max,
+          normalizationIsNotNone,
+        };
+      })
+      .filter((axis) => axis !== null);
+  }, [
+    orientation,
+    selectedValues,
+    maxes,
+    categoricalScale,
+    expandedSize,
+    normalization,
   ]);
 
   useLayoutEffect(() => {
@@ -172,8 +243,26 @@ export default function Bars({
       return;
     }
 
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+    // Save the current transformation matrix
+    ctx.save();
+
+    // Apply scroll offset for zoomed axes
+    if (scaleContext.isZoomed) {
+      if (orientation === "columns") {
+        ctx.translate(-scaleContext.scroll, 0);
+      } else {
+        ctx.translate(0, -scaleContext.scroll);
+      }
+    }
+
+    // Clear canvas with scroll offset
+    const clearX =
+      scaleContext.isZoomed && orientation === "columns"
+        ? scaleContext.scroll
+        : 0;
+    const clearY =
+      scaleContext.isZoomed && orientation === "rows" ? scaleContext.scroll : 0;
+    ctx.clearRect(clearX, clearY, width, height);
 
     // Draw bars
     bars.forEach((bar) => {
@@ -205,7 +294,21 @@ export default function Bars({
       ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
       ctx.strokeRect(bar.x, bar.y, bar.width, bar.height);
     });
-  }, [bars, width, height, theme, orderedValues, isDragging, draggedValue]);
+
+    // Restore the transformation matrix
+    ctx.restore();
+  }, [
+    bars,
+    width,
+    height,
+    theme,
+    orderedValues,
+    isDragging,
+    draggedValue,
+    scaleContext.isZoomed,
+    scaleContext.scroll,
+    orientation,
+  ]);
 
   // Hit detection for tooltips
   const handleMouseMove = useEventCallback(
@@ -220,8 +323,17 @@ export default function Bars({
 
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
+
+      // Adjust for scroll offset
+      if (scaleContext.isZoomed) {
+        if (orientation === "columns") {
+          x += scaleContext.scroll;
+        } else {
+          y += scaleContext.scroll;
+        }
+      }
 
       // Find which bar was hit (check background area first, then actual bar)
       const hitBar = bars.find((bar) => {
@@ -257,8 +369,28 @@ export default function Bars({
     closeTooltip();
   });
 
+  // Handle wheel scrolling for zoomed axes
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<HTMLDivElement>) => {
+      if (!scaleContext.isZoomed) return;
+
+      e.preventDefault();
+
+      scaleContext.setScroll((prev: number) => {
+        const maxScroll = Math.max(
+          0,
+          categoricalScale.range()[orientation === "rows" ? 0 : 1] -
+            (orientation === "columns" ? width : height),
+        );
+        const delta = orientation === "columns" ? e.deltaX : e.deltaY;
+        return Math.max(0, Math.min(maxScroll, prev + delta));
+      });
+    },
+    [scaleContext, categoricalScale, orientation, width, height],
+  );
+
   const style = useMemo(() => {
-    if (orientation === "horizontal") {
+    if (orientation === "rows") {
       return {
         marginLeft: -1,
       };
@@ -269,16 +401,32 @@ export default function Bars({
   }, [orientation]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      style={{
-        ...style,
-        cursor: isDragging ? "grabbing" : "grab",
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    />
+    <div
+      style={{ position: "relative", pointerEvents: "auto" }}
+      onWheel={handleWheel}
+    >
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        style={{
+          ...style,
+          cursor: isDragging ? "grabbing" : "grab",
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      />
+      {/* Render axes for expanded rows */}
+      <ExpandedAxes
+        expandedAxes={expandedAxes}
+        orientation={orientation}
+        width={width}
+        height={height}
+        scrollOffset={scaleContext.scroll}
+        isZoomed={scaleContext.isZoomed}
+        isDragging={isDragging}
+        draggedValue={draggedValue}
+      />
+    </div>
   );
 }

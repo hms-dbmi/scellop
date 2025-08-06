@@ -61,3 +61,8 @@ export const [
     `${direction}ConfigContext`,
   ),
 );
+
+export const useRowZoomed = () =>
+  useRowConfig((s) => [s.zoomed, s.zoomedBandwidth] as const);
+export const useColumnZoomed = () =>
+  useColumnConfig((s) => [s.zoomed, s.zoomedBandwidth] as const);

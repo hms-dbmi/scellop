@@ -30,16 +30,15 @@ const useColumnCountsScale = () => {
 
 function TopBar() {
   // Use same x scale as the heatmap
-  const { scale: xScale, nonExpandedSize } = useXScale();
+  const { scale: xScale } = useXScale();
   const [yScale, height, width] = useColumnCountsScale();
 
   return (
     <Bars
-      orientation="vertical"
+      orientation="columns"
       categoricalScale={xScale}
       numericalScale={yScale}
       domainLimit={height}
-      nonExpandedSize={nonExpandedSize}
       width={width}
       height={height}
     />
@@ -95,11 +94,10 @@ function TopViolin() {
  */
 export default function TopGraph() {
   const { fraction } = useFraction();
-
   const { height } = usePanelDimensions("center_top");
 
   return (
-    <Stack direction="column" width="100%" height={height}>
+    <Stack direction="column" width="100%" height={height} overflow="hidden">
       <HeatmapXAxis />
       <XAxisLabel />
       {fraction ? <TopViolin /> : <TopBar />}

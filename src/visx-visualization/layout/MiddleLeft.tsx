@@ -8,7 +8,7 @@ function MiddleLeftPanel(
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   return (
-    <VisualizationPanel id={id} ref={ref}>
+    <VisualizationPanel id={id} ref={ref} overflow="none">
       <LeftGraph />
     </VisualizationPanel>
   );

@@ -178,9 +178,9 @@ const MoveToStart = ({ dimension }: { dimension: "row" | "column" }) => {
   const rowLabel = useRowConfig((store) => store.label);
   const columnLabel = useColumnConfig((store) => store.label);
 
-  const move = dimension === "row" ? moveRowToStart : moveColumnToStart;
-  const label = dimension === "row" ? rowLabel : columnLabel;
-  const moveLabel = dimension === "row" ? "Top" : "Left";
+  const move = dimension === "Row" ? moveRowToStart : moveColumnToStart;
+  const label = dimension === "Row" ? rowLabel : columnLabel;
+  const moveLabel = dimension === "Row" ? "Top" : "Left";
 
   const value = tooltipData?.data?.[label] as string;
 
@@ -209,9 +209,9 @@ const MoveToEnd = ({ dimension }: { dimension: "row" | "column" }) => {
 
   const columnLabel = useColumnConfig((store) => store.label);
 
-  const move = dimension === "row" ? moveRowToEnd : moveColumnToEnd;
-  const label = dimension === "row" ? rowLabel : columnLabel;
-  const moveLabel = dimension === "row" ? "Bottom" : "Right";
+  const move = dimension === "Row" ? moveRowToEnd : moveColumnToEnd;
+  const label = dimension === "Row" ? rowLabel : columnLabel;
+  const moveLabel = dimension === "Row" ? "Bottom" : "Right";
 
   const value = tooltipData?.data?.[label] as string;
 
@@ -243,12 +243,12 @@ const SortDimension = ({ dimension }: { dimension: "row" | "column" }) => {
   const rowSortOrders = useRowSorts();
   const colSortOrders = useColumnSorts();
 
-  const sort = dimension === "row" ? sortRows : sortColumns;
-  const sortOrders = dimension === "row" ? rowSortOrders : colSortOrders;
+  const sort = dimension === "Row" ? sortRows : sortColumns;
+  const sortOrders = dimension === "Row" ? rowSortOrders : colSortOrders;
   const { label: rowLabel } = useRowConfig();
   const columnLabel = useColumnConfig((store) => store.label);
-  const label = dimension === "row" ? rowLabel : columnLabel;
-  const currentSortOrder = dimension === "row" ? rowSortOrder : colSortOrder;
+  const label = dimension === "Row" ? rowLabel : columnLabel;
+  const currentSortOrder = dimension === "Row" ? rowSortOrder : colSortOrder;
 
   const trackEvent = useTrackEvent();
 
@@ -301,7 +301,7 @@ const ContextMenuComponent = () => {
       <ContextMenuContent>
         <ContextMenuLabel>Global Actions</ContextMenuLabel>
         <RestoreHiddenRows />
-        <SortDimension dimension="row" />
+        <SortDimension dimension="Row" />
         <RestoreHiddenColumns />
         <SortDimension dimension="column" />
         {hasRow && (
@@ -309,8 +309,8 @@ const ContextMenuComponent = () => {
             <ContextMenuSeparator />
             <ContextMenuLabel>Rows ({rowLabel}s)</ContextMenuLabel>
             <HideRow />
-            <MoveToStart dimension="row" />
-            <MoveToEnd dimension="row" />
+            <MoveToStart dimension="Row" />
+            <MoveToEnd dimension="Row" />
             <ExpandRow />
             <CollapseRows />
           </>

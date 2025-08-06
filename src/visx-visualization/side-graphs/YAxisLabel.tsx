@@ -1,7 +1,11 @@
 import Typography from "@mui/material/Typography";
 import React from "react";
-import { useRowConfig } from "../../contexts/AxisConfigContext";
+import {
+  useColumnConfig,
+  useRowConfig,
+} from "../../contexts/AxisConfigContext";
 import { useData, useRows } from "../../contexts/DataContext";
+import { useYScale } from "../../contexts/ScaleContext";
 import AxisZoomControl from "./AxisZoomControl";
 
 export function useHeatmapYAxisLabel() {
@@ -30,7 +34,7 @@ const isLeft = (side: string | undefined): boolean => {
 
 export default function YAxisLabel({ height, side = "left" }: YAxisLabelProps) {
   const yAxisLabel = useHeatmapYAxisLabel();
-  const axisConfig = useRowConfig();
+  const { resetScroll } = useYScale();
 
   return (
     <Typography
@@ -49,7 +53,11 @@ export default function YAxisLabel({ height, side = "left" }: YAxisLabelProps) {
       }}
     >
       {yAxisLabel}
-      <AxisZoomControl axisConfig={axisConfig} orientation="vertical" />
+      <AxisZoomControl
+        axisConfig={useColumnConfig()}
+        resetScroll={resetScroll}
+        axis="Row"
+      />
     </Typography>
   );
 }

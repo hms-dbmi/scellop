@@ -68,7 +68,7 @@ function estimateTextDimensions(
  */
 export function useSetTickLabelSize(
   setTickLabelSize: (size: number) => void,
-  orientation: "x" | "y" = "x",
+  orientation: "rows" | "columns" = "rows",
   fontSize: number,
   items: string[] = [],
   fontFamily: string = "Roboto, Arial, sans-serif",

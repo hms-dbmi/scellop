@@ -1,15 +1,15 @@
 import React, {
   MouseEvent as ReactMouseEvent,
   ReactNode,
-  useCallback,
+  useMemo,
   useRef,
   useState,
 } from "react";
 
 import { AxisConfigStore } from "../../contexts/AxisConfigContext";
 
-import UnfoldLessDouble from "@mui/icons-material/UnfoldLessDouble";
-import UnfoldMoreDouble from "@mui/icons-material/UnfoldMoreDouble";
+import UnfoldMoreDouble from "@mui/icons-material/ZoomIn";
+import UnfoldLessDouble from "@mui/icons-material/ZoomOut";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import Grow from "@mui/material/Grow";
 import IconButton from "@mui/material/IconButton";
@@ -21,42 +21,55 @@ import Tooltip from "@mui/material/Tooltip";
 
 interface AxisZoomControlProps {
   axisConfig: AxisConfigStore;
-  orientation: "horizontal" | "vertical";
+  resetScroll: () => void;
+  axis: "Row" | "Column";
 }
 
 export default function AxisZoomControl({
   axisConfig,
-  orientation,
+  axis: orientation,
+  resetScroll,
 }: AxisZoomControlProps) {
   const { zoomed, zoomIn, zoomOut } = axisConfig;
 
   const Icon = zoomed ? UnfoldLessDouble : UnfoldMoreDouble;
 
-  const onClick = useCallback(() => {
-    if (!zoomed) {
-      zoomIn();
-    }
-  }, [zoomed, zoomIn]);
+  const options = useMemo(() => {
+    return [
+      {
+        label: `Zoom in to ${orientation}s`,
+        onClick: () => {
+          zoomIn();
+          resetScroll();
+        },
+        disabled: !!zoomed,
+      },
+      {
+        label: `Zoom out of ${orientation}s`,
+        onClick: () => {
+          zoomOut();
+          resetScroll();
+        },
+        disabled: !zoomed,
+      },
+    ];
+  }, [orientation, resetScroll, zoomIn, zoomOut, zoomed]);
 
   return (
     <DropdownButton
       icon={
         <Icon
           sx={{
-            ...(orientation === "horizontal"
-              ? { transform: "rotate(90deg)" }
+            ...(orientation === "Row"
+              ? { transform: "rotate(-90deg) scaleY(-1)" }
               : {}),
           }}
         />
       }
-      tooltip="Zoom Control"
-      tooltipPlacement={orientation === "horizontal" ? "top" : "bottom"}
-      dropdownPlacement={orientation === "horizontal" ? "bottom" : "right"}
-      onClick={onClick}
-      options={[
-        { label: "Zoom In", onClick: zoomIn, disabled: !!zoomed },
-        { label: "Zoom Out", onClick: zoomOut, disabled: !zoomed },
-      ]}
+      tooltip={`Zoom ${orientation}s In/Out`}
+      tooltipPlacement={orientation === "Row" ? "top" : "bottom"}
+      dropdownPlacement={orientation === "Row" ? "bottom" : "right"}
+      options={options}
     />
   );
 }
@@ -90,14 +103,7 @@ function DropdownButton({
     setOpen((prevOpen) => !prevOpen);
   };
 
-  const handleClose = (event: Event) => {
-    if (
-      anchorRef.current &&
-      anchorRef.current.contains(event.target as HTMLElement)
-    ) {
-      return;
-    }
-
+  const handleClose = () => {
     setOpen(false);
   };
 
@@ -133,17 +139,14 @@ function DropdownButton({
             }}
           >
             <Paper>
-              <ClickAwayListener
-                onClickAway={handleClose}
-                onClick={handleClose}
-              >
+              <ClickAwayListener onClickAway={handleClose}>
                 <MenuList>
                   {options.map((option) => (
                     <MenuItem
                       key={option.label}
-                      onClick={(_event) => {
+                      onClick={() => {
                         option.onClick();
-                        handleClose(_event as unknown as Event);
+                        handleClose();
                       }}
                       disabled={option.disabled}
                     >

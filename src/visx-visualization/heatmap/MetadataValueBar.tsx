@@ -98,8 +98,18 @@ export default function MetadataValueBar({
     data: { metadata: md },
   } = useData();
   const metadata = axis === "X" ? md.cols : md.rows;
-  const { scale: y } = useYScale();
-  const { scale: x } = useXScale();
+  const {
+    scale: y,
+    scroll: yScroll,
+    isZoomed: yIsZoomed,
+    setScroll: setYScroll,
+  } = useYScale();
+  const {
+    scale: x,
+    scroll: xScroll,
+    isZoomed: xIsZoomed,
+    setScroll: setXScroll,
+  } = useXScale();
   const rows = useRows();
   const columns = useColumns();
 
@@ -111,6 +121,26 @@ export default function MetadataValueBar({
   const values = useMetadataValues(axis);
   const metadataIsNumeric = useMetadataIsNumeric(axis);
   const sortOrder = useFilteredSortOrder(axis);
+
+  // Handle wheel scrolling for zoomed axes
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<SVGSVGElement>) => {
+      if (axis === "Y" && yIsZoomed) {
+        e.preventDefault();
+        setYScroll((prev: number) => {
+          const maxScrollY = Math.max(0, y.range()[0] - height);
+          return Math.max(0, Math.min(maxScrollY, prev + e.deltaY));
+        });
+      } else if (axis === "X" && xIsZoomed) {
+        e.preventDefault();
+        setXScroll((prev: number) => {
+          const maxScrollX = Math.max(0, x.range()[1] - width);
+          return Math.max(0, Math.min(maxScrollX, prev + e.deltaX));
+        });
+      }
+    },
+    [axis, yIsZoomed, xIsZoomed, setYScroll, setXScroll, y, x, height, width],
+  );
 
   const metadataValueColorScale = useMemo(() => {
     if (!values) {
@@ -134,8 +164,8 @@ export default function MetadataValueBar({
 
   const cellWidth = x.bandwidth();
 
-  const axisLabelPaddingX = Math.max(7.5, x.bandwidth());
-  const axisLabelPaddingY = Math.max(7.5, y.bandwidth());
+  const axisLabelPaddingX = Math.max(32, y.bandwidth() * 1.5, x.bandwidth());
+  const axisLabelPaddingY = Math.max(8, y.bandwidth());
 
   const axisLabelX = axis === "X" ? width / 2 : axisLabelPaddingX;
   const axisLabelY = axis === "X" ? axisLabelPaddingY : height / 2;
@@ -210,9 +240,9 @@ export default function MetadataValueBar({
           height += EXPANDED_ROW_PADDING * 2;
         }
         height = Math.ceil(height);
-        const width = axisLabelPaddingX;
+        const width = axisLabelPaddingX / 4;
 
-        const xVal = 2 * axisLabelPaddingX;
+        const xVal = axisLabelPaddingX * 1.5;
         const yVal = Math.ceil(y(key) as number);
 
         const newBar: BarHelper = {
@@ -295,71 +325,81 @@ export default function MetadataValueBar({
   };
 
   return (
-    <svg width={width} height={height}>
-      {bars.map((bar) => {
-        const {
-          value,
-          height,
-          width: barWidth,
-          color,
-          x: xVal,
-          y: yVal,
-          keys,
-        } = bar;
-        const shortenedValue =
-          value.toString().length > 20
-            ? value.toString().slice(0, 10) + "..."
-            : value;
-        return (
-          <g key={keys.join(",")} x={xVal} y={yVal}>
-            <rect
-              x={xVal}
-              y={yVal}
-              width={barWidth}
-              height={Math.ceil(height)}
-              fill={color}
-              data-value={value}
-              data-keys={keys.join(",")}
-              onMouseMove={onMouseMove}
-              onMouseOut={closeTooltip}
-              onMouseDown={(e) => {
-                const target = e.target as SVGRectElement;
-                target.style.filter = "brightness(1.5)";
-                const onMouseUp = () => {
-                  target.style.filter = "none";
-                  document.removeEventListener("mouseup", onMouseUp);
-                };
-                document.addEventListener("mouseup", onMouseUp);
-              }}
-            />
-            <Text
-              x={xVal}
-              y={textY(bar)}
-              className="text"
-              dx={axis == "X" ? 0 : cellWidth + 8}
-              dy={axis == "X" ? cellWidth + 8 : 0}
-              fill={theme.palette.text.primary}
-              angle={axis === "X" ? 90 : 0}
-              style={{
-                fontFamily: theme.typography.fontFamily,
-              }}
-              onMouseMove={(e) => {
-                openTooltip(
-                  {
-                    title: String(value),
-                    data: { ["key"]: value },
-                  },
-                  e.clientX,
-                  e.clientY,
-                );
-              }}
-              onMouseOut={closeTooltip}
-            >
-              {shortenedValue}
-            </Text>
-          </g>
-        );
-      })}
+    <svg width={width} height={height} onWheel={handleWheel}>
+      <g
+        transform={
+          axis === "Y" && yIsZoomed
+            ? `translate(0, ${-yScroll})`
+            : axis === "X" && xIsZoomed
+              ? `translate(${-xScroll}, 0)`
+              : undefined
+        }
+      >
+        {bars.map((bar) => {
+          const {
+            value,
+            height,
+            width: barWidth,
+            color,
+            x: xVal,
+            y: yVal,
+            keys,
+          } = bar;
+          const shortenedValue =
+            value.toString().length > 20
+              ? value.toString().slice(0, 10) + "..."
+              : value;
+          return (
+            <g key={keys.join(",")} x={xVal} y={yVal}>
+              <rect
+                x={xVal}
+                y={yVal}
+                width={barWidth}
+                height={Math.ceil(height)}
+                fill={color}
+                data-value={value}
+                data-keys={keys.join(",")}
+                onMouseMove={onMouseMove}
+                onMouseOut={closeTooltip}
+                onMouseDown={(e) => {
+                  const target = e.target as SVGRectElement;
+                  target.style.filter = "brightness(1.5)";
+                  const onMouseUp = () => {
+                    target.style.filter = "none";
+                    document.removeEventListener("mouseup", onMouseUp);
+                  };
+                  document.addEventListener("mouseup", onMouseUp);
+                }}
+              />
+              <Text
+                x={xVal}
+                y={textY(bar)}
+                className="text"
+                dx={axis == "X" ? 0 : cellWidth + 8}
+                dy={axis == "X" ? cellWidth + 8 : 0}
+                fill={theme.palette.text.primary}
+                angle={axis === "X" ? 90 : 0}
+                style={{
+                  fontFamily: theme.typography.fontFamily,
+                }}
+                onMouseMove={(e) => {
+                  openTooltip(
+                    {
+                      title: String(value),
+                      data: { ["key"]: value },
+                    },
+                    e.clientX,
+                    e.clientY,
+                  );
+                }}
+                onMouseOut={closeTooltip}
+              >
+                {shortenedValue}
+              </Text>
+            </g>
+          );
+        })}
+      </g>
       {sortOrder.length === 1 ? (
         <Text
           x={axisLabelX}

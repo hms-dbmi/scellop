@@ -101,6 +101,10 @@ function CanvasHeatmapRenderer() {
       yScale: yScale.scale,
       onReorder: handleReorder, // Final reordering on drop (fallback)
       onDragMove: handleReorder, // Real-time reordering during drag
+      xScrollOffset: xScale.scroll,
+      yScrollOffset: yScale.scroll,
+      xZoomed: xScale.isZoomed,
+      yZoomed: yScale.isZoomed,
     });
 
   // Handle mouse move for tooltips (when not dragging)
@@ -115,8 +119,8 @@ function CanvasHeatmapRenderer() {
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const x = e.clientX - rect.left + xScale.scroll;
+      const y = e.clientY - rect.top + yScale.scroll;
 
       const columnKey = xScale.scale.lookup(x);
       const rowKey = yScale.scale.lookup(y);
@@ -173,6 +177,8 @@ function CanvasHeatmapRenderer() {
       closeTooltip,
       rowLabel,
       columnLabel,
+      xScale.scroll,
+      yScale.scroll,
     ],
   );
 
@@ -197,23 +203,27 @@ function CanvasHeatmapRenderer() {
       ctx.lineWidth = 2;
       ctx.globalAlpha = 0.8;
 
+      // Adjust for scroll offset
+      const adjustedRowY = rowY - yScale.scroll;
+      const adjustedColX = colX - xScale.scroll;
+
       // Draw horizontal line (row highlight)
       ctx.beginPath();
-      ctx.moveTo(0, rowY + rowHeight / 2);
-      ctx.lineTo(width, rowY + rowHeight / 2);
+      ctx.moveTo(0, adjustedRowY + rowHeight / 2);
+      ctx.lineTo(width, adjustedRowY + rowHeight / 2);
       ctx.stroke();
 
       // Draw vertical line (column highlight)
       ctx.beginPath();
-      ctx.moveTo(colX + colWidth / 2, 0);
-      ctx.lineTo(colX + colWidth / 2, height);
+      ctx.moveTo(adjustedColX + colWidth / 2, 0);
+      ctx.lineTo(adjustedColX + colWidth / 2, height);
       ctx.stroke();
 
       // Draw highlighted cell border
       ctx.strokeStyle = theme.palette.primary.main;
       ctx.lineWidth = 3;
       ctx.globalAlpha = 1;
-      ctx.strokeRect(colX, rowY, colWidth, rowHeight);
+      ctx.strokeRect(adjustedColX, adjustedRowY, colWidth, rowHeight);
 
       ctx.restore();
     },
@@ -226,6 +236,8 @@ function CanvasHeatmapRenderer() {
       width,
       height,
       theme,
+      xScale.scroll,
+      yScale.scroll,
     ],
   );
 
@@ -238,7 +250,16 @@ function CanvasHeatmapRenderer() {
     if (!ctx) {
       return;
     }
-    ctx.clearRect(0, 0, width, height);
+
+    // Save the current transformation matrix
+    ctx.save();
+
+    // Apply scroll offset for zoomed axes
+    if (xScale.isZoomed || yScale.isZoomed) {
+      ctx.translate(-xScale.scroll, -yScale.scroll);
+    }
+
+    ctx.clearRect(xScale.scroll, yScale.scroll, width, height);
     const cellWidth = Math.ceil(xScale.scale.bandwidth());
     rows.forEach((row) => {
       const cellHeight = Math.ceil(yScale.scale.bandwidth(row));
@@ -284,7 +305,10 @@ function CanvasHeatmapRenderer() {
       }
     });
 
-    // Draw crosshair if dragging
+    // Restore the transformation matrix before drawing crosshair
+    ctx.restore();
+
+    // Draw crosshair if dragging (without scroll offset)
     drawCrosshair(ctx);
   }, [
     xScale,
@@ -296,12 +320,43 @@ function CanvasHeatmapRenderer() {
     heatmapTheme,
     theme,
     drawCrosshair,
+    xScale.isZoomed,
+    yScale.isZoomed,
+    xScale.scroll,
+    yScale.scroll,
+    width,
+    height,
   ]);
+
+  // Handle wheel scrolling for zoomed axes
+  const handleWheel = React.useCallback(
+    (e: React.WheelEvent<HTMLCanvasElement>) => {
+      if (!xScale.isZoomed && !yScale.isZoomed) return;
+
+      e.preventDefault();
+
+      if (xScale.isZoomed) {
+        xScale.setScroll((prev: number) => {
+          const maxScrollX = Math.max(0, xScale.scale.range()[1] - width);
+          return Math.max(0, Math.min(maxScrollX, prev + e.deltaX));
+        });
+      }
+
+      if (yScale.isZoomed) {
+        yScale.setScroll((prev: number) => {
+          const maxScrollY = Math.max(0, yScale.scale.range()[0] - height);
+          return Math.max(0, Math.min(maxScrollY, prev + e.deltaY));
+        });
+      }
+    },
+    [xScale, yScale, width, height],
+  );
 
   return (
     <canvas
       onMouseMove={handleMouseMove}
       onMouseOut={closeTooltip}
+      onWheel={handleWheel}
       ref={canvasRef}
       width={width}
       height={height}
