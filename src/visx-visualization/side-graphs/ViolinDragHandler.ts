@@ -22,6 +22,7 @@ export interface ViolinDragHandlerOptions {
   onReorder: (draggedValue: string, targetValue: string) => void;
   onDragMove?: (draggedValue: string, targetValue: string) => void;
   disabled?: boolean;
+  scrollOffset?: number;
 }
 
 export function useViolinDragHandler({
@@ -30,6 +31,7 @@ export function useViolinDragHandler({
   side,
   onReorder,
   onDragMove,
+  scrollOffset = 0,
   disabled = false,
 }: ViolinDragHandlerOptions) {
   const [dragState, setDragState] = useState<ViolinDragState>({
@@ -48,7 +50,11 @@ export function useViolinDragHandler({
   const getValueFromPosition = useCallback(
     (x: number, y: number) => {
       // For top violins, we use X position; for left violins, we use Y position
-      const position = side === "top" ? x : y;
+      let position = side === "top" ? x : y;
+
+      if (scrollOffset) {
+        position += scrollOffset;
+      }
 
       if (scale.lookup) {
         return scale.lookup(position) || null;

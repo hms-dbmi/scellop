@@ -226,13 +226,19 @@ export default function MetadataValueBar({
       const value = selectedMetadata
         .map((mdKey) => currentMd[mdKey])
         .join(", ");
+
+      let processedValue: string | number;
+      let color: string;
+
       if (!value) {
-        console.warn("No value for key", metadata[key], selectedMetadata);
-        return acc;
+        // Create a gray "[No Value]" bar instead of skipping
+        processedValue = "[No Value]";
+        color = theme.palette.grey[400];
+      } else {
+        processedValue = metadataIsNumeric ? parseInt(value, 10) : value;
+        // @ts-expect-error we're handling typechecking at runtime
+        color = metadataValueColorScale(processedValue);
       }
-      const processedValue = metadataIsNumeric ? parseInt(value, 10) : value;
-      // @ts-expect-error we're handling typechecking at runtime
-      const color = metadataValueColorScale(processedValue);
       if (axis === "Y") {
         let height = y.bandwidth(key);
         // Add padding around expanded bars
