@@ -31,14 +31,13 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
-  Divider,
   FormControl,
   Icon,
   IconButton,
   Stack,
   Switch,
   TextField,
+  Tooltip,
   Typography,
   useEventCallback,
 } from "@mui/material";
@@ -118,12 +117,12 @@ function useCanBeExpanded() {
   return section === "Row";
 }
 
-interface StickyColumnHeaderProps {
+interface StickyColumnHeaderProps extends React.PropsWithChildren {
   gridRow: number;
   gridColumn: number;
   ariaLabel: string;
   topOffset: number;
-  children: React.ReactNode;
+  textCenter?: boolean;
 }
 
 function StickyColumnHeader({
@@ -132,6 +131,7 @@ function StickyColumnHeader({
   ariaLabel,
   topOffset,
   children,
+  textCenter = false,
 }: StickyColumnHeaderProps) {
   return (
     <Box
@@ -144,16 +144,22 @@ function StickyColumnHeader({
         background: `linear-gradient(to bottom, ${theme.palette.background.paper} 75%, transparent 100%)`,
         backdropFilter: "blur(10px)",
         pb: 1,
+        minHeight: "40px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: textCenter ? "center" : "flex-start",
       })}
       zIndex={1}
     >
       <Typography
         component="label"
-        variant="subtitle1"
+        variant="caption"
         role="columnheader"
         display="flex"
         alignItems="center"
-        gap={1}
+        gap={0.5}
+        fontWeight={600}
+        fontSize="0.75rem"
       >
         {children}
       </Typography>
@@ -240,7 +246,6 @@ export function DisplayControls() {
 
   const collapseAllItems = useCollapseAllItems();
 
-  const itemLabel = useItemLabel();
   const pluralItemLabel = usePluralItemLabel();
 
   const [topStickySectionHeight, setTopStickySectionHeight] = useState(0);
@@ -305,94 +310,32 @@ export function DisplayControls() {
           <Typography variant="body2" mb={2}>
             {description}
           </Typography>
-          <FormControl fullWidth>
-            <TextField
-              placeholder="Search"
-              aria-label="Search items"
-              value={search}
-              onChange={updateSearch}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  setSearch("");
-                  e.preventDefault();
-                  e.stopPropagation();
-                }
-              }}
-              slotProps={{
-                input: {
-                  startAdornment: <Icon component={Search} sx={{ pr: 1 }} />,
-                  endAdornment: search ? (
-                    <IconButton onClick={() => setSearch("")} size="small">
-                      <Close />
-                    </IconButton>
-                  ) : null,
-                },
-              }}
-            />
-          </FormControl>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            mt={2}
-            useFlexGap
-          >
-            <Button
-              variant="text"
-              startIcon={<Restore />}
-              onClick={displayItems}
-              sx={{
-                opacity: hasHiddenItems ? 1 : 0,
-                transition: "opacity 0.2s ease-out",
-              }}
-              disabled={!hasHiddenItems}
-              size="small"
-            >
-              Set all to visible
-            </Button>
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{
-                visibility:
-                  hasHiddenItems || hasSelectedItems ? "visible" : "hidden",
-              }}
-            />
-            <Button
-              variant="text"
-              endIcon={<UnfoldLess />}
-              onClick={collapseAllItems}
-              sx={{
-                opacity: hasSelectedItems ? 1 : 0,
-                transition: "opacity 0.2s ease-out",
-              }}
-              disabled={!hasSelectedItems}
-              size="small"
-            >
-              Collapse all expanded {pluralItemLabel}
-            </Button>
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{
-                visibility:
-                  displayHideFiltered || hasSelectedItems
-                    ? "visible"
-                    : "hidden",
-              }}
-            />
-            <Button
-              variant="text"
-              endIcon={<VisibilityOff />}
-              onClick={hideFilteredItems}
-              sx={{
-                opacity: displayHideFiltered ? 1 : 0,
-                transition: "opacity 0.2s ease-out",
-              }}
-              disabled={!displayHideFiltered}
-              size="small"
-            >
-              Hide all filtered {pluralItemLabel}
-            </Button>
+          <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+            <FormControl sx={{ flex: 1 }}>
+              <TextField
+                placeholder="Search"
+                aria-label="Search items"
+                value={search}
+                onChange={updateSearch}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setSearch("");
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                }}
+                slotProps={{
+                  input: {
+                    startAdornment: <Icon component={Search} sx={{ pr: 1 }} />,
+                    endAdornment: search ? (
+                      <IconButton onClick={() => setSearch("")} size="small">
+                        <Close />
+                      </IconButton>
+                    ) : null,
+                  },
+                }}
+              />
+            </FormControl>
           </Stack>
         </Box>
         <DndContext
@@ -407,14 +350,19 @@ export function DisplayControls() {
             <Box
               sx={{
                 display: "grid",
-                gap: 1,
+                gap: 0.5,
                 gridTemplateColumns: canBeExpanded
-                  ? "1fr auto auto"
-                  : "1fr auto",
+                  ? "minmax(0, 1fr) 48px 48px"
+                  : "minmax(0, 1fr) 48px",
                 gridTemplateRows: "auto",
                 position: "relative",
+                "& > *": {
+                  minHeight: "40px",
+                  display: "flex",
+                  alignItems: "center",
+                },
               }}
-              role="list"
+              role="table"
             >
               <StickyColumnHeader
                 gridRow={1}
@@ -422,16 +370,66 @@ export function DisplayControls() {
                 ariaLabel={`${section} name and description`}
                 topOffset={topStickySectionHeight}
               >
-                <Icon sx={{ visibility: "hidden", pr: 1 }} />
-                {itemLabel}
+                <Icon component={DragHandle} sx={{ opacity: 0.3, mr: 0.5 }} />
+                {pluralItemLabel} ({filteredItems.length} / {items.length})
+                <Stack direction="row" spacing={0.5} mx={1}>
+                  <Tooltip title="Set all to visible">
+                    <span>
+                      <IconButton
+                        onClick={displayItems}
+                        sx={{
+                          opacity: hasHiddenItems ? 1 : 0.3,
+                          transition: "opacity 0.2s ease-out",
+                        }}
+                        disabled={!hasHiddenItems}
+                        size="small"
+                      >
+                        <Restore fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  {canBeExpanded && (
+                    <Tooltip title={`Collapse all expanded ${pluralItemLabel}`}>
+                      <span>
+                        <IconButton
+                          onClick={collapseAllItems}
+                          sx={{
+                            opacity: hasSelectedItems ? 1 : 0.3,
+                            transition: "opacity 0.2s ease-out",
+                          }}
+                          disabled={!hasSelectedItems}
+                          size="small"
+                        >
+                          <UnfoldLess fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                  <Tooltip title={`Hide all filtered ${pluralItemLabel}`}>
+                    <span>
+                      <IconButton
+                        onClick={hideFilteredItems}
+                        sx={{
+                          opacity: displayHideFiltered ? 1 : 0.3,
+                          transition: "opacity 0.2s ease-out",
+                        }}
+                        disabled={!displayHideFiltered}
+                        size="small"
+                      >
+                        <VisibilityOff fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </Stack>
               </StickyColumnHeader>
               <StickyColumnHeader
                 gridRow={1}
                 gridColumn={2}
                 ariaLabel={`Toggle visibility of ${section} items`}
                 topOffset={topStickySectionHeight}
+                textCenter
               >
-                Visible
+                <Visibility sx={{ fontSize: "1rem" }} />
               </StickyColumnHeader>
               {canBeExpanded && (
                 <StickyColumnHeader
@@ -439,8 +437,9 @@ export function DisplayControls() {
                   gridColumn={3}
                   ariaLabel={`Toggle between displaying ${section} items as heatmap cells or a bar plot.`}
                   topOffset={topStickySectionHeight}
+                  textCenter
                 >
-                  Expanded
+                  Expand
                   <InfoTooltip title="Toggle between displaying row as heatmap cells or a bar plot." />
                 </StickyColumnHeader>
               )}
@@ -563,52 +562,107 @@ function DisplayItem({ item }: DisplayItemProps) {
     <Box
       style={style}
       ref={setNodeRef}
-      role="listitem"
+      role="row"
       sx={{
         display: "grid",
-        gap: 1,
         gridRow: "auto",
-        gridColumn: "span 3",
+        gridColumn: `span ${canBeExpanded ? 3 : 2}`,
         gridTemplateColumns: "subgrid",
-        gridTemplateRows: "subgrid",
+        borderBottom: "1px solid",
+        borderColor: "divider",
+        "&:hover": {
+          backgroundColor: "action.hover",
+        },
+        py: 0.5,
       }}
     >
       <Box
         sx={{
           display: "flex",
           flexDirection: "row",
-          alignItems: "start",
-          spacing: 1,
+          alignItems: "center",
           gridColumn: 1,
+          minHeight: "40px",
+          pr: 1,
+          overflow: "hidden",
         }}
+        role="cell"
       >
         <Icon
           component={DragHandle}
           {...attributes}
           {...listeners}
-          sx={{ cursor: "pointer", mr: 2 }}
+          sx={{
+            cursor: "grab",
+            mr: 1,
+            fontSize: "1rem",
+            color: "action.active",
+            "&:active": { cursor: "grabbing" },
+          }}
           tabIndex={0}
         />
-        <Stack>
-          <Typography variant="subtitle2">{item}</Typography>
-          {subtitle && <Typography variant="body2">{subtitle}</Typography>}
-        </Stack>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography
+            variant="body2"
+            noWrap
+            sx={{
+              fontWeight: 500,
+              fontSize: "0.875rem",
+            }}
+          >
+            {item}
+          </Typography>
+          {subtitle && (
+            <Typography
+              variant="caption"
+              noWrap
+              sx={{
+                color: "text.secondary",
+                fontSize: "0.75rem",
+                display: "block",
+                lineHeight: 1.2,
+              }}
+            >
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
       </Box>
-      <Box gridColumn={2}>
+      <Box
+        gridColumn={2}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "40px",
+        }}
+        role="cell"
+      >
         <Switch
           name={item}
           onChange={toggleVisibility}
           aria-label={`Toggle visibility of ${section} ${item}`}
           checked={isVisible}
+          size="small"
         />
       </Box>
       {canBeExpanded && (
-        <Box gridColumn={3}>
+        <Box
+          gridColumn={3}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "40px",
+          }}
+          role="cell"
+        >
           <Switch
             name={item}
             onChange={toggleExpansion}
             checked={isExpanded}
             aria-label={`Toggle between displaying row ${item} as heatmap cells or a bar plot.`}
+            size="small"
           />
         </Box>
       )}
