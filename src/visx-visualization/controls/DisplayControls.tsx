@@ -59,13 +59,6 @@ function useItems() {
   return section === "Column" ? columns : rows;
 }
 
-function useItemLabel() {
-  const section = usePlotControlsContext();
-  return section === "Column"
-    ? useColumnConfig((s) => s.label)
-    : useRowConfig((s) => s.label);
-}
-
 function usePluralItemLabel() {
   const section = usePlotControlsContext();
   return section === "Column"

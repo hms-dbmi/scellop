@@ -32,6 +32,7 @@ const DimensionsContext = createContext<DimensionsContextType | null>(
 export type GridSizeTuple = [number, number, number];
 
 export const INITIAL_PROPORTIONS: GridSizeTuple = [0.3, 0.4, 0.3];
+const MIN_PANEL_SIZE = 48;
 
 // Helper function to get the initial size of the panels
 function getInitialSize(
@@ -96,21 +97,54 @@ export function DimensionsProvider({
         if (newSize > totalSize) {
           return prev;
         }
+
+        // Calculate the minimum total space needed for all panels
+        const minTotalNeeded = MIN_PANEL_SIZE * 3;
+        if (totalSize < minTotalNeeded) {
+          return prev; // Not enough space to maintain minimums
+        }
+
         switch (index) {
-          case 0:
-            newSizes[0] = newSize;
-            newSizes[1] = newSizes[1] + oldSize - newSize;
-            if (newSizes[0] < 0 || newSizes[1] < 0) {
-              return prev;
+          case 0: {
+            // Resizing the first panel
+            const clampedNewSize = Math.max(
+              MIN_PANEL_SIZE,
+              Math.min(newSize, totalSize - 2 * MIN_PANEL_SIZE),
+            );
+            const deltaChange = clampedNewSize - oldSize;
+
+            newSizes[0] = clampedNewSize;
+            // Distribute the change to panel 1, but ensure it stays above minimum
+            const newPanel1Size = newSizes[1] - deltaChange;
+            if (newPanel1Size >= MIN_PANEL_SIZE) {
+              newSizes[1] = newPanel1Size;
+            } else {
+              // If panel 1 would go below minimum, take from panel 2
+              newSizes[1] = MIN_PANEL_SIZE;
+              newSizes[2] = totalSize - newSizes[0] - newSizes[1];
             }
             break;
-          case 1:
-            newSizes[1] = newSize - newSizes[0];
-            newSizes[2] = totalSize - newSize;
-            if (newSizes[1] < 0 || newSizes[2] < 0) {
-              return prev;
+          }
+          case 1: {
+            // Resizing based on the cumulative size of panels 0 and 1
+            const maxCumulative = totalSize - MIN_PANEL_SIZE; // Leave space for panel 2
+            const minCumulative = MIN_PANEL_SIZE + MIN_PANEL_SIZE; // Both panels 0 and 1 need minimum
+            const clampedCumulative = Math.max(
+              minCumulative,
+              Math.min(newSize, maxCumulative),
+            );
+
+            newSizes[1] = clampedCumulative - newSizes[0];
+            newSizes[2] = totalSize - clampedCumulative;
+
+            // Ensure panel 1 doesn't go below minimum
+            if (newSizes[1] < MIN_PANEL_SIZE) {
+              newSizes[1] = MIN_PANEL_SIZE;
+              newSizes[0] = clampedCumulative - MIN_PANEL_SIZE;
+              newSizes[2] = totalSize - clampedCumulative;
             }
             break;
+          }
         }
         return newSizes as [number, number, number];
       });
