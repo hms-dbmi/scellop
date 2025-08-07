@@ -1,16 +1,23 @@
 import React, { ChangeEvent, useId } from "react";
 import { useColorScale } from "../../contexts/ColorScaleContext";
-import { HEATMAP_THEMES_LIST, HeatmapTheme } from "../../utils/heatmap-themes";
+import {
+  HEATMAP_THEMES_LIST,
+  HeatmapTheme,
+  heatmapThemes,
+  heatmapThemesInverted,
+} from "../../utils/heatmap-themes";
 
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { useTheme } from "@mui/material/styles";
 import { useEventCallback } from "@mui/material/utils";
 
 import {
   Box,
   Checkbox,
+  Divider,
   FormControlLabel,
   FormHelperText,
   Slider,
@@ -32,10 +39,64 @@ import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useFraction } from "../../contexts/FractionContext";
 import {
   NORMALIZATIONS,
+  NORMALIZATION_DESCRIPTIONS,
   useNormalization,
 } from "../../contexts/NormalizationContext";
-import InfoTooltip from "../InfoTooltip";
 import LabelledSwitch from "../LabelledSwitch";
+
+function ThemePreview({
+  theme,
+  isInverted,
+}: {
+  theme: HeatmapTheme;
+  isInverted?: boolean;
+}) {
+  const muiTheme = useTheme();
+
+  const themeList = isInverted ? heatmapThemesInverted : heatmapThemes;
+  const interpolator = themeList[theme];
+
+  // Generate 10 color samples from the theme
+  const colorSamples = Array.from({ length: 10 }, (_, i) =>
+    interpolator(i / 9),
+  );
+
+  // Zero value uses the background color
+  const zeroColor = muiTheme.palette.background.default;
+
+  return (
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Typography sx={{ textTransform: "capitalize", minWidth: 80 }}>
+        {theme}
+      </Typography>
+      <Divider orientation="vertical" flexItem />
+      <Stack direction="row" spacing={0.25}>
+        {/* Zero value indicator */}
+        <Box
+          sx={{
+            width: 12,
+            height: 12,
+            backgroundColor: zeroColor,
+            border: `1px solid ${muiTheme.palette.divider}`,
+            borderRadius: 1,
+          }}
+        />
+        {/* Color gradient samples */}
+        {colorSamples.map((color, index) => (
+          <Box
+            key={index}
+            sx={{
+              width: 12,
+              height: 12,
+              backgroundColor: color,
+              borderRadius: 1,
+            }}
+          />
+        ))}
+      </Stack>
+    </Stack>
+  );
+}
 
 export function HeatmapThemeControl() {
   const { setHeatmapTheme, heatmapTheme, isInverted, toggleInvert } =
@@ -50,9 +111,10 @@ export function HeatmapThemeControl() {
     toggleInvert();
     trackEvent("Toggle Heatmap Inversion", checked ? "Inverted" : "Normal");
   });
+
   return (
     <Stack direction="column" spacing={1} width="100%">
-      <Stack direction="row" spacing={2} alignItems="center">
+      <Stack direction="row" spacing={2} alignItems="center" flexWrap={"wrap"}>
         <FormControl sx={{ flex: 1 }}>
           <InputLabel id="heatmap-theme-select-label">
             Heatmap Themes
@@ -64,15 +126,18 @@ export function HeatmapThemeControl() {
             onChange={handleThemeChange}
             variant="outlined"
             label="Heatmap Themes"
-            sx={{ textTransform: "capitalize", minWidth: 200 }}
+            sx={{ textTransform: "capitalize", minWidth: "100%" }}
           >
             {HEATMAP_THEMES_LIST.map((theme) => (
               <MenuItem
                 key={theme}
                 value={theme}
-                sx={{ textTransform: "capitalize" }}
+                sx={{
+                  py: 1,
+                  px: 2,
+                }}
               >
-                {theme}
+                <ThemePreview theme={theme} isInverted={isInverted} />
               </MenuItem>
             ))}
           </Select>
@@ -83,8 +148,7 @@ export function HeatmapThemeControl() {
           }
           label={
             <Stack direction="row" spacing={1} alignItems="center">
-              <Box>Reverse Scale Colors</Box>
-              <InfoTooltip title="Reverse the color scale for the heatmap. This can be necessary for certain themes to work with light/dark mode." />
+              <Box>Invert</Box>
             </Stack>
           }
         />
@@ -92,6 +156,9 @@ export function HeatmapThemeControl() {
       <FormHelperText>
         Select a theme for the heatmap visualization. This will change the color
         scale used to represent data values.
+        <Divider orientation="horizontal" sx={{ my: 1 }} />
+        The &quot;Invert&quot; option allows reversing the color scale, which
+        can be necessary for certain themes to work with light/dark mode.
       </FormHelperText>
     </Stack>
   );
@@ -183,14 +250,47 @@ export function NormalizationControl() {
           variant="outlined"
           label="Heatmap Normalization"
           sx={{ textTransform: "capitalize", minWidth: 200 }}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                maxWidth: 400,
+                "& .MuiMenuItem-root": {
+                  whiteSpace: "normal",
+                  wordWrap: "break-word",
+                },
+              },
+            },
+          }}
         >
           {NORMALIZATIONS.map((normalization) => (
             <MenuItem
               key={normalization}
               value={normalization}
-              sx={{ textTransform: "capitalize" }}
+              sx={{
+                textTransform: "capitalize",
+                maxWidth: "100%", // Limit width to prevent overly wide dropdowns
+                whiteSpace: "normal", // Allow text wrapping
+              }}
             >
-              {normalization}
+              <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  {normalization}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.75rem",
+                    textTransform: "none",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word",
+                    lineHeight: 1.3,
+                    maxWidth: "100%",
+                  }}
+                >
+                  {NORMALIZATION_DESCRIPTIONS[normalization]}
+                </Typography>
+              </Stack>
             </MenuItem>
           ))}
         </Select>

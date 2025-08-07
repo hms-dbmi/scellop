@@ -32,7 +32,7 @@ function TabPanel(props: TabPanelProps) {
       role="tabpanel"
       hidden={value !== index}
       flexGrow={1}
-      display={value === index ? "flex" : "none"}
+      display={value === index ? "block" : "none"}
       width="100%"
       height="100%"
       {...other}
