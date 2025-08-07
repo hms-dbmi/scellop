@@ -9,7 +9,9 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { useEventCallback } from "@mui/material/utils";
 
 import {
+  Box,
   Checkbox,
+  FormControlLabel,
   FormHelperText,
   Slider,
   Stack,
@@ -32,43 +34,66 @@ import {
   NORMALIZATIONS,
   useNormalization,
 } from "../../contexts/NormalizationContext";
+import InfoTooltip from "../InfoTooltip";
 import LabelledSwitch from "../LabelledSwitch";
 
 export function HeatmapThemeControl() {
-  const { setHeatmapTheme, heatmapTheme } = useColorScale();
+  const { setHeatmapTheme, heatmapTheme, isInverted, toggleInvert } =
+    useColorScale();
   const trackEvent = useTrackEvent();
 
   const handleThemeChange = useEventCallback((e: SelectChangeEvent) => {
     setHeatmapTheme(e.target.value as HeatmapTheme);
     trackEvent("Change Heatmap Theme", e.target.value);
   });
+  const handleInvertChange = useEventCallback((_, checked: boolean) => {
+    toggleInvert();
+    trackEvent("Toggle Heatmap Inversion", checked ? "Inverted" : "Normal");
+  });
   return (
-    <FormControl fullWidth>
-      <InputLabel id="heatmap-theme-select-label">Heatmap Themes</InputLabel>
-      <Select
-        labelId="heatmap-theme-select-label"
-        id="heatmap-theme-select"
-        value={heatmapTheme}
-        onChange={handleThemeChange}
-        variant="outlined"
-        label="Heatmap Themes"
-        sx={{ textTransform: "capitalize", minWidth: 200 }}
-      >
-        {HEATMAP_THEMES_LIST.map((theme) => (
-          <MenuItem
-            key={theme}
-            value={theme}
-            sx={{ textTransform: "capitalize" }}
+    <Stack direction="column" spacing={1} width="100%">
+      <Stack direction="row" spacing={2} alignItems="center">
+        <FormControl sx={{ flex: 1 }}>
+          <InputLabel id="heatmap-theme-select-label">
+            Heatmap Themes
+          </InputLabel>
+          <Select
+            labelId="heatmap-theme-select-label"
+            id="heatmap-theme-select"
+            value={heatmapTheme}
+            onChange={handleThemeChange}
+            variant="outlined"
+            label="Heatmap Themes"
+            sx={{ textTransform: "capitalize", minWidth: 200 }}
           >
-            {theme}
-          </MenuItem>
-        ))}
-      </Select>
+            {HEATMAP_THEMES_LIST.map((theme) => (
+              <MenuItem
+                key={theme}
+                value={theme}
+                sx={{ textTransform: "capitalize" }}
+              >
+                {theme}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControlLabel
+          control={
+            <Checkbox checked={isInverted} onChange={handleInvertChange} />
+          }
+          label={
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Box>Reverse Scale Colors</Box>
+              <InfoTooltip title="Reverse the color scale for the heatmap. This can be necessary for certain themes to work with light/dark mode." />
+            </Stack>
+          }
+        />
+      </Stack>
       <FormHelperText>
         Select a theme for the heatmap visualization. This will change the color
         scale used to represent data values.
       </FormHelperText>
-    </FormControl>
+    </Stack>
   );
 }
 
@@ -147,32 +172,35 @@ export function NormalizationControl() {
   }
 
   return (
-    <FormControl fullWidth>
-      <InputLabel id={id}>Heatmap Normalization</InputLabel>
-      <Select
-        labelId={id}
-        id={`${id}-select`}
-        value={normalization}
-        onChange={changeNormalization}
-        variant="outlined"
-        label="Heatmap Normalization"
-        sx={{ textTransform: "capitalize", minWidth: 200 }}
-      >
-        {NORMALIZATIONS.map((normalization) => (
-          <MenuItem
-            key={normalization}
-            value={normalization}
-            sx={{ textTransform: "capitalize" }}
-          >
-            {normalization}
-          </MenuItem>
-        ))}
-      </Select>
+    <Stack direction="column" spacing={1} width="100%">
+      <FormControl fullWidth>
+        <InputLabel id={id}>Heatmap Normalization</InputLabel>
+        <Select
+          labelId={id}
+          id={`${id}-select`}
+          value={normalization}
+          onChange={changeNormalization}
+          variant="outlined"
+          label="Heatmap Normalization"
+          sx={{ textTransform: "capitalize", minWidth: 200 }}
+        >
+          {NORMALIZATIONS.map((normalization) => (
+            <MenuItem
+              key={normalization}
+              value={normalization}
+              sx={{ textTransform: "capitalize" }}
+            >
+              {normalization}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
       <FormHelperText>
         Select a normalization method for the heatmap. This will affect how data
         values are scaled and displayed.
       </FormHelperText>
-    </FormControl>
+    </Stack>
   );
 }
 

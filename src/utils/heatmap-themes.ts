@@ -34,22 +34,15 @@ export const heatmapThemes = {
   reds: interpolateReds,
   purples: interpolatePurples,
   greys: interpolateGreys,
-  invertedViridis: invertInterpolation(interpolateViridis),
-  invertedInferno: invertInterpolation(interpolateInferno),
-  invertedMagma: invertInterpolation(interpolateMagma),
-  invertedPlasma: invertInterpolation(interpolatePlasma),
-  invertedCividis: invertInterpolation(interpolateCividis),
-  invertedWarm: invertInterpolation(interpolateWarm),
-  invertedCool: invertInterpolation(interpolateCool),
-  invertedCubehelix: invertInterpolation(interpolateCubehelixDefault),
-  invertedGreens: invertInterpolation(interpolateGreens),
-  invertedBlues: invertInterpolation(interpolateBlues),
-  invertedOranges: invertInterpolation(interpolateOranges),
-  invertedReds: invertInterpolation(interpolateReds),
-  invertedPurples: invertInterpolation(interpolatePurples),
-  invertedGreys: invertInterpolation(interpolateGreys),
 };
 
 export type HeatmapTheme = keyof typeof heatmapThemes;
+
+export const heatmapThemesInverted = Object.fromEntries(
+  Object.entries(heatmapThemes).map(([key, value]) => [
+    key,
+    invertInterpolation(value),
+  ]),
+) as Record<HeatmapTheme, (t: number) => string>;
 
 export const HEATMAP_THEMES_LIST = Object.keys(heatmapThemes) as HeatmapTheme[];

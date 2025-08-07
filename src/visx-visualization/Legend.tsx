@@ -1,9 +1,11 @@
+import { useTheme } from "@mui/material/styles";
 import React, { useId } from "react";
 import { useColorScale } from "../contexts/ColorScaleContext";
 
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Tooltip, Typography, TypographyProps } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
 
+import { usePanelDimensions } from "../contexts/DimensionsContext";
 import {
   useIsNormalized,
   useNormalization,
@@ -11,9 +13,50 @@ import {
 
 const legendThresholds = new Array(100).fill(0).map((_, i) => i / 100);
 
+function ZeroValueIndicator({ isVertical = false }: { isVertical?: boolean }) {
+  const theme = useTheme();
+  return (
+    <Tooltip title="Zero values are indicated with the current visualization background color.">
+      <Box
+        sx={{
+          height: 32,
+          width: 32, // Keep square for vertical, match legend height for horizontal
+          backgroundColor: theme.palette.background.default,
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: 4,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          px: isVertical ? 0.5 : 0,
+          py: isVertical ? 1 : 0, // Add vertical padding for better spacing
+        }}
+      >
+        <ValueLabel color={theme.palette.text.primary}>0</ValueLabel>
+      </Box>
+    </Tooltip>
+  );
+}
+
+function ValueLabel({
+  color,
+  children,
+  ...rest
+}: TypographyProps & { color: string }) {
+  return (
+    <Typography variant="body2" style={{ color }} {...rest}>
+      {children}
+    </Typography>
+  );
+}
+
 export default function Legend() {
   const { scale: colors, maxValue } = useColorScale();
   const id = useId() + "-legend";
+  const { width: panelWidth } = usePanelDimensions("left_top");
+
+  // Determine if we should use vertical layout based on panel width
+  const isVertical = panelWidth < 128;
 
   const minColor = colors(0);
   const legendColors = legendThresholds.map((value) => [
@@ -27,40 +70,71 @@ export default function Legend() {
   const legendLabel = isNormalized
     ? `Percent of all cells in ${normalization}`
     : "Counts";
-  const minValueLabel = isNormalized ? "0%" : "0";
+  const minValueLabel = isNormalized ? ">0%" : "1";
   const maxValueLabel = isNormalized ? "100%" : maxValue;
 
+  const gradientDirection = isVertical ? "to top" : "to right";
+  const gradientBackground = `linear-gradient(${gradientDirection}, ${legendColors.map(([c, position]) => `${c} ${position}`).join(", ")})`;
+
   return (
-    <Stack height="100%" gap="1rem" paddingX={1}>
-      <Stack width="100%">
-        <InputLabel id="heatmap-legend-label">{legendLabel}</InputLabel>
+    <Box
+      sx={{
+        height: "100%",
+        px: 1,
+        display: "grid",
+        gridTemplateRows: isVertical
+          ? "auto 1fr auto" // label, legend, zero indicator
+          : "auto 1fr", // label, main content
+        gap: 1,
+      }}
+    >
+      {/* Legend Label */}
+      <InputLabel id="heatmap-legend-label">{legendLabel}</InputLabel>
+
+      {/* Main legend area */}
+      <Box
+        sx={{
+          display: isVertical ? "flex" : "grid",
+          flexDirection: isVertical ? "column-reverse" : "unset",
+          gridTemplateColumns: isVertical ? undefined : "auto 1fr",
+          gap: 2,
+          alignItems: isVertical ? "center" : "start", // Align to top for horizontal
+          justifyContent: isVertical ? "center" : undefined,
+        }}
+      >
+        {!isVertical && <ZeroValueIndicator isVertical={false} />}
+
         <Box
           id={id}
           data-testid="heatmap-legend"
           sx={{
-            width: "100%",
-            display: "flex",
-            flexGrow: 1,
-            background: `linear-gradient(to right, ${legendColors.map(([c, position]) => `${c} ${position}`).join(", ")})`,
+            maxWidth: isVertical ? 32 : "100%",
+            height: isVertical ? "100%" : 32,
+            minHeight: isVertical ? 100 : undefined,
+            flexBasis: isVertical ? "100%" : undefined,
+            background: gradientBackground,
             borderRadius: 4,
+            display: "flex",
+            flexShrink: 1,
+            flexGrow: 1,
+            flexDirection: isVertical ? "column-reverse" : "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            px: isVertical ? 0.5 : 2, // minimal padding for vertical, horizontal needs space for readability
+            py: isVertical ? 1 : 0, // Add vertical padding for better spacing
           }}
         >
-          <Stack
-            justifyContent="space-between"
-            direction={"row"}
-            width="100%"
-            px={2}
-            py={0.75}
-          >
-            <Typography variant="body2" style={{ color: maxColor }}>
-              {minValueLabel}
-            </Typography>
-            <Typography variant="body2" style={{ color: minColor }}>
-              {maxValueLabel}
-            </Typography>
-          </Stack>
+          <ValueLabel color={maxColor}>{minValueLabel}</ValueLabel>
+          <ValueLabel color={minColor}>{maxValueLabel}</ValueLabel>
         </Box>
-      </Stack>
-    </Stack>
+      </Box>
+
+      {/* Zero indicator when vertical (below legend) */}
+      {isVertical && (
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <ZeroValueIndicator isVertical={true} />
+        </Box>
+      )}
+    </Box>
   );
 }
