@@ -11,7 +11,7 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { useTheme } from "@mui/material/styles";
+import { styled, useTheme } from "@mui/material/styles";
 import { useEventCallback } from "@mui/material/utils";
 
 import {
@@ -44,6 +44,18 @@ import {
 } from "../../contexts/NormalizationContext";
 import LabelledSwitch from "../LabelledSwitch";
 
+interface ColorBoxProps {
+  color: string;
+}
+
+const ColorBox = styled(Box)<ColorBoxProps>(({ theme, color }) => ({
+  width: theme.spacing(1.5),
+  height: theme.spacing(1.5),
+  backgroundColor: color,
+  borderRadius: theme.spacing(0.5),
+  border: `1px solid ${theme.palette.divider}`,
+}));
+
 function ThemePreview({
   theme,
   isInverted,
@@ -72,27 +84,10 @@ function ThemePreview({
       <Divider orientation="vertical" flexItem />
       <Stack direction="row" spacing={0.25}>
         {/* Zero value indicator */}
-        <Box
-          sx={{
-            width: 12,
-            height: 12,
-            backgroundColor: zeroColor,
-            border: `1px solid ${muiTheme.palette.divider}`,
-            borderRadius: 1,
-          }}
-        />
+        <ColorBox color={zeroColor} />
         {/* Color gradient samples */}
         {colorSamples.map((color, index) => (
-          <Box
-            key={index}
-            sx={{
-              width: 12,
-              height: 12,
-              backgroundColor: color,
-              borderRadius: 1,
-              border: `1px solid ${muiTheme.palette.divider}`,
-            }}
-          />
+          <ColorBox key={index} color={color} />
         ))}
       </Stack>
     </Stack>
