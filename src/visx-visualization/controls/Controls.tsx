@@ -90,6 +90,7 @@ function ThemePreview({
               height: 12,
               backgroundColor: color,
               borderRadius: 1,
+              border: `1px solid ${muiTheme.palette.divider}`,
             }}
           />
         ))}
