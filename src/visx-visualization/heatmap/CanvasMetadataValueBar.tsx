@@ -3,8 +3,10 @@ import { scaleLinear, scaleOrdinal } from "@visx/scale";
 import {
   interpolatePlasma,
   schemePaired,
-  schemePastel1,
-  schemePastel2,
+  schemeSet1,
+  schemeSet2,
+  schemeSet3,
+  schemeTableau10,
 } from "d3";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useColumns, useData, useRows } from "../../contexts/DataContext";
@@ -54,6 +56,24 @@ const useFilteredSortOrder = (axis: "X" | "Y") => {
 //   ctx.font = previousFont;
 //   return width;
 // };
+
+// Use different categorical color schemes for each sort
+const categoricalSchemes = [
+  [...schemePaired],
+  [...schemeSet1],
+  [...schemeSet2],
+  [...schemeSet3],
+  [...schemeTableau10],
+];
+
+// Use different color schemes for each sort to distinguish them
+const numericColorSchemes = [
+  [interpolatePlasma(0), interpolatePlasma(1)],
+  ["#f7fcfd", "#00441b"], // Blue to dark green
+  ["#fff7ec", "#7f0000"], // Light orange to dark red
+  ["#f7f4f9", "#49006a"], // Light purple to dark purple
+  ["#fff7fb", "#023858"], // Light pink to dark blue
+];
 
 export default function CanvasMetadataValueBar({
   axis,
@@ -126,45 +146,43 @@ export default function CanvasMetadataValueBar({
         const min = Math.min(...numericValues);
         const max = Math.max(...numericValues);
 
-        // Use different color schemes for each sort to distinguish them
-        const colorSchemes = [
-          [interpolatePlasma(0), interpolatePlasma(1)],
-          ["#f7fcfd", "#00441b"], // Blue to dark green
-          ["#fff7ec", "#7f0000"], // Light orange to dark red
-          ["#f7f4f9", "#49006a"], // Light purple to dark purple
-          ["#fff7fb", "#023858"], // Light pink to dark blue
-        ];
-        const schemeIndex = sortIndex % colorSchemes.length;
+        const schemeIndex = sortIndex % numericColorSchemes.length;
 
         colorScale = scaleLinear<string>({
           domain: [min, max],
-          range: colorSchemes[schemeIndex],
+          range: numericColorSchemes[schemeIndex],
         });
       } else {
         // Use different categorical color schemes for each sort
-        const categoricalSchemes = [
-          [...schemePaired],
-          [...schemePastel1],
-          [...schemePastel2],
-          ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"],
-          ["#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#aec7e8", "#ffbb78"],
-        ];
         const schemeIndex = sortIndex % categoricalSchemes.length;
+
+        // Create a consistently sorted domain for stable color assignment
+        const uniqueValues = Array.from(new Set(values.map(String)));
+        const sortedDomain = uniqueValues.sort((a, b) => {
+          // Sort "[No Value]" to the end, then alphabetically
+          if (a === "[No Value]") return 1;
+          if (b === "[No Value]") return -1;
+          return a.localeCompare(b);
+        });
 
         colorScale = scaleOrdinal<string, string>({
           range: categoricalSchemes[schemeIndex],
-          domain: Array.from(new Set(values.map(String))),
+          domain: sortedDomain,
         });
       }
 
       // Calculate positioning for multiple bars
       const barSpacing = 4;
+      const labelSpacing = 16; // Space for label above each bar
       const totalBars = sortOrder.length;
       const barThickness =
         axis === "X"
           ? Math.max(
               12,
-              (axisLabelPaddingY - barSpacing * (totalBars - 1)) / totalBars,
+              (axisLabelPaddingY -
+                barSpacing * (totalBars - 1) -
+                labelSpacing * totalBars) /
+                totalBars,
             )
           : Math.max(
               16,
@@ -206,7 +224,8 @@ export default function CanvasMetadataValueBar({
           height = Math.ceil(height);
 
           const xVal =
-            axisLabelPaddingX * 1.5 + sortIndex * (barThickness + barSpacing);
+            axisLabelPaddingX * 1.5 +
+            sortIndex * (barThickness + barSpacing + labelSpacing);
 
           const newBar: BarHelper = {
             value: processedValue,
@@ -240,7 +259,9 @@ export default function CanvasMetadataValueBar({
         } else if (axis === "X") {
           const width = x.bandwidth();
           const yVal =
-            2 * axisLabelPaddingY + sortIndex * (barThickness + barSpacing);
+            axisLabelPaddingY +
+            labelSpacing +
+            sortIndex * (barThickness + barSpacing + labelSpacing);
           const xVal = x(key)!;
 
           const newBar: BarHelper = {
@@ -428,7 +449,7 @@ export default function CanvasMetadataValueBar({
         ctx.setLineDash([]); // Reset line dash
       }
 
-      // Draw text only if there's a single sort order (single bar type)
+      // Draw metadata label text only if there's a single sort order
       if (sortOrder.length === 1) {
         const shortenedValue =
           value.toString().length > 20
@@ -454,7 +475,7 @@ export default function CanvasMetadataValueBar({
         if (axis === "X") {
           // Rotated text for X axis
           ctx.save();
-          ctx.translate(xVal, textY + cellWidth + 8);
+          ctx.translate(xVal + barWidth / 2, textY + cellWidth + 8);
           ctx.rotate(Math.PI / 2);
           ctx.textAlign = "start";
           ctx.textBaseline = "middle";
@@ -469,7 +490,65 @@ export default function CanvasMetadataValueBar({
       }
     });
 
-    // Draw insertion line indicator when dragging
+    ctx.restore(); // End the scroll transform
+
+    // Draw individual bar labels when there are multiple sorts (outside scroll context)
+    if (sortOrder.length > 1) {
+      const barSpacing = 4;
+      const labelSpacing = 16;
+      const totalBars = sortOrder.length;
+      const barThickness =
+        axis === "X"
+          ? Math.max(
+              12,
+              (axisLabelPaddingY -
+                barSpacing * (totalBars - 1) -
+                labelSpacing * totalBars) /
+                totalBars,
+            )
+          : Math.max(
+              16,
+              (axisLabelPaddingX / 3 - barSpacing * (totalBars - 1)) /
+                totalBars,
+            );
+
+      sortOrder.forEach((sort, sortIndex) => {
+        const labelText = sort.key.split("_").join(" ");
+
+        ctx.fillStyle = theme.palette.text.primary;
+        ctx.font = `${theme.typography.fontSize - 1}px ${theme.typography.fontFamily}`;
+
+        if (axis === "Y") {
+          // Position label to the left of the bar (not overlapping)
+          const labelX =
+            axisLabelPaddingX * 1.5 +
+            sortIndex * (barThickness + barSpacing + labelSpacing) -
+            8; // Position to the left of the bar
+          const labelY = height / 2;
+
+          ctx.save();
+          ctx.translate(labelX, labelY);
+          ctx.rotate(-Math.PI / 2);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(labelText, 0, 0);
+          ctx.restore();
+        } else {
+          // Position label above the bar
+          const labelX = width / 2;
+          const labelY =
+            axisLabelPaddingY +
+            sortIndex * (barThickness + barSpacing + labelSpacing) -
+            4;
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          ctx.fillText(labelText, labelX, labelY);
+        }
+      });
+    }
+
+    // Draw insertion line indicator when dragging (also outside scroll context for Y labels)
     if (isDragging && targetSegment) {
       ctx.save();
       ctx.strokeStyle = theme.palette.secondary.main;
@@ -478,6 +557,11 @@ export default function CanvasMetadataValueBar({
       ctx.globalAlpha = 0.8;
 
       if (axis === "Y") {
+        // Apply scroll transform for the insertion line since it needs to move with content
+        if (yIsZoomed) {
+          ctx.translate(0, -yScroll);
+        }
+
         // Draw horizontal line above the target segment
         const lineY = targetSegment.y - 2;
         ctx.beginPath();
@@ -507,6 +591,11 @@ export default function CanvasMetadataValueBar({
         );
         ctx.stroke();
       } else {
+        // Apply scroll transform for the insertion line since it needs to move with content
+        if (xIsZoomed) {
+          ctx.translate(-xScroll, 0);
+        }
+
         // Draw vertical line before the target segment
         const lineX = targetSegment.x - 2;
         ctx.beginPath();
@@ -540,9 +629,7 @@ export default function CanvasMetadataValueBar({
       ctx.restore();
     }
 
-    ctx.restore();
-
-    // Draw axis label if single sort order
+    // Draw axis label if single sort order (outside scroll context)
     if (sortOrder.length === 1) {
       ctx.fillStyle = theme.palette.text.primary;
       ctx.font = font;
