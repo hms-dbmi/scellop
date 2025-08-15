@@ -78,7 +78,12 @@ export default function HeatmapXAxis() {
   );
 
   return (
-    <svg width={x.range()[1]} style={{ zIndex: 1 }} onWheel={handleWheel}>
+    <svg
+      width={x.range()[1]}
+      height={tickLabelSize}
+      style={{ zIndex: 1 }}
+      onWheel={handleWheel}
+    >
       <SVGBackgroundColorFilter
         color={theme.palette.background.default}
         id={filterId}
