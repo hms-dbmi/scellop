@@ -1,6 +1,7 @@
 import Box, { BoxProps } from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import DialogActions from "@mui/material/DialogActions";
+import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -129,10 +130,12 @@ export default function ControlsModalTabs({
               flexGrow={1}
               height="100%"
             >
+              <ThemeControl />
               <HeatmapThemeControl />
               <NormalizationControl />
-              <ThemeControl />
+              <Divider flexItem />
               <FractionControl />
+              <Divider flexItem />
               <ZoomBandwidthControl />
             </Stack>
           </TabPanel>

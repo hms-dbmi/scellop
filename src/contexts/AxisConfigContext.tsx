@@ -22,6 +22,10 @@ export interface AxisConfig {
   zoomedBandwidth?: number;
 }
 
+interface InitializedAxisConfig extends AxisConfig {
+  pluralLabel: string;
+}
+
 interface AxisConfigActions {
   setLabel: (label: string) => void;
   setCreateHref: (createHref: (tick: string) => string) => void;
@@ -31,7 +35,7 @@ interface AxisConfigActions {
   setZoomBandwidth: (zoomSize: number) => void;
 }
 
-export type AxisConfigStore = AxisConfig & AxisConfigActions;
+export type AxisConfigStore = InitializedAxisConfig & AxisConfigActions;
 
 const createAxisConfigStore =
   (direction: "Row" | "Column") => (initialArgs: AxisConfig) => {

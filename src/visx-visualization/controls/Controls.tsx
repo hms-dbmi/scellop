@@ -151,10 +151,9 @@ export function HeatmapThemeControl() {
       </Stack>
       <FormHelperText>
         Select a theme for the heatmap visualization. This will change the color
-        scale used to represent data values.
-        <Divider orientation="horizontal" sx={{ my: 1 }} />
-        The &quot;Invert&quot; option allows reversing the color scale, which
-        can be necessary for certain themes to work with light/dark mode.
+        scale used to represent data values. The &quot;Invert&quot; option
+        allows reversing the color scale, which can be necessary for certain
+        themes to work with light/dark mode.
       </FormHelperText>
     </Stack>
   );
@@ -303,12 +302,14 @@ export function NormalizationControl() {
 interface ZoomBandwidthControlProps {
   axisConfig: AxisConfigStore;
   label: string;
+  sublabel: string;
   id?: string;
 }
 
 function ZoomBandwidthFormControl({
   axisConfig,
   label,
+  sublabel,
   id = label.toLowerCase().replace(" ", "-"),
 }: ZoomBandwidthControlProps) {
   const { zoomed, zoomedBandwidth, toggleZoom, setZoomBandwidth } = axisConfig;
@@ -323,32 +324,35 @@ function ZoomBandwidthFormControl({
   );
 
   return (
-    <FormControl fullWidth>
-      <Typography
-        id={`${id}-zoom-bandwidth-label`}
-        gutterBottom
-        component="label"
-      >
-        {label}
-      </Typography>
-      <Stack direction="row" spacing={2} alignItems="center">
-        <Checkbox
-          checked={zoomed}
-          onChange={toggleZoom}
-          aria-label={`Enable zoom on ${axisConfig.label} axis`}
-        />
-        <Slider
-          value={zoomedBandwidth}
-          disabled={!zoomed}
-          min={5}
-          max={50}
-          step={1}
-          onChange={handleBandwidthChange}
-          aria-labelledby={`${id}-zoom-bandwidth-label`}
-          valueLabelDisplay="auto"
-        />
-      </Stack>
-    </FormControl>
+    <Stack>
+      <FormControl fullWidth>
+        <Typography
+          id={`${id}-zoom-bandwidth-label`}
+          gutterBottom
+          component="label"
+        >
+          {label}
+        </Typography>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Checkbox
+            checked={zoomed}
+            onChange={toggleZoom}
+            aria-label={`Enable zoom on ${sublabel} axis`}
+          />
+          <Slider
+            value={zoomedBandwidth}
+            disabled={!zoomed}
+            min={5}
+            max={50}
+            step={1}
+            onChange={handleBandwidthChange}
+            aria-labelledby={`${id}-zoom-bandwidth-label`}
+            valueLabelDisplay="auto"
+          />
+        </Stack>
+      </FormControl>
+      <FormHelperText>Adjust the zoom bandwidth for {sublabel}.</FormHelperText>
+    </Stack>
   );
 }
 
@@ -366,10 +370,12 @@ export function ZoomBandwidthControl() {
       <ZoomBandwidthFormControl
         axisConfig={rowConfig}
         label="Column Width Zoom"
+        sublabel={colConfig.pluralLabel}
       />
       <ZoomBandwidthFormControl
         axisConfig={colConfig}
         label="Row Height Zoom"
+        sublabel={rowConfig.pluralLabel}
       />
     </Stack>
   );
