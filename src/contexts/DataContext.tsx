@@ -134,6 +134,14 @@ interface DataContextActions {
    * Revalidates the row sort order, updating the row order to match the current sort order.
    */
   revalidateRowSort: () => void;
+  /**
+   * Removes all rows that have zero values across the indicated column
+   */
+  removeZeroedValuesFromColumn: (column: string) => void;
+  /**
+   * Removes all columns that have zero values across the indicated row
+   */
+  removeZeroedValuesFromRow: (row: string) => void;
 }
 
 type DataContextStore = DataContextState & DataContextActions;
@@ -406,6 +414,38 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
           );
           return { rowOrder, rowSortInvalidated: false };
         });
+      },
+      removeZeroedValuesFromColumn: (column: string) => {
+        const { data, removedRows } = get();
+        const rowsToRemove = new Set<string>();
+        data.countsMatrix.forEach(([row, col, value]) => {
+          if (col === column && value === 0 && !removedRows.has(row)) {
+            rowsToRemove.add(row);
+          }
+        });
+        if (rowsToRemove.size > 0) {
+          set((state) => {
+            const newRemovedRows = new Set(state.removedRows);
+            rowsToRemove.forEach((row) => newRemovedRows.add(row));
+            return { removedRows: newRemovedRows };
+          });
+        }
+      },
+      removeZeroedValuesFromRow: (row: string) => {
+        const { data, removedColumns } = get();
+        const columnsToRemove = new Set<string>();
+        data.countsMatrix.forEach(([r, col, value]) => {
+          if (r === row && value === 0 && !removedColumns.has(col)) {
+            columnsToRemove.add(col);
+          }
+        });
+        if (columnsToRemove.size > 0) {
+          set((state) => {
+            const newRemovedColumns = new Set(state.removedColumns);
+            columnsToRemove.forEach((col) => newRemovedColumns.add(col));
+            return { removedColumns: newRemovedColumns };
+          });
+        }
       },
     })),
   );

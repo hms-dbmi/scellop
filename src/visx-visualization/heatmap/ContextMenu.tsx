@@ -87,6 +87,54 @@ const HideColumn = () => {
   return null;
 };
 
+const HideZeroedRows = () => {
+  const { removeZeroedValuesFromColumn } = useData();
+  const { tooltipData } = useTooltipData();
+  const pluralRowLabel = useRowConfig((store) => store.pluralLabel);
+  const columnLabel = useColumnConfig((store) => store.label);
+
+  const trackEvent = useTrackEvent();
+  const columnValue = tooltipData?.data?.[columnLabel] as string;
+
+  const onClick = useEventCallback(() => {
+    trackEvent(
+      `Hide Zeroed ${pluralRowLabel} from ${columnLabel}`,
+      columnValue,
+    );
+    removeZeroedValuesFromColumn(columnValue);
+  });
+
+  if (columnValue) {
+    return (
+      <ContextMenuItem onClick={onClick}>
+        Hide {pluralRowLabel} with no data for {columnLabel} {columnValue}
+      </ContextMenuItem>
+    );
+  }
+};
+
+const HideZeroedColumns = () => {
+  const { removeZeroedValuesFromRow } = useData();
+  const { tooltipData } = useTooltipData();
+  const rowLabel = useRowConfig((store) => store.label);
+  const pluralColumnLabel = useColumnConfig((store) => store.pluralLabel);
+  const trackEvent = useTrackEvent();
+  const rowValue = tooltipData?.data?.[rowLabel] as string;
+
+  const onClick = useEventCallback(() => {
+    trackEvent(`Hide Zeroed ${pluralColumnLabel} from ${rowLabel}`, rowValue);
+    removeZeroedValuesFromRow(rowValue);
+  });
+
+  if (rowValue) {
+    return (
+      <ContextMenuItem onClick={onClick}>
+        Hide {pluralColumnLabel} with no data for {rowLabel} {rowValue}
+      </ContextMenuItem>
+    );
+  }
+};
+
 const RestoreHiddenRows = () => {
   const { removedRows, resetRemovedRows } = useData();
   const rowLabel = useRowConfig((store) => store.label);
@@ -170,7 +218,7 @@ const CollapseRows = () => {
   return <ContextMenuItem onClick={onClick}>Clear Selection</ContextMenuItem>;
 };
 
-const MoveToStart = ({ dimension }: { dimension: "row" | "column" }) => {
+const MoveToStart = ({ dimension }: { dimension: "Row" | "Column" }) => {
   const moveRowToStart = useMoveRowToStart();
   const moveColumnToStart = useMoveColumnToStart();
   const { tooltipData } = useTooltipData();
@@ -200,7 +248,7 @@ const MoveToStart = ({ dimension }: { dimension: "row" | "column" }) => {
   );
 };
 
-const MoveToEnd = ({ dimension }: { dimension: "row" | "column" }) => {
+const MoveToEnd = ({ dimension }: { dimension: "Row" | "Column" }) => {
   const moveRowToEnd = useMoveRowToEnd();
   const moveColumnToEnd = useMoveColumnToEnd();
 
@@ -231,7 +279,7 @@ const MoveToEnd = ({ dimension }: { dimension: "row" | "column" }) => {
   );
 };
 
-const SortDimension = ({ dimension }: { dimension: "row" | "column" }) => {
+const SortDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
   const { sortColumns, sortRows, colSortOrder, rowSortOrder } = useData((s) => {
     return {
       sortColumns: s.setColumnSortOrder,
@@ -303,7 +351,7 @@ const ContextMenuComponent = () => {
         <RestoreHiddenRows />
         <SortDimension dimension="Row" />
         <RestoreHiddenColumns />
-        <SortDimension dimension="column" />
+        <SortDimension dimension="Column" />
         {hasRow && (
           <>
             <ContextMenuSeparator />
@@ -313,6 +361,7 @@ const ContextMenuComponent = () => {
             <MoveToEnd dimension="Row" />
             <ExpandRow />
             <CollapseRows />
+            <HideZeroedColumns />
           </>
         )}
         {hasColumn && (
@@ -320,8 +369,9 @@ const ContextMenuComponent = () => {
             <ContextMenuSeparator />
             <ContextMenuLabel>Columns ({columnLabel}s)</ContextMenuLabel>
             <HideColumn />
-            <MoveToStart dimension="column" />
-            <MoveToEnd dimension="column" />
+            <MoveToStart dimension="Column" />
+            <MoveToEnd dimension="Column" />
+            <HideZeroedRows />
           </>
         )}
       </ContextMenuContent>
