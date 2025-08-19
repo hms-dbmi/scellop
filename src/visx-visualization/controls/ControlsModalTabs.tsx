@@ -5,7 +5,7 @@ import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { PlotControlSection } from ".";
 import {
   useColumnConfig,
@@ -56,6 +56,49 @@ interface ControlsModalTabsProps {
   hideControls: () => void;
 }
 
+const scrollToSection = (section: string) => {
+  document.getElementById(section)?.scrollIntoView({
+    behavior: "smooth",
+  });
+};
+
+const rowSubItems = [
+  {
+    id: "row-sorts",
+    label: "Sorts",
+    onClick: (e: React.MouseEvent) => {
+      e.preventDefault();
+      scrollToSection("sort-options-Row");
+    },
+  },
+  {
+    id: "row-display",
+    label: "Display Options",
+    onClick: (e: React.MouseEvent) => {
+      e.preventDefault();
+      scrollToSection("display-options-Row");
+    },
+  },
+];
+const columnSubItems = [
+  {
+    id: "column-sorts",
+    label: "Sorts",
+    onClick: (e: React.MouseEvent) => {
+      e.preventDefault();
+      scrollToSection("sort-options-Column");
+    },
+  },
+  {
+    id: "column-display",
+    label: "Display Options",
+    onClick: (e: React.MouseEvent) => {
+      e.preventDefault();
+      scrollToSection("display-options-Column");
+    },
+  },
+];
+
 /**
  * ControlsModalTabs component renders a set of tabs for controlling plot settings.
  */
@@ -76,55 +119,6 @@ export default function ControlsModalTabs({
 
   const rowLabel = useRowConfig((state) => state.pluralLabel);
   const columnLabel = useColumnConfig((state) => state.pluralLabel);
-
-  // Helper function to scroll to section
-  const scrollToSection = useCallback((section: string) => {
-    document.getElementById(section)?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, []);
-
-  const { rowSubItems, columnSubItems } = useMemo(
-    () => ({
-      rowSubItems: [
-        {
-          id: "row-sorts",
-          label: "Sorts",
-          onClick: (e: React.MouseEvent) => {
-            e.preventDefault();
-            scrollToSection("sort-options-Row");
-          },
-        },
-        {
-          id: "row-display",
-          label: "Display Options",
-          onClick: (e: React.MouseEvent) => {
-            e.preventDefault();
-            scrollToSection("display-options-Row");
-          },
-        },
-      ],
-      columnSubItems: [
-        {
-          id: "column-sorts",
-          label: "Sorts",
-          onClick: (e: React.MouseEvent) => {
-            e.preventDefault();
-            scrollToSection("sort-options-Column");
-          },
-        },
-        {
-          id: "column-display",
-          label: "Display Options",
-          onClick: (e: React.MouseEvent) => {
-            e.preventDefault();
-            scrollToSection("display-options-Column");
-          },
-        },
-      ],
-    }),
-    [scrollToSection],
-  );
 
   const handleSubItemClick = useCallback(
     (subItem: SubItem) => (event: React.MouseEvent<HTMLElement>) => {
