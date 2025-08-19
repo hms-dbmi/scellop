@@ -7,11 +7,10 @@ import { CellPopData, CellPopTheme } from "./cellpop-schema";
 import { AxisConfig } from "./contexts/AxisConfigContext";
 import { OuterContainerRefProvider } from "./contexts/ContainerRefContext";
 import { Dimensions, GridSizeTuple } from "./contexts/DimensionsContext";
+import { DisableableControls } from "./contexts/DisabledControlProvider";
 import { Providers } from "./contexts/Providers";
 import { loadHuBMAPData } from "./dataLoading";
 import VizContainer from "./visx-visualization/layout";
-
-type DisableableControls = "fraction" | "selection" | "theme";
 
 interface CellPopConfig {
   yAxis: AxisConfig;

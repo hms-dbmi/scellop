@@ -22,7 +22,7 @@ import {
 } from "./DisabledControlProvider";
 import { EventTrackerProvider } from "./EventTrackerProvider";
 import { SelectedValuesProvider } from "./ExpandedValuesContext";
-import { FractionProvider } from "./FractionContext";
+import { GraphType, GraphTypeProvider } from "./FractionContext";
 import { MetadataConfigProvider } from "./MetadataConfigContext";
 import { NormalizationProvider } from "./NormalizationContext";
 import { ScaleProvider } from "./ScaleContext";
@@ -37,7 +37,7 @@ interface CellPopConfigProps extends PropsWithChildren {
   xAxis: AxisConfig;
   yAxis: AxisConfig;
   selectedDimension?: "X" | "Y";
-  fraction?: boolean;
+  graphType?: GraphType;
   selectedValues?: string[];
   normalization?: "Row" | "Column";
   customTheme?: Theme;
@@ -58,7 +58,7 @@ export function Providers({
   data,
   dimensions,
   theme,
-  fraction = false,
+  graphType = "Bars",
   selectedValues = [],
   selectedDimension = "Y",
   xAxis: xAxisConfig,
@@ -85,7 +85,7 @@ export function Providers({
                       dimensions={dimensions}
                       initialProportions={initialProportions}
                     >
-                      <FractionProvider initialFraction={fraction}>
+                      <GraphTypeProvider initialGraphType={graphType}>
                         <NormalizationProvider
                           initialNormalization={initialNormalization}
                         >
@@ -109,7 +109,7 @@ export function Providers({
                             </ColorScaleProvider>
                           </ScaleProvider>
                         </NormalizationProvider>
-                      </FractionProvider>
+                      </GraphTypeProvider>
                     </DimensionsProvider>
                   </CellPopThemeProvider>
                 </TooltipDataProvider>

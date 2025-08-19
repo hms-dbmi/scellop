@@ -6,7 +6,7 @@ import { AxisRight } from "@visx/axis";
 import { formatPrefix, max } from "d3";
 import { useColumnCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
-import { useFraction } from "../../contexts/FractionContext";
+import { useGraphType } from "../../contexts/FractionContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import HeatmapXAxis from "../heatmap/HeatmapXAxis";
 import Bars from "./Bars";
@@ -18,8 +18,9 @@ const useColumnCountsScale = () => {
   const { height, width } = usePanelDimensions("center_top");
   const columnCounts = useColumnCounts();
   const { tickLabelSize } = useXScale();
-  const fraction = useFraction((s) => s.fraction);
-  const domainMax = fraction ? 100 : (max(Object.values(columnCounts)) ?? 0);
+  const { graphType } = useGraphType();
+  const domainMax =
+    graphType === "Violins" ? 100 : (max(Object.values(columnCounts)) ?? 0);
   const rangeMax = height - tickLabelSize;
   return [
     useCountsScale([domainMax, 0], [height - tickLabelSize, 0]),
@@ -56,9 +57,9 @@ export function TopGraphScale() {
 
   const theme = useTheme();
 
-  const fraction = useFraction((s) => s.fraction);
+  const violins = useGraphType((s) => s.graphType === "Violins");
 
-  if (fraction) {
+  if (violins) {
     return null;
   }
 
@@ -93,14 +94,14 @@ function TopViolin() {
  * Container component for the top graph.
  */
 export default function TopGraph() {
-  const { fraction } = useFraction();
+  const violins = useGraphType((s) => s.graphType === "Violins");
   const { height } = usePanelDimensions("center_top");
 
   return (
     <Stack direction="column" width="100%" height={height} overflow="hidden">
       <HeatmapXAxis />
       <XAxisLabel />
-      {fraction ? <TopViolin /> : <TopBar />}
+      {violins ? <TopViolin /> : <TopBar />}
     </Stack>
   );
 }

@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from "react";
 import { createContext, useContext } from "../utils/context";
 
 export type DisableableControls =
-  | "fraction"
+  | "graphType"
   | "selection"
   | "theme"
   | "normalization";
@@ -20,8 +20,8 @@ export const useDisabledControls = () => useContext(DisabledControlContext);
 export const useThemeControlIsDisabled = () =>
   useDisabledControls().includes("theme");
 
-export const useFractionControlIsDisabled = () =>
-  useDisabledControls().includes("fraction");
+export const useGraphTypeControlIsDisabled = () =>
+  useDisabledControls().includes("graphType");
 
 export const useSelectionControlIsDisabled = () =>
   useDisabledControls().includes("selection");

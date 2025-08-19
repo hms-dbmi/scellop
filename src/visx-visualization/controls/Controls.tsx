@@ -31,12 +31,17 @@ import {
 } from "../../contexts/AxisConfigContext";
 import { useSetTheme } from "../../contexts/CellPopThemeContext";
 import {
-  useFractionControlIsDisabled,
+  useGraphTypeControlIsDisabled,
   useNormalizationControlIsDisabled,
   useThemeControlIsDisabled,
 } from "../../contexts/DisabledControlProvider";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
-import { useFraction } from "../../contexts/FractionContext";
+import {
+  GRAPH_TYPES,
+  GRAPH_TYPE_DESCRIPTIONS,
+  GraphType,
+  useGraphType,
+} from "../../contexts/FractionContext";
 import {
   NORMALIZATIONS,
   NORMALIZATION_DESCRIPTIONS,
@@ -189,34 +194,66 @@ export function ThemeControl() {
   );
 }
 
-export function FractionControl() {
-  const { fraction, setFraction } = useFraction();
+export function GraphTypeControl() {
+  const { graphType, setGraphType } = useGraphType();
   const trackEvent = useTrackEvent();
-  const changeFraction = useEventCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const newFraction = Boolean(event.target.checked);
-      setFraction(newFraction);
-      const fraction = newFraction ? "Fraction" : "Count";
-      trackEvent("Change Graph Type", fraction);
-    },
-  );
-  const fractionIsDisabled = useFractionControlIsDisabled();
+  const changeGraphType = useEventCallback((event: SelectChangeEvent) => {
+    const newGraphType = event.target.value as GraphType;
+    setGraphType(newGraphType);
+    trackEvent("Change Graph Type", newGraphType);
+  });
+  const fractionIsDisabled = useGraphTypeControlIsDisabled();
+  const id = useId();
+
   if (fractionIsDisabled) {
     return null;
   }
 
   return (
-    <LabelledSwitch
-      label="Graph Type"
-      leftLabel="Count"
-      rightLabel="Fraction"
-      onChange={changeFraction}
-      checked={fraction}
-      tooltip={
-        "Toggle between displaying bars representing total cell counts, or violins representing fractions of data in the plot."
-      }
-      tooltipIsHelper
-    />
+    <Stack direction="column" spacing={1} width="100%">
+      <FormControl fullWidth>
+        <InputLabel id={id}>Graph Type</InputLabel>
+        <Select
+          labelId={id}
+          id={`${id}-select`}
+          value={graphType}
+          onChange={changeGraphType}
+          variant="outlined"
+          label="Graph Type"
+          sx={{ minWidth: 200 }}
+        >
+          {GRAPH_TYPES.map((type) => (
+            <MenuItem key={type} value={type}>
+              <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  {type}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.75rem",
+                    textTransform: "none",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word",
+                    lineHeight: 1.3,
+                    maxWidth: "100%",
+                  }}
+                >
+                  {GRAPH_TYPE_DESCRIPTIONS[type]}
+                </Typography>
+              </Stack>
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormHelperText>
+        Select the type of graph to display in the side panels. &quot;Bars&quot;
+        shows simple bar charts, &quot;Stacked Bars&quot; shows segmented bars
+        with colors matching the heatmap cells, and &quot;Violins&quot; shows
+        violin plots representing data distributions.
+      </FormHelperText>
+    </Stack>
   );
 }
 

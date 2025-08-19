@@ -7,14 +7,17 @@ import {
   useColumnConfig,
   useRowConfig,
 } from "../../contexts/AxisConfigContext";
+import { useColorScale } from "../../contexts/ColorScaleContext";
 import {
   useColumnCounts,
   useColumnMaxes,
   useData,
+  useFractionDataMap,
   useRowCounts,
   useRowMaxes,
 } from "../../contexts/DataContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
+import { useGraphType } from "../../contexts/FractionContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
@@ -88,6 +91,19 @@ export default function Bars({
   const expandedSize = useExpandedSize(orientation);
   const { setRowOrder, setColumnOrder } = useData();
   const normalization = useNormalization((s) => s.normalization);
+  const colorScale = useColorScale();
+  const { graphType } = useGraphType();
+
+  // Get data for stacked bars - use appropriate data map based on normalization
+  const dataMap = useFractionDataMap(normalization);
+
+  // Get the opposite dimension values for stacking
+  const stackValues = useData((s) =>
+    orientation === "columns" ? s.rowOrder : s.columnOrder,
+  );
+  const removedStackValues = useData((s) =>
+    orientation === "columns" ? s.removedRows : s.removedColumns,
+  );
 
   // Get the appropriate scale context based on orientation
   const xScale = useXScale();
@@ -139,21 +155,94 @@ export default function Bars({
 
   const bars = useMemo(() => {
     const entries = Object.entries(data);
-    return entries
-      .map(([key, value]) => {
-        if (orientation === "rows" && selectedValues?.has(key)) {
-          return null;
+    const result = [];
+
+    for (const [key, totalValue] of entries) {
+      if (orientation === "rows" && selectedValues?.has(key)) {
+        continue;
+      }
+
+      const scaledKey = categoricalScale(key);
+      const isVertical = orientation === "columns";
+      const barSize = categoricalScale.bandwidth();
+      const scaledPosition = scaledKey ?? 0;
+      const [rangeStart, rangeEnd] = numericalScale.range();
+
+      // Background dimensions and position
+      const backgroundX = isVertical ? scaledPosition : domainLimit - rangeEnd;
+      const backgroundY = isVertical
+        ? domainLimit - rangeStart
+        : scaledPosition;
+      const backgroundWidth = isVertical ? barSize : rangeEnd;
+      const backgroundHeight = isVertical ? rangeStart : barSize;
+
+      // Create segments based on graph type
+      const segments = [];
+
+      if (graphType === "Stacked Bars") {
+        // Create stacked segments
+        let currentOffset = 0;
+
+        // Filter out removed stack values
+        const activeStackValues = stackValues.filter(
+          (stackValue) => !removedStackValues.has(stackValue),
+        );
+
+        for (const stackValue of activeStackValues) {
+          // Get the cell value for this combination
+          const cellKey =
+            orientation === "columns"
+              ? `${stackValue}-${key}`
+              : `${key}-${stackValue}`;
+          const cellValue = dataMap[cellKey as keyof typeof dataMap] || 0;
+
+          if (cellValue > 0) {
+            // Scale the segment value
+            const scaledSegmentValue = numericalScale(
+              currentOffset + cellValue,
+            );
+            const scaledCurrentOffset = numericalScale(currentOffset);
+
+            // Calculate segment dimensions
+            const segmentLength = scaledSegmentValue - scaledCurrentOffset;
+
+            const segmentX = isVertical
+              ? scaledPosition
+              : domainLimit - scaledSegmentValue;
+            const segmentY = isVertical
+              ? domainLimit - scaledSegmentValue
+              : scaledPosition;
+            const segmentWidth = isVertical ? barSize : segmentLength;
+            const segmentHeight = isVertical ? segmentLength : barSize;
+
+            // Get color based on normalization
+            let color: string;
+            if (normalization === "None") {
+              color = colorScale.scale(cellValue);
+            } else {
+              // For normalized data, use percentage scale
+              const normalizedValue =
+                normalization === "Row" ? cellValue / totalValue : cellValue;
+              color = colorScale.percentageScale(normalizedValue);
+            }
+
+            segments.push({
+              x: segmentX,
+              y: segmentY,
+              width: segmentWidth,
+              height: segmentHeight,
+              value: cellValue,
+              stackValue,
+              color,
+            });
+
+            currentOffset += cellValue;
+          }
         }
-
-        const scaledKey = categoricalScale(key);
-        const scaledValue = numericalScale(value);
-        const isVertical = orientation === "columns";
-        // Use the actual bandwidth from the scale to match heatmap cells exactly
-        const barSize = categoricalScale.bandwidth();
-
-        const scaledPosition = scaledKey ?? 0;
+      } else {
+        // Create a single unsegmented bar for "Bars" mode
+        const scaledValue = numericalScale(totalValue);
         const barLength = scaledValue;
-        const [rangeStart, rangeEnd] = numericalScale.range();
 
         // Bar dimensions and position
         const x = isVertical ? scaledPosition : domainLimit - scaledValue;
@@ -161,33 +250,43 @@ export default function Bars({
         const barWidth = isVertical ? barSize : barLength;
         const barHeight = isVertical ? barLength : barSize;
 
-        // Background dimensions and position
-        const backgroundX = isVertical ? x : domainLimit - rangeEnd;
-        const backgroundY = isVertical ? domainLimit - rangeStart : y;
-        const backgroundWidth = isVertical ? barSize : rangeEnd;
-        const backgroundHeight = isVertical ? rangeStart : barSize;
-
-        return {
+        segments.push({
           x,
           y,
           width: barWidth,
           height: barHeight,
-          value: key,
-          backgroundX,
-          backgroundY,
-          backgroundHeight,
-          backgroundWidth,
-          key,
-        };
-      })
-      .filter((bar) => bar !== null);
+          value: totalValue,
+          stackValue: key, // Use the bar key as stack value for consistency
+          color: theme.palette.text.primary, // Use default color for simple bars
+        });
+      }
+
+      result.push({
+        key,
+        totalValue,
+        segments,
+        backgroundX,
+        backgroundY,
+        backgroundWidth,
+        backgroundHeight,
+      });
+    }
+
+    return result;
   }, [
     orientation,
     data,
+    dataMap,
     categoricalScale,
     numericalScale,
     domainLimit,
     selectedValues,
+    stackValues,
+    removedStackValues,
+    colorScale,
+    normalization,
+    graphType,
+    theme.palette.text.primary,
   ]);
 
   // Create axes for expanded values
@@ -267,12 +366,12 @@ export default function Bars({
     // Draw bars
     bars.forEach((bar) => {
       // Get the position of this bar in the ordered data for consistent striping
-      const barIndex = orderedValues.indexOf(bar.value);
+      const barIndex = orderedValues.indexOf(bar.key);
 
       // Highlight dragged bar
-      const isDraggedBar = isDragging && draggedValue === bar.value;
+      const isDraggedBar = isDragging && draggedValue === bar.key;
 
-      // Draw background stripe pattern (simplified - you may want to implement stripes)
+      // Draw background stripe pattern
       ctx.fillStyle =
         barIndex % 2 === 0
           ? theme.palette.action.hover
@@ -284,15 +383,17 @@ export default function Bars({
         bar.backgroundHeight,
       );
 
-      // Draw bar with drag highlight
-      ctx.fillStyle = isDraggedBar
-        ? theme.palette.primary.main
-        : theme.palette.text.primary;
-      ctx.strokeStyle = theme.palette.background.default;
-      ctx.lineWidth = isDraggedBar ? 2 : 1;
+      // Draw stacked segments
+      bar.segments.forEach((segment) => {
+        ctx.fillStyle = isDraggedBar
+          ? theme.palette.primary.main
+          : segment.color;
+        ctx.strokeStyle = theme.palette.background.default;
+        ctx.lineWidth = isDraggedBar ? 2 : 1;
 
-      ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
-      ctx.strokeRect(bar.x, bar.y, bar.width, bar.height);
+        ctx.fillRect(segment.x, segment.y, segment.width, segment.height);
+        ctx.strokeRect(segment.x, segment.y, segment.width, segment.height);
+      });
     });
 
     // Restore the transformation matrix
@@ -346,15 +447,38 @@ export default function Bars({
       });
 
       if (hitBar) {
-        const metadataValues = metadata?.[hitBar.value];
+        const metadataValues = metadata?.[hitBar.key];
+
+        // Find which segment was hit for more detailed tooltip
+        let hitSegment = null;
+        for (const segment of hitBar.segments) {
+          if (
+            x >= segment.x &&
+            x <= segment.x + segment.width &&
+            y >= segment.y &&
+            y <= segment.y + segment.height
+          ) {
+            hitSegment = segment;
+            break;
+          }
+        }
+
+        const tooltipData: Record<string, string | number> = {
+          "Total Count": data[hitBar.key],
+          [label]: hitBar.key,
+          ...metadataValues,
+        };
+
+        if (hitSegment && graphType === "Stacked Bars") {
+          const segmentLabel = orientation === "columns" ? "Row" : "Column";
+          tooltipData[`${segmentLabel} Value`] = hitSegment.stackValue;
+          tooltipData["Segment Count"] = hitSegment.value;
+        }
+
         openTooltip(
           {
-            title: hitBar.value,
-            data: {
-              "Cell Count": data[hitBar.value],
-              [label]: hitBar.value,
-              ...metadataValues,
-            },
+            title: hitBar.key,
+            data: tooltipData,
           },
           e.clientX,
           e.clientY,

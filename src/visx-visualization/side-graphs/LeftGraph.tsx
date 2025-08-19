@@ -6,7 +6,7 @@ import React from "react";
 import { useRowCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
-import { useFraction } from "../../contexts/FractionContext";
+import { useGraphType } from "../../contexts/FractionContext";
 import { useYScale } from "../../contexts/ScaleContext";
 import HeatmapYAxis from "../heatmap/HeatmapYAxis";
 import Bars from "./Bars";
@@ -17,9 +17,9 @@ import { useCountsScale } from "./hooks";
 const useXAxisCountsScale = () => {
   const { width, height } = usePanelDimensions("left_middle");
   const rowCounts = useRowCounts();
-  const fraction = useFraction((s) => s.fraction);
+  const violins = useGraphType((s) => s.graphType === "Violins");
   const { tickLabelSize } = useYScale();
-  const domainMax = fraction ? 100 : (max(Object.values(rowCounts)) ?? 0);
+  const domainMax = violins ? 100 : (max(Object.values(rowCounts)) ?? 0);
   const rangeMax = width - tickLabelSize;
   return [
     useCountsScale([0, domainMax], [0, rangeMax]),
@@ -55,9 +55,9 @@ export function LeftGraphScale() {
   const axisScale = xScale.copy().range([width, tickLabelSize * 1.25]);
   const axisTotalWidth = width - tickLabelSize;
 
-  const fraction = useFraction((s) => s.fraction);
+  const violins = useGraphType((s) => s.graphType === "Violins");
   const theme = useTheme();
-  if (fraction) {
+  if (violins) {
     return null;
   }
   return (
@@ -92,12 +92,12 @@ function LeftViolin() {
 export default function LeftGraph() {
   const { height, width } = usePanelDimensions("left_middle");
 
-  const { fraction } = useFraction();
+  const violins = useGraphType((s) => s.graphType === "Violins");
   return (
     <Stack direction="row" width={width} height={height} overflow="hidden">
       <HeatmapYAxis />
       <YAxisLabel height={height} side="left" />
-      {fraction ? <LeftViolin /> : <LeftBar />}
+      {violins ? <LeftViolin /> : <LeftBar />}
     </Stack>
   );
 }

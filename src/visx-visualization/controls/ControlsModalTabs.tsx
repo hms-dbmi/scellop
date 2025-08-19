@@ -13,7 +13,7 @@ import {
 } from "../../contexts/AxisConfigContext";
 import { useIsMobile } from "../../hooks/useMediaQueries";
 import {
-  FractionControl,
+  GraphTypeControl,
   HeatmapThemeControl,
   NormalizationControl,
   ThemeControl,
@@ -286,7 +286,7 @@ export default function ControlsModalTabs({
               <HeatmapThemeControl />
               <NormalizationControl />
               <Divider flexItem />
-              <FractionControl />
+              <GraphTypeControl />
               <Divider flexItem />
               <ZoomBandwidthControl />
             </Stack>

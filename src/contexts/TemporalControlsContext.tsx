@@ -11,17 +11,22 @@ import {
 } from "./AxisConfigContext";
 import { useThemeHistory } from "./CellPopThemeContext";
 import { useDataHistory } from "./DataContext";
-import { useThemeControlIsDisabled } from "./DisabledControlProvider";
+import {
+  useGraphTypeControlIsDisabled,
+  useNormalizationControlIsDisabled,
+  useSelectionControlIsDisabled,
+  useThemeControlIsDisabled,
+} from "./DisabledControlProvider";
 import { useTrackEvent } from "./EventTrackerProvider";
 import { useExpandedValuesHistory } from "./ExpandedValuesContext";
-import { useFractionHistory } from "./FractionContext";
+import { useGraphTypeHistory } from "./FractionContext";
 import { useNormalizationHistory } from "./NormalizationContext";
 import { useSelectedDimensionHistory } from "./SelectedDimensionContext";
 
 function useTemporalActions() {
   const themeHistory = useThemeHistory();
   const selectedDimensionHistory = useSelectedDimensionHistory();
-  const fractionHistory = useFractionHistory();
+  const graphTypeHistory = useGraphTypeHistory();
   const dataHistory = useDataHistory();
   const expandedHistory = useExpandedValuesHistory();
   const normalizationHistory = useNormalizationHistory();
@@ -29,9 +34,9 @@ function useTemporalActions() {
   const columnHistory = useColumnConfigHistory();
 
   const themeIsDisabled = useThemeControlIsDisabled();
-  const selectedDimensionIsDisabled = useThemeControlIsDisabled();
-  const fractionIsDisabled = useThemeControlIsDisabled();
-  const normalizationIsDisabled = useThemeControlIsDisabled();
+  const graphTypeIsDisabled = useGraphTypeControlIsDisabled();
+  const selectionTypeisDisabled = useSelectionControlIsDisabled();
+  const normalizationIsDisabled = useNormalizationControlIsDisabled();
 
   const undoQueue = useRef<TemporalState<StoreApi<unknown>>[]>([]);
   const redoQueue = useRef<TemporalState<StoreApi<unknown>>[]>([]);
@@ -46,11 +51,11 @@ function useTemporalActions() {
     if (!themeIsDisabled) {
       themeHistory.setOnSave(onSave(themeHistory));
     }
-    if (!selectedDimensionIsDisabled) {
+    if (!selectionTypeisDisabled) {
       selectedDimensionHistory.setOnSave(onSave(selectedDimensionHistory));
     }
-    if (!fractionIsDisabled) {
-      fractionHistory.setOnSave(onSave(fractionHistory));
+    if (!graphTypeIsDisabled) {
+      graphTypeHistory.setOnSave(onSave(graphTypeHistory));
     }
     if (!normalizationIsDisabled) {
       normalizationHistory.setOnSave(onSave(normalizationHistory));
@@ -62,14 +67,19 @@ function useTemporalActions() {
     return () => {
       themeHistory.setOnSave(undefined);
       selectedDimensionHistory.setOnSave(undefined);
-      fractionHistory.setOnSave(undefined);
+      graphTypeHistory.setOnSave(undefined);
       dataHistory.setOnSave(undefined);
       expandedHistory.setOnSave(undefined);
       normalizationHistory.setOnSave(undefined);
       rowHistory.setOnSave(undefined);
       columnHistory.setOnSave(undefined);
     };
-  }, [themeIsDisabled, selectedDimensionIsDisabled, fractionIsDisabled]);
+  }, [
+    themeIsDisabled,
+    graphTypeIsDisabled,
+    graphTypeIsDisabled,
+    selectionTypeisDisabled,
+  ]);
 
   const undo = useEventCallback(() => {
     const last = undoQueue.current.pop();
@@ -92,7 +102,7 @@ function useTemporalActions() {
   const restoreToDefault = useEventCallback(() => {
     themeHistory.undo(themeHistory.pastStates.length);
     selectedDimensionHistory.undo(selectedDimensionHistory.pastStates.length);
-    fractionHistory.undo(fractionHistory.pastStates.length);
+    graphTypeHistory.undo(graphTypeHistory.pastStates.length);
     dataHistory.undo(dataHistory.pastStates.length);
     expandedHistory.undo(expandedHistory.pastStates.length);
     normalizationHistory.undo(normalizationHistory.pastStates.length);
