@@ -243,7 +243,7 @@ function DraggableDialogContent({
   );
 }
 
-const initialSize = { width: 600, height: 800 };
+const initialSize = { width: 700, height: 800 };
 
 export function ControlsModal() {
   const { isControlsVisible } = useControlsVisibility();
