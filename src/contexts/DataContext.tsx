@@ -37,6 +37,10 @@ interface DataContextState {
   columnOrder: string[];
   rowSortOrder: SortOrder<string>[];
   columnSortOrder: SortOrder<string>[];
+  rowFilters: FilterOrder<string>[];
+  columnFilters: FilterOrder<string>[];
+  filteredRows: Set<string>;
+  filteredColumns: Set<string>;
   rowSortInvalidated: boolean;
   columnSortInvalidated: boolean;
 }
@@ -139,6 +143,70 @@ interface DataContextActions {
    * Revalidates the row sort order, updating the row order to match the current sort order.
    */
   revalidateRowSort: () => void;
+  /**
+   * 
+   */
+  setRowFilters: (filters: FilterOrder<string>[]) => void;
+  /**
+   * 
+   */
+  setColumnFilters: (filters: FilterOrder<string>[]) => void;
+  /**
+   * Add filter Row
+   */
+  addRowFilter: (key: string) => void;
+  /**
+   * Add filter Column
+   */
+  addColumnFilter: (key: string) => void;
+  /**
+   * 
+   */
+  addRowSubFilter: (key: string, value: string | number | boolean) => void;
+  /**
+   * 
+   */
+  addColumnSubFilter: (key: string, value: string | number | boolean) => void;
+  /**
+   * 
+   */
+  editRowFilter: (index: number, newKey: string) => void;
+  /**
+   * 
+   */
+  editColumnFilter: (index: number, newKey: string) => void;
+  /**
+   * 
+   */
+  removeRowSubFilter: (key: string, value: string | number | boolean) => void;
+  /**
+   * 
+   */
+  removeColumnSubFilter: (key: string, value: string | number | boolean) => void;
+  /**
+   * 
+   */
+  editRowSubFilters: (key: string, values: (string | number | boolean)[]) => void;
+  /**
+   * 
+   */
+  editColumnSubFilters: (key: string, values: (string | number | boolean)[]) => void;
+  /**
+   * 
+   */
+  removeRowFilter: (key: string) => void;
+  /**
+   * 
+   */
+  removeColumnFilter: (key: string) => void;
+  /**
+   * 
+   */
+  clearRowFilters: () => void;
+  /**
+   * 
+   */
+  clearColumnFilters: () => void;
 }
 
 type DataContextStore = DataContextState & DataContextActions;
@@ -219,15 +287,6 @@ const applySortOrders = (
   return arrayCopy.sort(comparisonFunction);
 };
 
-
-/**
- * Take FilterOrders and all items, and return items that are filtered out.
- * @param array items (rownames or colnames)
- * @param filters list of FilterOrders
- * @param state DataContextStore
- * @param row boolean for row (true) or column (false)
- * @returns list of items that are filtered out
- */
 const applyFilters = (
     array: string[],
     filters: FilterOrder<string>[],
@@ -271,6 +330,10 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
       columnOrder: initialData.colNames,
       rowSortInvalidated: false,
       columnSortInvalidated: false,
+      rowFilters: [] as FilterOrder<RowKey>[],
+      columnFilters: [] as FilterOrder<ColumnKey>[],
+      filteredRows: new Set<string>(),
+      filteredColumns: new Set<string>(),
       resetRemovedRows: () => {
         set({ removedRows: new Set<string>() });
       },
@@ -452,6 +515,152 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
           return { rowOrder, rowSortInvalidated: false };
         });
       },
+      setRowFilters: (filters: FilterOrder<string>[]) => {
+        set((state) => {
+          const rowFilters = filters;
+          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          return { rowFilters, filteredRows };
+        });
+      },
+      setColumnFilters: (filters: FilterOrder<string>[]) => {
+        set((state) => {
+          const columnFilters = filters;
+          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          return { columnFilters, filteredColumns };
+        });
+      },
+      addRowFilter: (key: string) => {
+        set((state) => {
+          const rowFilters = [...state.rowFilters, { key, values: [] }];
+          return { rowFilters }; //rowFilterInvalidated?
+        });
+      },
+      addColumnFilter: (key: string) => {
+        set((state) => {
+          const columnFilters = [...state.columnFilters, { key, values: [] }];
+          return { columnFilters }; //columnFilterInvalidated?
+        });
+      },
+      editRowSubFilters: (key: string, values: (string | number | boolean)[]) => {
+        set((state) => {
+          const rowFilters = state.rowFilters.map((filter) => {
+            if (filter.key === key) {
+              return { key, values };
+            }
+            return filter;
+          });
+          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          return { rowFilters, filteredRows };
+        });
+      },
+      editColumnSubFilters: (key: string, values: (string | number | boolean)[]) => {
+        set((state) => {
+          const columnFilters = state.columnFilters.map((filter) => {
+            if (filter.key === key) {
+              return { key, values };
+            }
+            return filter;
+          });
+          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          return { columnFilters, filteredColumns };
+        });
+      },
+      addRowSubFilter: (key: string, value: string | number | boolean) => {
+        set((state) => {
+          const rowFilters = state.rowFilters.map((filter) => {
+            if (filter.key === key) {
+              const values = new Set(filter.values);
+              values.add(value);
+              return { key, values: Array.from(values) };
+            }
+            return filter;
+          });
+          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          return { rowFilters, filteredRows };
+        });
+      },
+      addColumnSubFilter: (key: string, value: string | number | boolean) => {
+        set((state) => {
+          const columnFilters = state.columnFilters.map((filter) => {
+            if (filter.key === key) {
+              const values = new Set(filter.values);
+              values.add(value);
+              return { key, values: Array.from(values) };
+            }
+            return filter;
+          });
+          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          return { columnFilters, filteredColumns };
+        });
+      },
+      editRowFilter: (index: number, newKey: string) => {
+        set((state) => {
+          const rowFilters = [...state.rowFilters];
+          rowFilters[index] = {key: newKey, values: []};
+          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          return { rowFilters, filteredRows };
+        });
+      },
+      editColumnFilter: (index: number, newKey: string) => {
+        set((state) => {
+          const columnFilters = [...state.columnFilters];
+          columnFilters[index] = {key: newKey, values: []};
+          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          return { columnFilters, filteredColumns };
+        });
+      },
+      removeRowSubFilter: (key: string, value: string | number | boolean) => {
+        set((state) => {
+          const rowFilters = state.rowFilters.map((filter) => {
+            if (filter.key === key) {
+              const values = new Set(filter.values);
+              values.delete(value);
+              return { key, values: Array.from(values) };
+            }
+            return filter;
+          });
+          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          return { rowFilters, filteredRows };
+        });
+      },
+      removeColumnSubFilter: (key: string, value: string | number | boolean) => {
+        set((state) => {
+          const columnFilters = state.columnFilters.map((filter) => {
+            if (filter.key === key) {
+              const values = new Set(filter.values);
+              values.delete(value);
+              return { key, values: Array.from(values) };
+            }
+            return filter;
+          });
+          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          return { columnFilters, filteredColumns };
+        });
+      },
+      removeRowFilter: (key: string) => {
+        set((state) => {
+          const rowFilters = state.rowFilters.filter((s) => s.key !== key);
+          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          return { rowFilters, filteredRows };
+        });
+      },
+      removeColumnFilter: (key: string) => {
+        set((state) => {
+          const columnFilters = state.columnFilters.filter((s) => s.key !== key);
+          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          return { columnFilters, filteredColumns };
+        });
+      },
+      clearRowFilters: () => {
+        set((state) => {
+          return { rowFilters: [], filteredRows: new Set(state.data.rowNames) };
+        });
+      },
+      clearColumnFilters: () => {
+        set((state) => {
+          return { columnFilters: [], filteredColumns: new Set(state.data.colNames) };
+        });
+      },
     })),
   );
 
@@ -516,13 +725,13 @@ const getColumnFractionDataMap = memoize((state: DataContextStore) => {
 });
 
 const getRowNames = memoize((state: DataContextStore) => {
-  const { rowOrder, removedRows } = state;
-  return rowOrder.filter((row) => !removedRows.has(row));
+  const { rowOrder, removedRows, filteredRows } = state;
+  return rowOrder.filter((row) => !removedRows.has(row) && !filteredRows.has(row));
 });
 
 const getColumnNames = memoize((state: DataContextStore) => {
-  const { columnOrder, removedColumns } = state;
-  return columnOrder.filter((column) => !removedColumns.has(column));
+  const { columnOrder, removedColumns, filteredColumns } = state;
+  return columnOrder.filter((column) => !removedColumns.has(column) && !filteredColumns.has(column));
 });
 
 const getMetadataKeys = (
@@ -544,12 +753,40 @@ const getMetadataKeys = (
   return [...set];
 };
 
+const getMetadataObject = (
+  metadata: Record<string, Record<string, string | number>> | undefined,
+) => {
+  if (!metadata) {
+    return [];
+  }
+  const metadataValues = Object.values(metadata);
+  const set = metadataValues.reduce<Record<string, Set<string | number>>>(
+    (acc, curr) => {
+      Object.entries(curr).forEach(([key, value]) => {
+        if (!acc[key]) acc[key] = new Set();
+        acc[key].add(value);
+      });
+      return acc;
+    },
+    {}
+  );
+  return Object.entries(set);
+};
+
 const getRowSortKeys = memoize((state: DataContextStore) => {
   return getMetadataKeys(state.data.metadata?.rows);
 });
 
 const getColumnSortKeys = memoize((state: DataContextStore) => {
   return getMetadataKeys(state.data.metadata?.cols);
+});
+
+const getRowFilterKeys = memoize((state: DataContextStore) => {
+  return getMetadataObject(state.data.metadata?.rows);
+});
+
+const getColumnFilterKeys = memoize((state: DataContextStore) => {
+  return getMetadataObject(state.data.metadata?.cols);
 });
 
 export const useMetadataLookup = () => {
@@ -677,6 +914,42 @@ export const useAvailableColumnSorts = () => {
   return columnSortKeys.filter(
     (key) => !columnSortOrder.some((sort) => sort.key === key),
   );
+};
+
+export const useAvailableRowFilters = () => {
+  const rowFilterKeys = useData(getRowFilterKeys);
+  const currentRowFilters = useData((s) => s.rowFilters);
+
+  return useMemo(() => {
+    return rowFilterKeys
+      .filter(([key]) => !currentRowFilters.some(f => f.key === key))
+      .map(([key]) => key);
+  }, [rowFilterKeys, currentRowFilters]);
+}
+
+export const useAllRowSubFilters = (key: string) => {
+  const rowFilterKeys = useData(getRowFilterKeys);
+
+  const entry = rowFilterKeys.find(([k]) => k === key);
+  return entry ? Array.from(entry[1]) : [];
+};
+
+export const useAvailableColumnFilters = () => {
+  const columnFilterKeys = useData(getColumnFilterKeys);
+  const currentColumnFilters = useData((s) => s.columnFilters);
+
+  return useMemo(() => {
+    return columnFilterKeys
+      .filter(([key]) => !currentColumnFilters.some(f => f.key === key))
+      .map(([key]) => key);
+  }, [columnFilterKeys, currentColumnFilters]);
+}
+
+export const useAllColumnSubFilters = (key: string) => {
+  const columnFilterKeys = useData(getColumnFilterKeys);
+
+  const entry = columnFilterKeys.find(([k]) => k === key);
+  return entry ? Array.from(entry[1]) : [];
 };
 
 export const useHighestColumnCount = () => {
