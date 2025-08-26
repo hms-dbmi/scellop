@@ -22,6 +22,11 @@ export interface SortOrder<T> {
   direction: SortDirection;
 }
 
+export interface FilterOrder<T> {
+  key: T;
+  values: (string | number | boolean)[];
+}
+
 export const DEFAULT_SORTS = ["count", "alphabetical"] as const;
 
 interface DataContextState {
@@ -213,6 +218,46 @@ const applySortOrders = (
   );
   return arrayCopy.sort(comparisonFunction);
 };
+
+
+/**
+ * Take FilterOrders and all items, and return items that are filtered out.
+ * @param array items (rownames or colnames)
+ * @param filters list of FilterOrders
+ * @param state DataContextStore
+ * @param row boolean for row (true) or column (false)
+ * @returns list of items that are filtered out
+ */
+const applyFilters = (
+    array: string[],
+    filters: FilterOrder<string>[],
+    state: DataContextStore,
+    row: boolean,
+): string[] => {
+  const metadata = row ? state.data.metadata.rows : state.data.metadata.cols;
+  let discarded = [] as string[];
+
+  if (filters.length === 0) {
+    return discarded;
+  }
+
+  const arrayCopy = [...array];
+
+  for (const item of arrayCopy) {
+    for (const filter of filters) {
+      if (filter.values.length === 0) continue;
+
+      const itemMetadata = metadata?.[item];
+      const itemValue = itemMetadata?.[filter.key];
+      if (itemValue === undefined || filter.values.includes(itemValue)) {
+        discarded.push(item);
+        break;
+      }
+    }
+  }
+  discarded = Array.from(new Set(discarded));
+  return discarded;
+}
 
 const createDataContextStore = ({ initialData }: DataContextProps) =>
   createStore<DataContextStore>()(
