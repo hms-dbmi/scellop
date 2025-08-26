@@ -162,27 +162,11 @@ interface DataContextActions {
   /**
    * 
    */
-  addRowSubFilter: (key: string, value: string | number | boolean) => void;
-  /**
-   * 
-   */
-  addColumnSubFilter: (key: string, value: string | number | boolean) => void;
-  /**
-   * 
-   */
   editRowFilter: (index: number, newKey: string) => void;
   /**
    * 
    */
   editColumnFilter: (index: number, newKey: string) => void;
-  /**
-   * 
-   */
-  removeRowSubFilter: (key: string, value: string | number | boolean) => void;
-  /**
-   * 
-   */
-  removeColumnSubFilter: (key: string, value: string | number | boolean) => void;
   /**
    * 
    */
@@ -565,34 +549,6 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
           return { columnFilters, filteredColumns };
         });
       },
-      addRowSubFilter: (key: string, value: string | number | boolean) => {
-        set((state) => {
-          const rowFilters = state.rowFilters.map((filter) => {
-            if (filter.key === key) {
-              const values = new Set(filter.values);
-              values.add(value);
-              return { key, values: Array.from(values) };
-            }
-            return filter;
-          });
-          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
-          return { rowFilters, filteredRows };
-        });
-      },
-      addColumnSubFilter: (key: string, value: string | number | boolean) => {
-        set((state) => {
-          const columnFilters = state.columnFilters.map((filter) => {
-            if (filter.key === key) {
-              const values = new Set(filter.values);
-              values.add(value);
-              return { key, values: Array.from(values) };
-            }
-            return filter;
-          });
-          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
-          return { columnFilters, filteredColumns };
-        });
-      },
       editRowFilter: (index: number, newKey: string) => {
         set((state) => {
           const rowFilters = [...state.rowFilters];
@@ -605,34 +561,6 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
         set((state) => {
           const columnFilters = [...state.columnFilters];
           columnFilters[index] = {key: newKey, values: []};
-          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
-          return { columnFilters, filteredColumns };
-        });
-      },
-      removeRowSubFilter: (key: string, value: string | number | boolean) => {
-        set((state) => {
-          const rowFilters = state.rowFilters.map((filter) => {
-            if (filter.key === key) {
-              const values = new Set(filter.values);
-              values.delete(value);
-              return { key, values: Array.from(values) };
-            }
-            return filter;
-          });
-          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
-          return { rowFilters, filteredRows };
-        });
-      },
-      removeColumnSubFilter: (key: string, value: string | number | boolean) => {
-        set((state) => {
-          const columnFilters = state.columnFilters.map((filter) => {
-            if (filter.key === key) {
-              const values = new Set(filter.values);
-              values.delete(value);
-              return { key, values: Array.from(values) };
-            }
-            return filter;
-          });
           const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
           return { columnFilters, filteredColumns };
         });
