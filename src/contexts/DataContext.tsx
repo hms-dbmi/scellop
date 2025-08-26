@@ -844,6 +844,23 @@ export const useAvailableColumnSorts = () => {
   );
 };
 
+export function sortFilterValues(values: (string | number | boolean)[]) {
+  const valuesCopy = [...values];
+  valuesCopy.sort((a, b) => {
+    if (typeof a === "boolean") {
+      a = a ? 1 : 0;
+    }
+    if (typeof b === "boolean") {
+      b = b ? 1 : 0;
+    }
+    if (typeof a === "number" && typeof b === "number") {
+      return a - b;
+    }
+    return String(a).localeCompare(String(b));
+  });
+  return valuesCopy;
+}
+
 export const useAvailableRowFilters = () => {
   const rowFilterKeys = useData(getRowFilterKeys);
   const currentRowFilters = useData((s) => s.rowFilters);
@@ -859,7 +876,7 @@ export const useAllRowSubFilters = (key: string) => {
   const rowFilterKeys = useData(getRowFilterKeys);
 
   const entry = rowFilterKeys.find(([k]) => k === key);
-  return entry ? Array.from(entry[1]) : [];
+  return entry ? sortFilterValues(Array.from(entry[1])) : [];
 };
 
 export const useAvailableColumnFilters = () => {
@@ -877,7 +894,7 @@ export const useAllColumnSubFilters = (key: string) => {
   const columnFilterKeys = useData(getColumnFilterKeys);
 
   const entry = columnFilterKeys.find(([k]) => k === key);
-  return entry ? Array.from(entry[1]) : [];
+  return entry ? sortFilterValues(Array.from(entry[1])) : [];
 };
 
 export const useHighestColumnCount = () => {
