@@ -17,8 +17,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import {
   Add,
-  ArrowDownwardRounded,
-  ArrowUpwardRounded,
   Close,
   DragHandle,
   ExpandMoreRounded,
@@ -29,60 +27,74 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Alert,
   Button,
   FormControl,
-  FormControlLabel,
   Icon,
   IconButton,
   MenuItem,
-  Radio,
-  RadioGroup,
   Select,
   SelectChangeEvent,
   Stack,
   Typography,
   useEventCallback,
 } from "@mui/material";
+import { filter } from "d3";
 import React from "react";
 import {
-  SortOrder,
-  useAvailableColumnSorts,
-  useAvailableRowSorts,
+  FilterOrder,
+  useAllColumnSubFilters,
+  useAllRowSubFilters,
+  useAvailableColumnFilters,
+  useAvailableRowFilters,
   useData,
 } from "../../contexts/DataContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import {
+  useFilterableFields,
   useGetFieldDisplayName,
-  useSortableFields,
 } from "../../contexts/MetadataConfigContext";
 import { usePlotControlsContext } from "./PlotControlsContext";
 import { LeftAlignedButton } from "./style";
 
-function useAvailableSorts() {
+function useAvailableFilters() {
   const section = usePlotControlsContext();
-  const columns = useAvailableColumnSorts();
-  const rows = useAvailableRowSorts();
+  const rows = useAvailableRowFilters();
+  const columns = useAvailableColumnFilters();
   return section === "Column" ? columns : rows;
 }
 
-function AddSort() {
+function useAllSubFilters(key: string) {
+  const section = usePlotControlsContext();
+  const rows = useAllRowSubFilters(key);
+  const columns = useAllColumnSubFilters(key);
+  return section === "Column" ? columns : rows;
+}
+
+function useCurrentFilterValues(key: string) {
+  const section = usePlotControlsContext();
+  return useData((s) =>
+    section === "Column"
+      ? s.columnFilters.find(f => f.key === key)?.values ?? []
+      : s.rowFilters.find(f => f.key === key)?.values ?? []
+  );
+}
+
+function AddFilter() {
   const section = usePlotControlsContext();
 
-  const availableSorts = useAvailableSorts();
-  const addSort = useData((s) =>
-    section === "Column" ? s.addColumnSortOrder : s.addRowSortOrder,
+  const availableFilters = useAvailableFilters();
+  const addFilter = useData((s) =>
+    section === "Column" ? s.addColumnFilter : s.addRowFilter,
   );
-  const sortIsInvalidated = useSortIsInvalidated();
-  const disabled = availableSorts.length === 0;
+  const disabled = availableFilters.length === 0;
+
   const onClick = useEventCallback(() => {
-    if (availableSorts.length > 0) {
-      addSort({ key: availableSorts[0], direction: "asc" });
+    console.log("clicked add filter")
+    if (availableFilters.length > 0) {
+      addFilter(availableFilters[0]);
+      console.log("availableFilters", availableFilters);
     }
   });
-  if (sortIsInvalidated) {
-    return null;
-  }
   return (
     <LeftAlignedButton
       variant="text"
@@ -95,72 +107,32 @@ function AddSort() {
   );
 }
 
-function useResetSorts() {
+function useResetFilters() {
   const section = usePlotControlsContext();
-  const resetSorts = useData((s) =>
-    section === "Column" ? s.clearColumnSortOrder : s.clearRowSortOrder,
+  const resetFilters = useData((s) =>
+    section === "Column" ? s.clearColumnFilters : s.clearRowFilters,
   );
-  const currentSorts = useData((s) =>
-    section === "Column" ? s.columnSortOrder : s.rowSortOrder,
+  const currentFilters = useData((s) =>
+    section === "Column" ? s.columnFilters : s.rowFilters,
   );
-  const disabled = currentSorts.length === 0;
+  const disabled = currentFilters.length === 0;
   const onClick = useEventCallback(() => {
-    resetSorts();
+    resetFilters();
   });
   return { disabled, onClick };
 }
 
-function useSortIsInvalidated() {
-  const section = usePlotControlsContext();
-  return useData((s) =>
-    section === "Column" ? s.columnSortInvalidated : s.rowSortInvalidated,
-  );
-}
-
-function useRevalidateSort() {
-  const section = usePlotControlsContext();
-  const revalidateSort = useData((s) =>
-    section === "Column" ? s.revalidateColumnSort : s.revalidateRowSort,
-  );
-  const trackEvent = useTrackEvent();
-  return useEventCallback(() => {
-    revalidateSort();
-    trackEvent(`Revalidate ${section} Sort`, "");
-  });
-}
-
-function InvalidationAlert() {
-  const sortIsInvalidated = useSortIsInvalidated();
-  const revalidateSort = useRevalidateSort();
-  if (!sortIsInvalidated) return null;
-  return (
-    <Alert
-      severity="info"
-      variant="outlined"
-      sx={{ alignItems: "center", mb: 2 }}
-      action={
-        <Button color="inherit" size="small" onClick={revalidateSort}>
-          Restore Sorts
-        </Button>
-      }
-    >
-      The data order has been manually changed and the sort order is no longer
-      valid. Sorting is currently disabled.
-    </Alert>
-  );
-}
-
 export function FilterControls() {
   const section = usePlotControlsContext();
-  const { sorts, setSorts } = useData((s) => ({
-    sorts: section === "Column" ? s.columnSortOrder : s.rowSortOrder,
-    setSorts: section === "Column" ? s.setColumnSortOrder : s.setRowSortOrder,
+  const { filters, setFilters } = useData((s) => ({
+    filters: section === "Column" ? s.columnFilters : s.rowFilters,
+    setFilters: section === "Column" ? s.setColumnFilters : s.setRowFilters,
   }));
 
   const trackEvent = useTrackEvent();
 
-  const allowedSorts = useSortableFields(sorts.map((sort) => sort.key));
-  const filteredSorts = sorts.filter((sort) => allowedSorts.includes(sort.key));
+  const allowedFilters = useFilterableFields(filters.map((filter) => filter.key));
+  const filteredFilters = filters.filter((filter) => allowedFilters.includes(filter.key));
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -177,17 +149,15 @@ export function FilterControls() {
     }
 
     if (active.id !== over.id) {
-      const oldIndex = sorts.findIndex((sort) => sort.key === active.id);
-      const newIndex = sorts.findIndex((sort) => sort.key === over.id);
+      const oldIndex = filters.findIndex((filter) => filter.key === active.id);
+      const newIndex = filters.findIndex((filter) => filter.key === over.id);
 
-      const newSorts = arrayMove(sorts, oldIndex, newIndex);
+      const newFilters = arrayMove(filters, oldIndex, newIndex);
 
-      setSorts(newSorts);
-      trackEvent("Update Sort Order", section, { newSorts });
+      setFilters(newFilters);
+      trackEvent("Update Filters", section, { newFilters });
     }
   });
-
-  const sortIsInvalidated = useSortIsInvalidated();
 
   return (
     <Accordion
@@ -214,35 +184,31 @@ export function FilterControls() {
       </AccordionSummary>
 
       <AccordionDetails>
-        {sortIsInvalidated ? (
-          <InvalidationAlert />
-        ) : (
-          <Typography variant="body2">
-            Filter columns by selecting which fields to show from the metadata fields.
-          </Typography>
-        )}
+        <Typography variant="body2">
+          Filter columns by selecting which fields to show from the metadata fields.
+        </Typography>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={sorts.map((s) => s.key)}
+            items={filters.map((f) => f.key)}
             strategy={verticalListSortingStrategy}
           >
             <Stack>
-              {filteredSorts.map((sort, i) => (
-                <SortItem key={sort.key} sort={sort} index={i} />
+              {filteredFilters.map((filter, i) => (
+                <FilterItem key={filter.key} sort={filter} index={i} />
               ))}
             </Stack>
           </SortableContext>
         </DndContext>
         <Stack direction="column">
-          <AddSort />
+          <AddFilter />
           <LeftAlignedButton
             variant="text"
             startIcon={<Restore />}
-            {...useResetSorts()}
+            {...useResetFilters()}
           >
             Reset Filter
           </LeftAlignedButton>
@@ -252,18 +218,27 @@ export function FilterControls() {
   );
 }
 
-const useSortItemActions = () => {
+const useFilterItemActions = () => {
   const section = usePlotControlsContext();
-  const editSort = useData((s) =>
-    section === "Column" ? s.editColumnSortOrder : s.editRowSortOrder,
+  const editFilter = useData((s) =>
+    section === "Column" ? s.editColumnFilter : s.editRowFilter,
   );
-  const removeSort = useData((s) =>
-    section === "Column" ? s.removeColumnSortOrder : s.removeRowSortOrder,
+  const removeFilter = useData((s) =>
+    section === "Column" ? s.removeColumnFilter : s.removeRowFilter,
   );
-  return { editSort, removeSort };
+  const addSubFilter = useData((s) =>
+    section === "Column" ? s.addColumnSubFilter : s.addRowSubFilter
+  );
+  const removeSubFilter = useData((s) =>
+    section === "Column" ? s.removeColumnSubFilter : s.removeRowSubFilter
+  );
+  const editSubFilters = useData((s) => 
+    section === "Column" ? s.editColumnSubFilters : s.editRowSubFilters
+  );
+  return { editFilter, removeFilter, addSubFilter, removeSubFilter, editSubFilters };
 };
 
-function SortItem({ sort, index }: { sort: SortOrder<string>; index: number }) {
+function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: sort.key });
 
@@ -272,28 +247,29 @@ function SortItem({ sort, index }: { sort: SortOrder<string>; index: number }) {
     transition,
   };
 
-  const { editSort, removeSort } = useSortItemActions();
+  const { editFilter, removeFilter, addSubFilter, removeSubFilter, editSubFilters } = useFilterItemActions();
 
-  const sortText = index === 0 ? "Sort By" : "Then By";
+  const FilterText = "Filter By";
 
-  const availableSorts = useAvailableSorts();
-
-  const onRadioChange = useEventCallback(
-    (_event: React.ChangeEvent<HTMLInputElement>, value: string) => {
-      const direction = value as "asc" | "desc";
-      editSort(index, { ...sort, direction });
-    },
-  );
-
-  const sortIsInvalidated = useSortIsInvalidated();
+  const availableFilters = useAvailableFilters();
+  const availableSubFilters = useAllSubFilters(sort.key);
+  const currentFilterValues = useCurrentFilterValues(sort.key);
 
   const onSelectChange = useEventCallback((event: SelectChangeEvent) => {
     const key = event.target.value as string;
-    editSort(index, { ...sort, key });
+    editFilter(index, key);
+  });
+
+  const onSelectSubFilterChange = useEventCallback((event: SelectChangeEvent<string[]>) => {
+    const selectedValues = Array.isArray(event.target.value)
+      ? event.target.value
+      : [event.target.value];
+
+    editSubFilters(sort.key, selectedValues);
   });
 
   const remove = useEventCallback(() => {
-    removeSort(sort.key);
+    removeFilter(sort.key);
   });
   const getFieldDisplayName = useGetFieldDisplayName();
 
@@ -308,25 +284,37 @@ function SortItem({ sort, index }: { sort: SortOrder<string>; index: number }) {
           tabIndex={0}
         />
         <Typography variant="subtitle1" noWrap sx={{ flexShrink: 0 }}>
-          {sortText}
+          {FilterText}
         </Typography>
         <Select
           value={sort.key}
           onChange={onSelectChange}
           fullWidth
-          disabled={sortIsInvalidated}
         >
-          {[sort.key, ...availableSorts].map((key) => (
+          {[sort.key, ...availableFilters].map((key) => (
             <MenuItem key={key} value={key}>
               {getFieldDisplayName(key)}
             </MenuItem>
           ))}
         </Select>
+        <FormControl fullWidth sx={{ mt: 1 }}>
+          <Select
+            multiple
+            value={currentFilterValues}
+            onChange={onSelectSubFilterChange}
+            renderValue={(selected) => selected.join(", ")}
+          >
+            {availableSubFilters.map((value) => (
+              <MenuItem key={value.toString()} value={value}>
+                {value}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Button
           aria-label={`Remove ${sort.key}`}
           component={IconButton}
           onClick={remove}
-          disabled={sortIsInvalidated}
           sx={{
             minWidth: 0,
             padding: 0.5,
@@ -336,30 +324,6 @@ function SortItem({ sort, index }: { sort: SortOrder<string>; index: number }) {
           <Close />
         </Button>
       </Stack>
-      <FormControl disabled={sortIsInvalidated}>
-        <RadioGroup onChange={onRadioChange} value={sort.direction}>
-          <FormControlLabel
-            value="asc"
-            control={<Radio />}
-            label={
-              <Stack alignItems="center" direction="row" spacing={1}>
-                <ArrowUpwardRounded />
-                <Typography variant="body2">Ascending</Typography>
-              </Stack>
-            }
-          />
-          <FormControlLabel
-            value="desc"
-            control={<Radio />}
-            label={
-              <Stack alignItems="center" direction="row" spacing={1}>
-                <ArrowDownwardRounded />
-                <Typography variant="body2">Descending</Typography>
-              </Stack>
-            }
-          />
-        </RadioGroup>
-      </FormControl>
     </Stack>
   );
 }

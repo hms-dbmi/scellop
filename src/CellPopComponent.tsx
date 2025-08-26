@@ -24,6 +24,7 @@ interface CellPopConfig {
   initialProportions?: [GridSizeTuple, GridSizeTuple];
   fieldDisplayNames?: Record<string, string>;
   sortableFields?: string[];
+  filterableFields?: string[];
   tooltipFields?: string[];
   trackEvent?: (
     event: string,
@@ -55,6 +56,7 @@ export const CellPop = withParentSize(
     initialProportions,
     fieldDisplayNames,
     sortableFields,
+    filterableFields,
     tooltipFields,
     trackEvent,
   }: CellPopProps) => {
@@ -102,6 +104,7 @@ export const CellPop = withParentSize(
             initialProportions={initialProportions}
             fieldDisplayNames={fieldDisplayNames}
             sortableFields={sortableFields}
+            filterableFields={filterableFields}
             tooltipFields={tooltipFields}
             trackEvent={trackEvent}
           >
