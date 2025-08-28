@@ -21,25 +21,27 @@ interface AxisConfigActions {
 
 type AxisConfigStore = AxisConfig & AxisConfigActions;
 
-const createAxisConfigStore = (initialArgs: AxisConfig) => {
-  return createStore<AxisConfigStore>()(
-    temporal((set) => ({
-      ...initialArgs,
-      setLabel: (label: string) => set({ label }),
-      setCreateHref: (createHref: (tick: string) => string) =>
-        set({ createHref }),
-      setFlipAxisPosition: (flipAxisPosition: boolean) =>
-        set({ flipAxisPosition }),
-    })),
-  );
-};
+const createAxisConfigStore =
+  (direction: "Row" | "Column") => (initialArgs: AxisConfig) => {
+    return createStore<AxisConfigStore>()(
+      temporal((set) => ({
+        ...initialArgs,
+        label: initialArgs.label ?? direction,
+        setLabel: (label: string) => set({ label }),
+        setCreateHref: (createHref: (tick: string) => string) =>
+          set({ createHref }),
+        setFlipAxisPosition: (flipAxisPosition: boolean) =>
+          set({ flipAxisPosition }),
+      })),
+    );
+  };
 
 export const [
   [RowConfigProvider, useRowConfig, , useRowConfigHistory],
   [ColumnConfigProvider, useColumnConfig, , useColumnConfigHistory],
-] = ["Row", "Column"].map((direction) =>
+] = (["Row", "Column"] as const).map((direction) =>
   createTemporalStoreContext<AxisConfigStore, AxisConfig>(
-    createAxisConfigStore,
+    createAxisConfigStore(direction),
     `${direction}ConfigContext`,
   ),
 );

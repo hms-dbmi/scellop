@@ -134,8 +134,11 @@ export default function MetadataValueBar({
 
   const cellWidth = x.bandwidth();
 
-  const axisLabelX = axis === "X" ? width / 2 : width / 3;
-  const axisLabelY = axis === "X" ? height / 3 : height / 2;
+  const axisLabelPaddingX = Math.max(7.5, x.bandwidth());
+  const axisLabelPaddingY = Math.max(7.5, y.bandwidth());
+
+  const axisLabelX = axis === "X" ? width / 2 : axisLabelPaddingX;
+  const axisLabelY = axis === "X" ? axisLabelPaddingY : height / 2;
 
   const onMouseMove = useCallback((e: React.MouseEvent<SVGRectElement>) => {
     const target = e.target as SVGRectElement;
@@ -207,9 +210,9 @@ export default function MetadataValueBar({
           height += EXPANDED_ROW_PADDING * 2;
         }
         height = Math.ceil(height);
-        const width = x.bandwidth();
+        const width = axisLabelPaddingX;
 
-        const xVal = x.bandwidth() * 2;
+        const xVal = 2 * axisLabelPaddingX;
         const yVal = Math.ceil(y(key) as number);
 
         const newBar: BarHelper = {
@@ -241,9 +244,9 @@ export default function MetadataValueBar({
         return [...acc, newBar];
       } else if (axis === "X") {
         const width = x.bandwidth();
-        const height = y.bandwidth();
+        const height = axisLabelPaddingY;
         const xVal = x(key)!;
-        const yVal = y.bandwidth();
+        const yVal = 2 * axisLabelPaddingY;
         const newBar: BarHelper = {
           value: processedValue,
           width,
@@ -361,6 +364,7 @@ export default function MetadataValueBar({
         <Text
           x={axisLabelX}
           y={axisLabelY}
+          transform={axis === "Y" ? `rotate(-90, ${axisLabelX}, ${axisLabelY})` : undefined}
           verticalAnchor="middle"
           textAnchor="middle"
           orientation={axis === "X" ? "horizontal" : "vertical"}

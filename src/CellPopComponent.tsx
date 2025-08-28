@@ -86,7 +86,11 @@ export const CellPop = withParentSize(
 
     return (
       <OuterContainerRefProvider value={outerContainerRef}>
-        <div onClick={handleClick} ref={outerContainerRef}>
+        <div
+          onClick={handleClick}
+          ref={outerContainerRef}
+          style={{ position: "relative", overflow: "hidden" }}
+        >
           <Providers
             data={data}
             dimensions={dimensions}

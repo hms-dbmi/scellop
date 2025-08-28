@@ -292,11 +292,16 @@ const useToggleVisibility = () => {
   const rowLabel = useRowConfig((s) => s.label);
   const label = section === "Column" ? columnLabel : rowLabel;
   const trackEvent = useTrackEvent();
+  const selectedValues = useSelectedValues((s) => s.selectedValues);
+  const deselectValue = useSelectedValues((s) => s.deselectValue);
   const handleChange = useEventCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       showItem(e.target.name);
       trackEvent(`Show ${label}`, e.target.name);
     } else {
+      if (section === "Row" && selectedValues.has(e.target.name)) {
+        deselectValue(e.target.name);
+      }
       hideItem(e.target.name);
       trackEvent(`Hide ${label}`, e.target.name);
     }
@@ -309,13 +314,20 @@ const useToggleExpansion = () => {
     toggleItem: s.toggleValue,
     selectedValues: s.selectedValues,
   }));
+  const showItem = useData((s) => s.restoreRow);
+  const removedRows = useData((s) => s.removedRows);
   const trackEvent = useTrackEvent();
   const rowLabel = useRowConfig((s) => s.label);
   const handleChange = useEventCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (selectedValues.has(e.target.name)) {
-      trackEvent(`Collapse ${rowLabel}`, e.target.name);
+    const row = e.target.name;
+    if (selectedValues.has(row)) {
+      trackEvent(`Collapse ${rowLabel}`, row);
     } else {
-      trackEvent(`Expand ${rowLabel}`, e.target.name);
+      const rowIsHidden = removedRows.has(row);
+      if (rowIsHidden) {
+        showItem(e.target.name);
+      }
+      trackEvent(`Expand ${rowLabel}`, row);
     }
     toggleItem(e.target.name);
   });
