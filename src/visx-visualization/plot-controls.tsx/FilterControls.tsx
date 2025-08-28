@@ -72,11 +72,14 @@ function useAllSubFilters(key: string) {
 
 function useCurrentFilterValues(key: string) {
   const section = usePlotControlsContext();
-  return useData((s) =>
+  const allValues = useAllSubFilters(key);
+  const currentValues = useData((s) =>
     section === "Column"
       ? s.columnFilters.find(f => f.key === key)?.values ?? []
       : s.rowFilters.find(f => f.key === key)?.values ?? []
   );
+  const availableValues = allValues.filter(v => !currentValues.includes(v));
+  return availableValues;
 }
 
 function AddFilter() {
@@ -89,10 +92,8 @@ function AddFilter() {
   const disabled = availableFilters.length === 0;
 
   const onClick = useEventCallback(() => {
-    console.log("clicked add filter")
     if (availableFilters.length > 0) {
       addFilter(availableFilters[0]);
-      console.log("availableFilters", availableFilters);
     }
   });
   return (
@@ -226,16 +227,10 @@ const useFilterItemActions = () => {
   const removeFilter = useData((s) =>
     section === "Column" ? s.removeColumnFilter : s.removeRowFilter,
   );
-  const addSubFilter = useData((s) =>
-    section === "Column" ? s.addColumnSubFilter : s.addRowSubFilter
-  );
-  const removeSubFilter = useData((s) =>
-    section === "Column" ? s.removeColumnSubFilter : s.removeRowSubFilter
-  );
   const editSubFilters = useData((s) => 
     section === "Column" ? s.editColumnSubFilters : s.editRowSubFilters
   );
-  return { editFilter, removeFilter, addSubFilter, removeSubFilter, editSubFilters };
+  return { editFilter, removeFilter, editSubFilters };
 };
 
 function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number }) {
@@ -247,7 +242,7 @@ function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number 
     transition,
   };
 
-  const { editFilter, removeFilter, addSubFilter, removeSubFilter, editSubFilters } = useFilterItemActions();
+  const { editFilter, removeFilter, editSubFilters } = useFilterItemActions();
 
   const FilterText = "Filter By";
 
@@ -260,12 +255,13 @@ function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number 
     editFilter(index, key);
   });
 
-  const onSelectSubFilterChange = useEventCallback((event: SelectChangeEvent<string[]>) => {
+  const onSelectSubFilterChange = useEventCallback((event: SelectChangeEvent<(string | number | boolean)[]>) => {
     const selectedValues = Array.isArray(event.target.value)
       ? event.target.value
       : [event.target.value];
 
-    editSubFilters(sort.key, selectedValues);
+    const excludedValues = availableSubFilters.filter(v => !selectedValues.includes(v));
+    editSubFilters(sort.key, excludedValues);
   });
 
   const remove = useEventCallback(() => {
@@ -298,7 +294,7 @@ function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number 
           ))}
         </Select>
         <FormControl fullWidth sx={{ mt: 1 }}>
-          <Select
+          <Select<(string | number | boolean)[]>
             multiple
             value={currentFilterValues}
             onChange={onSelectSubFilterChange}
