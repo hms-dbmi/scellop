@@ -291,8 +291,8 @@ const applyFilters = (
       if (filter.values.length === 0) continue;
 
       const itemMetadata = metadata?.[item];
-      const itemValue = itemMetadata?.[filter.key];
-      if (itemValue === undefined || filter.values.includes(itemValue)) {
+      let itemValue = itemMetadata?.[filter.key] ?? "undefined";
+      if (filter.values.includes(itemValue)) {
         discarded.push(item);
         break;
       }
@@ -516,13 +516,13 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
       addRowFilter: (key: string) => {
         set((state) => {
           const rowFilters = [...state.rowFilters, { key, values: [] }];
-          return { rowFilters }; //rowFilterInvalidated?
+          return { rowFilters };
         });
       },
       addColumnFilter: (key: string) => {
         set((state) => {
           const columnFilters = [...state.columnFilters, { key, values: [] }];
-          return { columnFilters }; //columnFilterInvalidated?
+          return { columnFilters };
         });
       },
       editRowSubFilters: (key: string, values: (string | number | boolean)[]) => {
@@ -692,7 +692,7 @@ const getMetadataObject = (
     (acc, curr) => {
       Object.entries(curr).forEach(([key, value]) => {
         if (!acc[key]) acc[key] = new Set();
-        acc[key].add(value);
+        acc[key].add(value === undefined ? "undefined" : value);
       });
       return acc;
     },
