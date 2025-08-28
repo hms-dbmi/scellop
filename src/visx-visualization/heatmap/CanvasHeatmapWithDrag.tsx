@@ -25,6 +25,24 @@ import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import { useCanvasDragHandler } from "./CanvasDragHandler";
 
+const useCurrentNormalizedScale = () => {
+  const normalization = useNormalization((s) => s.normalization);
+  const {
+    countsScale: globalScale,
+    percentageScale,
+    logScale,
+  } = useColorScale();
+
+  switch (normalization) {
+    case "None":
+      return globalScale;
+    case "Log":
+      return logScale;
+    default:
+      return percentageScale;
+  }
+};
+
 function CanvasHeatmapRenderer() {
   const { width, height } = useHeatmapDimensions();
   const rows = useRows();
@@ -35,7 +53,7 @@ function CanvasHeatmapRenderer() {
   const yScale = useYScale();
   const selectedValues = useSelectedValues((s) => s.selectedValues);
 
-  const { scale: globalScale, percentageScale, heatmapTheme } = useColorScale();
+  const colors = useCurrentNormalizedScale();
   const normalization = useNormalization((s) => s.normalization);
   const dataMap = useFractionDataMap(normalization);
   const rowMaxes = useRowMaxes();
@@ -133,13 +151,26 @@ function CanvasHeatmapRenderer() {
       const key = `${rowKey}-${columnKey}` as keyof typeof dataMap;
       const value = dataMap[key];
 
-      const normalizationInfo =
-        normalization !== "None"
-          ? {
-              [`Percentage of total cells in ${normalization}`]:
-                (dataMap[key] * 100).toFixed(2) + "%",
-            }
-          : {};
+      let normalizationInfo: Record<string, string> = {};
+
+      switch (normalization) {
+        case "None":
+          break;
+        case "Log":
+          normalizationInfo = {
+            "Log count": dataMap[key].toFixed(2),
+          };
+          break;
+        case "Row":
+        case "Column":
+          normalizationInfo = {
+            [`Percentage of total cells in ${normalization}`]:
+              (dataMap[key] * 100).toFixed(2) + "%",
+          };
+          break;
+        default:
+          console.error(`Unknown normalization type: ${normalization}`);
+      }
 
       const columnMetadata = lookupMetadata(
         columnKey,
@@ -289,8 +320,6 @@ function CanvasHeatmapRenderer() {
       } else {
         // draw heatmap cells
         columns.forEach((col) => {
-          const colors =
-            normalization !== "None" ? percentageScale : globalScale;
           const value = dataMap[`${row}-${col}` as keyof typeof dataMap];
           ctx.fillStyle =
             value !== 0 ? colors(value) : theme.palette.background.default;
@@ -317,7 +346,7 @@ function CanvasHeatmapRenderer() {
     rowMaxes,
     selectedValues,
     normalization,
-    heatmapTheme,
+    colors,
     theme,
     drawCrosshair,
     xScale.isZoomed,

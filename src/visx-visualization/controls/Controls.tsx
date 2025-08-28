@@ -42,11 +42,11 @@ import {
   GraphType,
   useGraphType,
 } from "../../contexts/FractionContext";
+import { useNormalization } from "../../contexts/NormalizationContext";
 import {
   NORMALIZATIONS,
   NORMALIZATION_DESCRIPTIONS,
-  useNormalization,
-} from "../../contexts/NormalizationContext";
+} from "../../utils/normalizations";
 import LabelledSwitch from "../LabelledSwitch";
 
 interface ColorBoxProps {

@@ -7,7 +7,8 @@ import InputLabel from "@mui/material/InputLabel";
 
 import { usePanelDimensions } from "../contexts/DimensionsContext";
 import {
-  useIsNormalized,
+  useIsLogTransformed,
+  useIsNormalizedByRowOrColumn,
   useNormalization,
 } from "../contexts/NormalizationContext";
 
@@ -49,9 +50,41 @@ function ValueLabel({
     </Typography>
   );
 }
+const useLegendLabel = () => {
+  const isNormalized = useIsNormalizedByRowOrColumn();
+  const isLogTransformed = useIsLogTransformed();
+  const normalization = useNormalization((state) => state.normalization);
+
+  if (isNormalized) {
+    return `Percent of all cells in ${normalization}`;
+  }
+  if (isLogTransformed) {
+    return "Log Counts";
+  }
+  return "Counts";
+};
+
+const useMinValueLabel = () => {
+  const isNormalized = useIsNormalizedByRowOrColumn();
+  return isNormalized ? "0%" : "0";
+};
+
+const useMaxValueLabel = () => {
+  const isNormalized = useIsNormalizedByRowOrColumn();
+  const isLogTransformed = useIsLogTransformed();
+  const { maxValue, maxLogValue } = useColorScale();
+
+  if (isNormalized) {
+    return "100%";
+  }
+  if (isLogTransformed) {
+    return maxLogValue.toFixed(2);
+  }
+  return maxValue;
+};
 
 export default function Legend() {
-  const { scale: colors, maxValue } = useColorScale();
+  const { countsScale: colors, maxValue } = useColorScale();
   const id = useId() + "-legend";
   const { width: panelWidth } = usePanelDimensions("left_top");
 
@@ -64,14 +97,10 @@ export default function Legend() {
     `${value * 100}%`,
   ]);
   const maxColor = colors(maxValue);
-  const isNormalized = useIsNormalized();
-  const normalization = useNormalization((state) => state.normalization);
 
-  const legendLabel = isNormalized
-    ? `Percent of all cells in ${normalization}`
-    : "Counts";
-  const minValueLabel = isNormalized ? ">0%" : "1";
-  const maxValueLabel = isNormalized ? "100%" : maxValue;
+  const legendLabel = useLegendLabel();
+  const minValueLabel = useMinValueLabel();
+  const maxValueLabel = useMaxValueLabel();
 
   const gradientDirection = isVertical ? "to top" : "to right";
   const gradientBackground = `linear-gradient(${gradientDirection}, ${legendColors.map(([c, position]) => `${c} ${position}`).join(", ")})`;

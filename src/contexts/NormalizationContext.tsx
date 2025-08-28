@@ -1,25 +1,17 @@
 import { temporal } from "zundo";
 import { createStore } from "zustand";
+import { Normalization } from "../utils/normalizations";
 import { createTemporalStoreContext } from "../utils/zustand";
 
 interface NormalizationProps {
   initialNormalization?: Normalization;
 }
 
-export const NORMALIZATIONS = ["None", "Row", "Column"] as const;
-export type Normalization = (typeof NORMALIZATIONS)[number];
-
-export const NORMALIZATION_DESCRIPTIONS: Record<Normalization, string> = {
-  None: "No normalization applied.",
-  Row: "Display each cell's counts as a percentage of the total counts in the row.",
-  Column:
-    "Display each cell's counts as a percentage of the total counts in the column.",
-};
-
 interface NormalizationStore {
   normalization: Normalization;
   normalizeByRow: () => void;
   normalizeByColumn: () => void;
+  normalizeByLog: () => void;
   removeNormalization: () => void;
   setNormalization: (normalization: Normalization) => void;
 }
@@ -32,6 +24,7 @@ const createNormalizationStore = ({
       normalization: initialNormalization,
       normalizeByRow: () => set({ normalization: "Row" }),
       normalizeByColumn: () => set({ normalization: "Column" }),
+      normalizeByLog: () => set({ normalization: "Log" }),
       removeNormalization: () => set({ normalization: "None" }),
       setNormalization: (normalization: Normalization) =>
         set({ normalization }),
@@ -49,7 +42,12 @@ export const [
   "NormalizationStore",
 );
 
-export const useIsNormalized = () => {
+export const useIsNormalizedByRowOrColumn = () => {
   const normalization = useNormalization((state) => state.normalization);
-  return normalization !== "None";
+  return normalization !== "None" && normalization !== "Log";
+};
+
+export const useIsLogTransformed = () => {
+  const normalization = useNormalization((state) => state.normalization);
+  return normalization === "Log";
 };

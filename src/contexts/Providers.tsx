@@ -39,7 +39,7 @@ interface CellPopConfigProps extends PropsWithChildren {
   selectedDimension?: "X" | "Y";
   graphType?: GraphType;
   selectedValues?: string[];
-  normalization?: "Row" | "Column";
+  normalization?: "Row" | "Column" | "Log";
   customTheme?: Theme;
   disabledControls?: DisableableControls[];
   initialProportions?: [GridSizeTuple, GridSizeTuple];

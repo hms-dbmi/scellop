@@ -4,8 +4,8 @@ import { temporal } from "zundo";
 import { createStore } from "zustand";
 import { CellPopData } from "../cellpop-schema";
 import { moveToEnd, moveToStart } from "../utils/array-reordering";
+import { Normalization } from "../utils/normalizations";
 import { createTemporalStoreContext } from "../utils/zustand";
-import { Normalization } from "./NormalizationContext";
 
 interface DataContextProps {
   initialData: CellPopData;
@@ -510,6 +510,14 @@ const getColumnFractionDataMap = memoize((state: DataContextStore) => {
   return dataMap;
 });
 
+const getLogDataMap = memoize((state: DataContextStore) => {
+  const dataMap: Record<DataMapKey, number> = {};
+  state.data.countsMatrix.forEach(([row, col, value]) => {
+    dataMap[`${row}-${col}`] = Math.log(value + 1);
+  });
+  return dataMap;
+});
+
 const getRowNames = memoize((state: DataContextStore) => {
   const { rowOrder, removedRows } = state;
   return rowOrder.filter((row) => !removedRows.has(row));
@@ -630,6 +638,10 @@ export const useColumnFractionDataMap = () => {
   return useData(getColumnFractionDataMap);
 };
 
+export const useLogDataMap = () => {
+  return useData(getLogDataMap);
+};
+
 export const useRowCounts = () => {
   return useData(getDerivedStatesMemo).rowCounts;
 };
@@ -725,6 +737,8 @@ export const useFractionDataMap = (normalization: Normalization) => {
         return getRowFractionDataMap;
       case "Column":
         return getColumnFractionDataMap;
+      case "Log":
+        return getLogDataMap;
       default:
         return getDataMap;
     }
