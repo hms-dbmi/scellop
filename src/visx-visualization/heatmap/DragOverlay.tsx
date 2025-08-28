@@ -260,13 +260,24 @@ function DragIndicator({
 
     const key = `${rowKey}-${columnKey}` as keyof typeof dataMap;
 
-    const normalizationInfo =
-      normalization !== "None"
-        ? {
-            [`Percentage of total cells in ${normalization}`]:
-              (normalizedDataMap[key] * 100).toFixed(2) + "%",
-          }
-        : {};
+    let normalizationInfo: Record<string, string> = {};
+
+    switch (normalization) {
+      case "None":
+        break;
+      case "Log":
+        normalizationInfo = { "Log count": normalizedDataMap[key].toFixed(2) };
+        break;
+      case "Row":
+      case "Column":
+        normalizationInfo = {
+          [`Percentage of total cells in ${normalization}`]:
+            (normalizedDataMap[key] * 100).toFixed(2) + "%",
+        };
+        break;
+      default:
+        console.error(`Unknown normalization type: ${normalization}`);
+    }
 
     const columnMetadata = lookupMetadata(
       columnKey,

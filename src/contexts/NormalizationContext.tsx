@@ -1,19 +1,17 @@
 import { temporal } from "zundo";
 import { createStore } from "zustand";
+import { Normalization } from "../utils/normalizations";
 import { createTemporalStoreContext } from "../utils/zustand";
 
 interface NormalizationProps {
   initialNormalization?: Normalization;
 }
 
-export type Normalization = "None" | "Row" | "Column";
-
-export const NORMALIZATIONS = ["None", "Row", "Column"] as const;
-
 interface NormalizationStore {
   normalization: Normalization;
   normalizeByRow: () => void;
   normalizeByColumn: () => void;
+  normalizeByLog: () => void;
   removeNormalization: () => void;
   setNormalization: (normalization: Normalization) => void;
 }
@@ -26,6 +24,7 @@ const createNormalizationStore = ({
       normalization: initialNormalization,
       normalizeByRow: () => set({ normalization: "Row" }),
       normalizeByColumn: () => set({ normalization: "Column" }),
+      normalizeByLog: () => set({ normalization: "Log" }),
       removeNormalization: () => set({ normalization: "None" }),
       setNormalization: (normalization: Normalization) =>
         set({ normalization }),
@@ -43,7 +42,12 @@ export const [
   "NormalizationStore",
 );
 
-export const useIsNormalized = () => {
+export const useIsNormalizedByRowOrColumn = () => {
   const normalization = useNormalization((state) => state.normalization);
-  return normalization !== "None";
+  return normalization !== "None" && normalization !== "Log";
+};
+
+export const useIsLogTransformed = () => {
+  const normalization = useNormalization((state) => state.normalization);
+  return normalization === "Log";
 };

@@ -18,6 +18,24 @@ import { useSelectedDimension } from "../../contexts/SelectedDimensionContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import DragOverlayContainer from "./DragOverlay";
 
+const useCurrentNormalizedScale = () => {
+  const normalization = useNormalization((s) => s.normalization);
+  const {
+    countsScale: globalScale,
+    percentageScale,
+    logScale,
+  } = useColorScale();
+
+  switch (normalization) {
+    case "None":
+      return globalScale;
+    case "Log":
+      return logScale;
+    default:
+      return percentageScale;
+  }
+};
+
 function CanvasHeatmapRenderer() {
   const { width, height } = useHeatmapDimensions();
   const rows = useRows();
@@ -28,7 +46,7 @@ function CanvasHeatmapRenderer() {
   const yScale = useYScale();
   const selectedValues = useSelectedValues((s) => s.selectedValues);
 
-  const { scale: globalScale, percentageScale, heatmapTheme } = useColorScale();
+  const colors = useCurrentNormalizedScale();
   const normalization = useNormalization((s) => s.normalization);
   const dataMap = useFractionDataMap(normalization);
   const rowMaxes = useRowMaxes();
@@ -47,6 +65,7 @@ function CanvasHeatmapRenderer() {
     }
     ctx.clearRect(0, 0, width, height);
     const cellWidth = Math.ceil(xScale.scale.bandwidth());
+
     rows.forEach((row) => {
       const cellHeight = Math.ceil(yScale.scale.bandwidth(row));
       if (selectedValues.has(row)) {
@@ -75,8 +94,6 @@ function CanvasHeatmapRenderer() {
       } else {
         // draw heatmap cells
         columns.forEach((col) => {
-          const colors =
-            normalization !== "None" ? percentageScale : globalScale;
           const value = dataMap[`${row}-${col}` as keyof typeof dataMap];
           ctx.fillStyle =
             value !== 0 ? colors(value) : theme.palette.background.default;
@@ -97,7 +114,7 @@ function CanvasHeatmapRenderer() {
     rowMaxes,
     selectedValues,
     normalization,
-    heatmapTheme,
+    colors,
     theme,
   ]);
 
