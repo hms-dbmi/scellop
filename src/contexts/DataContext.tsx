@@ -280,15 +280,14 @@ const applyFilters = (
   const metadata = row ? state.data.metadata.rows : state.data.metadata.cols;
   let discarded = [] as string[];
 
-  if (filters.length === 0) {
+  const activeFilters = filters.filter(f => f.values.length !== 0)
+  
+  if (activeFilters.length === 0) {
     return discarded;
   }
 
-  const arrayCopy = [...array];
-
-  for (const item of arrayCopy) {
-    for (const filter of filters) {
-      if (filter.values.length === 0) continue;
+  for (const item of array) {
+    for (const filter of activeFilters) {
 
       const itemMetadata = metadata?.[item];
       let itemValue = itemMetadata?.[filter.key] ?? "undefined";
