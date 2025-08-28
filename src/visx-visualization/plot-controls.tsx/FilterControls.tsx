@@ -28,6 +28,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
+  Divider,
   FormControl,
   Icon,
   IconButton,
@@ -38,7 +39,6 @@ import {
   Typography,
   useEventCallback,
 } from "@mui/material";
-import { filter } from "d3";
 import React from "react";
 import {
   FilterOrder,
@@ -197,9 +197,9 @@ export function FilterControls() {
             items={filters.map((f) => f.key)}
             strategy={verticalListSortingStrategy}
           >
-            <Stack>
+            <Stack spacing={1}>
               {filteredFilters.map((filter, i) => (
-                <FilterItem key={filter.key} sort={filter} index={i} />
+                <FilterItem key={filter.key} filter={filter} index={i} />
               ))}
             </Stack>
           </SortableContext>
@@ -211,7 +211,7 @@ export function FilterControls() {
             startIcon={<Restore />}
             {...useResetFilters()}
           >
-            Reset Filter
+            Reset Filters
           </LeftAlignedButton>
         </Stack>
       </AccordionDetails>
@@ -233,9 +233,9 @@ const useFilterItemActions = () => {
   return { editFilter, removeFilter, editSubFilters };
 };
 
-function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number }) {
+function FilterItem({ filter, index }: { filter: FilterOrder<string>; index: number }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: sort.key });
+    useSortable({ id: filter.key });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -244,11 +244,9 @@ function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number 
 
   const { editFilter, removeFilter, editSubFilters } = useFilterItemActions();
 
-  const FilterText = "Filter By";
-
   const availableFilters = useAvailableFilters();
-  const availableSubFilters = useAllSubFilters(sort.key);
-  const currentFilterValues = useCurrentFilterValues(sort.key);
+  const allSubFilters = useAllSubFilters(filter.key);
+  const currentFilterValues = useCurrentFilterValues(filter.key);
 
   const onSelectChange = useEventCallback((event: SelectChangeEvent) => {
     const key = event.target.value as string;
@@ -260,17 +258,26 @@ function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number 
       ? event.target.value
       : [event.target.value];
 
-    const excludedValues = availableSubFilters.filter(v => !selectedValues.includes(v));
-    editSubFilters(sort.key, excludedValues);
+    if (selectedValues.includes("selectAll")) {
+      editSubFilters(filter.key, []);
+    }
+    else if (selectedValues.includes("deselectAll")) {
+      editSubFilters(filter.key, allSubFilters);
+    }
+    else {
+      const excludedValues = allSubFilters.filter(v => !selectedValues.includes(v));
+      editSubFilters(filter.key, excludedValues);
+    }
   });
 
   const remove = useEventCallback(() => {
-    removeFilter(sort.key);
+    removeFilter(filter.key);
   });
+
   const getFieldDisplayName = useGetFieldDisplayName();
 
   return (
-    <Stack key={sort.key} style={style} ref={setNodeRef}>
+    <Stack key={filter.key} style={style} ref={setNodeRef} spacing={1}>
       <Stack direction="row" alignItems="center" spacing={1}>
         <Icon
           component={DragHandle}
@@ -280,35 +287,21 @@ function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number 
           tabIndex={0}
         />
         <Typography variant="subtitle1" noWrap sx={{ flexShrink: 0 }}>
-          {FilterText}
+          Filter By
         </Typography>
         <Select
-          value={sort.key}
+          value={filter.key}
           onChange={onSelectChange}
           fullWidth
         >
-          {[sort.key, ...availableFilters].map((key) => (
+          {[filter.key, ...availableFilters].map((key) => (
             <MenuItem key={key} value={key}>
               {getFieldDisplayName(key)}
             </MenuItem>
           ))}
         </Select>
-        <FormControl fullWidth sx={{ mt: 1 }}>
-          <Select<(string | number | boolean)[]>
-            multiple
-            value={currentFilterValues}
-            onChange={onSelectSubFilterChange}
-            renderValue={(selected) => selected.join(", ")}
-          >
-            {availableSubFilters.map((value) => (
-              <MenuItem key={value.toString()} value={value}>
-                {value}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
         <Button
-          aria-label={`Remove ${sort.key}`}
+          aria-label={`Remove ${filter.key}`}
           component={IconButton}
           onClick={remove}
           sx={{
@@ -319,6 +312,28 @@ function FilterItem({ sort, index }: { sort: FilterOrder<string>; index: number 
         >
           <Close />
         </Button>
+      </Stack>
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ pl: 6, pr: 5 }}>
+        <Typography variant="body2" noWrap sx={{ flexShrink: 0 }}>
+          {"Values"}
+        </Typography>
+        <FormControl fullWidth sx={{ mt: 1 }}>
+          <Select<(string | number | boolean)[]>
+            multiple
+            value={currentFilterValues}
+            onChange={onSelectSubFilterChange}
+            renderValue={(selected) => selected.join(", ")}
+          >
+            <MenuItem key="selectAll" value="selectAll">Select All</MenuItem>
+            <MenuItem key="deselectAll" value="deselectAll">Deselect All</MenuItem>
+            <Divider />
+            {allSubFilters.map((value) => (
+              <MenuItem key={value.toString()} value={value}>
+                {value}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Stack>
     </Stack>
   );
