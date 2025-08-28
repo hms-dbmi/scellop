@@ -4,8 +4,8 @@ import { temporal } from "zundo";
 import { createStore } from "zustand";
 import { CellPopData } from "../cellpop-schema";
 import { moveToEnd, moveToStart } from "../utils/array-reordering";
+import { Normalization } from "../utils/normalizations";
 import { createTemporalStoreContext } from "../utils/zustand";
-import { Normalization } from "./NormalizationContext";
 
 interface DataContextProps {
   initialData: CellPopData;
