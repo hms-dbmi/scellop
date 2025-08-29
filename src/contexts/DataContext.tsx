@@ -760,30 +760,12 @@ export const useRowMetadataKeys = () => {
   return useMetadataKeys("row");
 };
 
-export const useRowSorts: () => SortOrder<string>[] = () => {
-  const keys = useRowSortKeys();
-  return useMemo(() => {
-    return ["asc", "desc"].flatMap((direction) =>
-      keys.map((key) => ({ key, direction }) as SortOrder<string>),
-    );
-  }, [keys]);
-};
-
 export const useColumnMetadataKeys = () => {
   return useMetadataKeys("column");
 };
 
 export const useColumnSortKeys = () => {
   return useSortKeys("column");
-};
-
-export const useColumnSorts: () => SortOrder<string>[] = () => {
-  const keys = useColumnSortKeys();
-  return useMemo(() => {
-    return ["asc", "desc"].flatMap((direction) =>
-      keys.map((key) => ({ key, direction }) as SortOrder<string>),
-    );
-  }, [keys]);
 };
 
 export const useDataMap = () => {
