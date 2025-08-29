@@ -142,6 +142,10 @@ interface DataContextActions {
    * Removes all columns that have zero values across the indicated row
    */
   removeZeroedValuesFromRow: (row: string) => void;
+  /**
+   * Transposes the data by swapping rows and columns
+   */
+  transposeData: () => void;
 }
 
 type DataContextStore = DataContextState & DataContextActions;
@@ -447,6 +451,58 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
           });
         }
       },
+      transposeData: () => {
+        set((state) => {
+          // Create transposed counts matrix: [row, col, value] becomes [col, row, value]
+          const transposedCountsMatrix: [string, string, number][] =
+            state.data.countsMatrix.map(([row, col, value]) => [
+              col,
+              row,
+              value,
+            ]);
+
+          // Swap row and column names
+          const newRowNames = state.data.colNames;
+          const newColNames = state.data.rowNames;
+
+          // Swap metadata
+          const newMetadata = {
+            rows: state.data.metadata?.cols,
+            cols: state.data.metadata?.rows,
+          };
+
+          // Create new data object
+          const newData: CellPopData = {
+            ...state.data,
+            rowNames: newRowNames,
+            colNames: newColNames,
+            countsMatrix: transposedCountsMatrix,
+            metadata: newMetadata,
+          };
+
+          // Swap orders and removed sets
+          const newRowOrder = state.columnOrder;
+          const newColumnOrder = state.rowOrder;
+          const newRemovedRows = new Set(state.removedColumns);
+          const newRemovedColumns = new Set(state.removedRows);
+
+          // Swap sort orders
+          const newRowSortOrder = state.columnSortOrder;
+          const newColumnSortOrder = state.rowSortOrder;
+
+          return {
+            data: newData,
+            rowOrder: newRowOrder,
+            columnOrder: newColumnOrder,
+            removedRows: newRemovedRows,
+            removedColumns: newRemovedColumns,
+            rowSortOrder: newRowSortOrder,
+            columnSortOrder: newColumnSortOrder,
+            rowSortInvalidated: state.columnSortInvalidated,
+            columnSortInvalidated: state.rowSortInvalidated,
+          };
+        });
+      },
     })),
   );
 
@@ -744,4 +800,14 @@ export const useFractionDataMap = (normalization: Normalization) => {
     }
   }, [normalization]);
   return useData(selector);
+};
+
+export const useTransposeData = () => {
+  return useData((s) => s.transposeData);
+};
+
+export const useTranspose = () => {
+  const transposeData = useTransposeData();
+
+  return transposeData;
 };

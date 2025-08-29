@@ -17,7 +17,7 @@ import {
   useRowMaxes,
 } from "../../contexts/DataContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
-import { useGraphType } from "../../contexts/FractionContext";
+import { useGraphType } from "../../contexts/GraphTypeContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";

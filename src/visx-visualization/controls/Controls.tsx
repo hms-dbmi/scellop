@@ -16,6 +16,7 @@ import { useEventCallback } from "@mui/material/utils";
 
 import {
   Box,
+  Button,
   Checkbox,
   Divider,
   FormControlLabel,
@@ -28,8 +29,10 @@ import {
   AxisConfigStore,
   useColumnConfig,
   useRowConfig,
+  useSwapAxisConfigs,
 } from "../../contexts/AxisConfigContext";
 import { useSetTheme } from "../../contexts/CellPopThemeContext";
+import { useTranspose } from "../../contexts/DataContext";
 import {
   useGraphTypeControlIsDisabled,
   useNormalizationControlIsDisabled,
@@ -41,8 +44,9 @@ import {
   GRAPH_TYPE_DESCRIPTIONS,
   GraphType,
   useGraphType,
-} from "../../contexts/FractionContext";
+} from "../../contexts/GraphTypeContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
+import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import {
   NORMALIZATIONS,
   NORMALIZATION_DESCRIPTIONS,
@@ -414,6 +418,46 @@ export function ZoomBandwidthControl() {
         label="Row Height Zoom"
         sublabel={rowConfig.pluralLabel}
       />
+    </Stack>
+  );
+}
+
+export function TransposeControl() {
+  const transposeData = useTranspose();
+  const swapAxisConfigs = useSwapAxisConfigs();
+  const trackEvent = useTrackEvent();
+
+  const rowConfig = useRowConfig();
+  const columnConfig = useColumnConfig();
+
+  const xScale = useXScale();
+  const yScale = useYScale();
+
+  const handleTranspose = useEventCallback(() => {
+    // First transpose the data
+    transposeData();
+    // Then swap the axis configurations
+    swapAxisConfigs();
+    // Reset scroll positions to avoid invalid states
+    xScale.resetScroll();
+    yScale.resetScroll();
+    trackEvent("Transpose Data", "");
+  });
+
+  return (
+    <Stack direction="column" spacing={1} width="100%">
+      <Button
+        variant="outlined"
+        onClick={handleTranspose}
+        sx={{ textTransform: "none" }}
+      >
+        Transpose Rows and Columns
+      </Button>
+      <FormHelperText>
+        Swap rows and columns in the visualization. Currently showing{" "}
+        <strong>{rowConfig.pluralLabel}</strong> as rows and{" "}
+        <strong>{columnConfig.pluralLabel}</strong> as columns.
+      </FormHelperText>
     </Stack>
   );
 }

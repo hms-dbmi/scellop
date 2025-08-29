@@ -22,7 +22,7 @@ import {
 } from "./DisabledControlProvider";
 import { EventTrackerProvider } from "./EventTrackerProvider";
 import { SelectedValuesProvider } from "./ExpandedValuesContext";
-import { GraphType, GraphTypeProvider } from "./FractionContext";
+import { GraphType, GraphTypeProvider } from "./GraphTypeContext";
 import { MetadataConfigProvider } from "./MetadataConfigContext";
 import { NormalizationProvider } from "./NormalizationContext";
 import { ScaleProvider } from "./ScaleContext";

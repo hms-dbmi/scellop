@@ -19,7 +19,7 @@ import {
 } from "./DisabledControlProvider";
 import { useTrackEvent } from "./EventTrackerProvider";
 import { useExpandedValuesHistory } from "./ExpandedValuesContext";
-import { useGraphTypeHistory } from "./FractionContext";
+import { useGraphTypeHistory } from "./GraphTypeContext";
 import { useNormalizationHistory } from "./NormalizationContext";
 import { useSelectedDimensionHistory } from "./SelectedDimensionContext";
 

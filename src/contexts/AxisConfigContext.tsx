@@ -72,3 +72,50 @@ export const useRowZoomed = () =>
   useRowConfig((s) => [s.zoomed, s.zoomedBandwidth] as const);
 export const useColumnZoomed = () =>
   useColumnConfig((s) => [s.zoomed, s.zoomedBandwidth] as const);
+
+export const useSwapAxisConfigs = () => {
+  const rowConfigState = useRowConfig();
+  const columnConfigState = useColumnConfig();
+
+  return () => {
+    // Get current states
+    const currentRowState = {
+      label: rowConfigState.label,
+      createHref: rowConfigState.createHref,
+      createSubtitle: rowConfigState.createSubtitle,
+      icon: rowConfigState.icon,
+      pluralLabel: rowConfigState.pluralLabel,
+      zoomed: rowConfigState.zoomed,
+      zoomedBandwidth: rowConfigState.zoomedBandwidth,
+    };
+
+    const currentColumnState = {
+      label: columnConfigState.label,
+      createHref: columnConfigState.createHref,
+      createSubtitle: columnConfigState.createSubtitle,
+      icon: columnConfigState.icon,
+      pluralLabel: columnConfigState.pluralLabel,
+      zoomed: columnConfigState.zoomed,
+      zoomedBandwidth: columnConfigState.zoomedBandwidth,
+    };
+
+    // Apply swapped configurations
+    rowConfigState.setLabel(currentColumnState.label);
+    if (currentColumnState.createHref) {
+      rowConfigState.setCreateHref(currentColumnState.createHref);
+    }
+    rowConfigState.setZoomBandwidth(currentColumnState.zoomedBandwidth ?? 32);
+    if (currentColumnState.zoomed !== rowConfigState.zoomed) {
+      rowConfigState.toggleZoom();
+    }
+
+    columnConfigState.setLabel(currentRowState.label);
+    if (currentRowState.createHref) {
+      columnConfigState.setCreateHref(currentRowState.createHref);
+    }
+    columnConfigState.setZoomBandwidth(currentRowState.zoomedBandwidth ?? 32);
+    if (currentRowState.zoomed !== columnConfigState.zoomed) {
+      columnConfigState.toggleZoom();
+    }
+  };
+};

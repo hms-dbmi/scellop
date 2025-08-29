@@ -6,7 +6,7 @@ import { AxisRight } from "@visx/axis";
 import { formatPrefix, max } from "d3";
 import { useColumnCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
-import { useGraphType } from "../../contexts/FractionContext";
+import { useGraphType } from "../../contexts/GraphTypeContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import HeatmapXAxis from "../heatmap/HeatmapXAxis";
 import Bars from "./Bars";

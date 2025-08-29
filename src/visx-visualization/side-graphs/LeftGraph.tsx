@@ -6,7 +6,7 @@ import React from "react";
 import { useRowCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
-import { useGraphType } from "../../contexts/FractionContext";
+import { useGraphType } from "../../contexts/GraphTypeContext";
 import { useYScale } from "../../contexts/ScaleContext";
 import HeatmapYAxis from "../heatmap/HeatmapYAxis";
 import Bars from "./Bars";

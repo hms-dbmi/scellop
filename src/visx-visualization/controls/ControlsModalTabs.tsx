@@ -17,6 +17,7 @@ import {
   HeatmapThemeControl,
   NormalizationControl,
   ThemeControl,
+  TransposeControl,
   ZoomBandwidthControl,
 } from "./Controls";
 import {
@@ -287,6 +288,8 @@ export default function ControlsModalTabs({
               <NormalizationControl />
               <Divider flexItem />
               <GraphTypeControl />
+              <Divider flexItem />
+              <TransposeControl />
               <Divider flexItem />
               <ZoomBandwidthControl />
             </Stack>
