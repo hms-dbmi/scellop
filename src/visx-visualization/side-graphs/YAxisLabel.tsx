@@ -1,39 +1,18 @@
 import Typography from "@mui/material/Typography";
 import React from "react";
-import {
-  useColumnConfig,
-  useRowConfig,
-} from "../../contexts/AxisConfigContext";
-import { useData, useRows } from "../../contexts/DataContext";
+import { useColumnConfig } from "../../contexts/AxisConfigContext";
 import { useYScale } from "../../contexts/ScaleContext";
 import AxisZoomControl from "./AxisZoomControl";
+import { useAxisLabel } from "./useAxisLabel";
 
-export function useHeatmapYAxisLabel() {
-  const axisConfig = useRowConfig();
-  const { label } = axisConfig;
-
-  const rows = useRows();
-  const filteredRows = rows.length;
-  const allRows = useData((s) => s.rowOrder.length);
-
-  const labelWithCounts =
-    filteredRows !== allRows
-      ? `${label} (${filteredRows}/${allRows})`
-      : `${label} (${allRows})`;
-  return labelWithCounts;
-}
+export function useHeatmapYAxisLabel() {}
 
 interface YAxisLabelProps {
   height: number;
-  side?: "left" | "right";
 }
 
-const isLeft = (side: string | undefined): boolean => {
-  return side === "left" || side === undefined;
-};
-
-export default function YAxisLabel({ height, side = "left" }: YAxisLabelProps) {
-  const yAxisLabel = useHeatmapYAxisLabel();
+export default function YAxisLabel({ height }: YAxisLabelProps) {
+  const yAxisLabel = useAxisLabel("y");
   const { resetScroll } = useYScale();
 
   return (
@@ -46,7 +25,7 @@ export default function YAxisLabel({ height, side = "left" }: YAxisLabelProps) {
       noWrap
       top={height / 2}
       sx={{
-        writingMode: isLeft(side) ? "vertical-lr" : "vertical-rl",
+        writingMode: "vertical-lr",
         transform: "rotate(180deg) translateY(50%)",
         // Necessary for the axis zoom control to be positioned over the axis
         zIndex: "100 !important",

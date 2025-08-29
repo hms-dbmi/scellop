@@ -2,32 +2,13 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import React from "react";
-import {
-  useColumnConfig,
-  useRowConfig,
-} from "../../contexts/AxisConfigContext";
-import { useColumns, useData } from "../../contexts/DataContext";
+import { useRowConfig } from "../../contexts/AxisConfigContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import AxisZoomControl from "./AxisZoomControl";
-
-function useHeatmapXAxisLabel() {
-  const axisConfig = useColumnConfig();
-  const { label } = axisConfig;
-
-  const columns = useColumns();
-  const filteredColumns = columns.length;
-  const allColumns = useData((s) => s.columnOrder.length);
-
-  const labelWithCounts =
-    filteredColumns !== allColumns
-      ? `${label} (${filteredColumns}/${allColumns})`
-      : `${label} (${allColumns})`;
-
-  return labelWithCounts;
-}
+import { useAxisLabel } from "./useAxisLabel";
 
 export default function XAxisLabel() {
-  const xAxisLabel = useHeatmapXAxisLabel();
+  const xAxisLabel = useAxisLabel("x");
   const { resetScroll } = useXScale();
 
   return (

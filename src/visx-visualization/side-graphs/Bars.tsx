@@ -218,7 +218,7 @@ export default function Bars({
             // Get color based on normalization
             let color: string;
             if (normalization === "None") {
-              color = colorScale.scale(cellValue);
+              color = colorScale.countsScale(cellValue);
             } else {
               // For normalized data, use percentage scale
               const normalizedValue =

@@ -66,7 +66,7 @@ const useLegendLabel = () => {
 
 const useMinValueLabel = () => {
   const isNormalized = useIsNormalizedByRowOrColumn();
-  return isNormalized ? "0%" : "0";
+  return isNormalized ? "0%" : "1";
 };
 
 const useMaxValueLabel = () => {
