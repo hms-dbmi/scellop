@@ -6,8 +6,11 @@ import {
   useRowConfig,
 } from "../../contexts/AxisConfigContext";
 import {
+  useAllColumnSubFilters,
+  useAllRowSubFilters,
   useColumnSorts,
   useData,
+  useMetadataKeys,
   useMoveColumnToEnd,
   useMoveColumnToStart,
   useMoveRowToEnd,
@@ -16,6 +19,9 @@ import {
 } from "../../contexts/DataContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
+import {
+  useGetFieldDisplayName,
+} from "../../contexts/MetadataConfigContext";
 import {
   useSetTooltipData,
   useTooltipData,
@@ -279,6 +285,100 @@ const SortDimension = ({ dimension }: { dimension: "row" | "column" }) => {
   );
 };
 
+const FilterDimension = ({ dimension }: { dimension: "row" | "column" }) => {
+  const addFilter = useData((s) => 
+    dimension === "row" ? s.addRowFilter : s.addColumnFilter,
+  )
+  const removeFilter = useData((s) => 
+    dimension === "row" ? s.removeRowFilter : s.removeColumnFilter,
+  )
+  const editSubFilters = useData((s) => 
+    dimension === "row" ? s.editRowSubFilters : s.editColumnSubFilters,
+  )
+
+  const allFilters = useMetadataKeys(dimension);
+  const currentFilters =  useData((s) =>
+    dimension === "row" ? s.rowFilters : s.columnFilters,
+  );
+  const currentFilterKeys = currentFilters.map(f => f.key);
+
+  const currentFilterValues = (key: string) => currentFilters.find(f => f.key === key)?.values ?? [];
+
+  const getFieldDisplayName = useGetFieldDisplayName();
+
+  const useAllSubFilters = (key: string) => {
+    const rows = useAllRowSubFilters(key);
+    const columns = useAllColumnSubFilters(key);
+    return dimension === "row" ? rows : columns;
+  }
+
+  const { label: rowLabel } = useRowConfig();
+  const columnLabel = useColumnConfig((store) => store.label);
+  const label = dimension === "row" ? rowLabel : columnLabel;
+
+  const trackEvent = useTrackEvent();
+
+  const handleSelect = (filter: string, subfilter: string | number | boolean) => {
+    console.log("filter", filter, subfilter)
+    if (!currentFilterKeys.includes(filter)) {
+      addFilter(filter);
+      editSubFilters(filter, [subfilter]);
+      trackEvent(`Filter ${label}s`, `Added ${filter} - ${subfilter}`);
+    } else {
+      const currValues = currentFilterValues(filter)
+      if (currValues.includes(subfilter)) {
+        const newValues = currValues.filter(item => item !== subfilter);
+        trackEvent(`Filter ${label}s`, `Removed ${filter} - ${subfilter}`);
+        if (newValues.length === 0) {
+          removeFilter(filter);
+        } else {
+          editSubFilters(filter, newValues);
+        }
+      } else {
+        editSubFilters(filter, [...currValues, subfilter]);
+        trackEvent(`Filter ${label}s`, `Added ${filter} - ${subfilter}`);
+      }
+    }
+  }
+  
+  return (
+    <ContextMenu.Sub>
+      <ContextMenuSubTrigger>
+        Filter {label}s <RightSlot>&rsaquo;</RightSlot>
+      </ContextMenuSubTrigger>
+      <ContextMenu.Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          {allFilters.map((filter) => (
+            <ContextMenu.Sub key={filter}>
+              <ContextMenuSubTrigger>
+                {getFieldDisplayName(filter)}
+              </ContextMenuSubTrigger>
+              <ContextMenu.Portal>
+                <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+                  {useAllSubFilters(filter).map((subfilter) => (
+                    <ContextMenuItem 
+                      key={filter + "-" + subfilter}
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        handleSelect(filter, subfilter);
+                      }}
+                    >
+                      <ContextMenu.CheckboxItem checked={!currentFilterValues(filter).includes(subfilter)}>
+                        <ContextMenu.ItemIndicator>✓</ContextMenu.ItemIndicator>
+                      </ContextMenu.CheckboxItem>
+                      {subfilter}
+                    </ContextMenuItem>
+                  ))}
+                </ContextMenuSubContent>
+              </ContextMenu.Portal>
+            </ContextMenu.Sub>
+          ))}
+        </ContextMenuSubContent>
+      </ContextMenu.Portal>
+    </ContextMenu.Sub>
+  );
+};
+
 const ContextMenuComponent = () => {
   const { label: rowLabel } = useRowConfig();
   const columnLabel = useColumnConfig((store) => store.label);
@@ -302,8 +402,10 @@ const ContextMenuComponent = () => {
         <ContextMenuLabel>Global Actions</ContextMenuLabel>
         <RestoreHiddenRows />
         <SortDimension dimension="row" />
+        <FilterDimension dimension="row" />
         <RestoreHiddenColumns />
         <SortDimension dimension="column" />
+        <FilterDimension dimension="column" />
         {hasRow && (
           <>
             <ContextMenuSeparator />
