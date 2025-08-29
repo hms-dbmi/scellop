@@ -49,6 +49,7 @@ import {
 } from "../../contexts/IndividualGraphTypeContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
+import useBoolean from "../../hooks/useBoolean";
 import {
   GRAPH_TYPES,
   GRAPH_TYPE_DESCRIPTIONS,
@@ -107,42 +108,6 @@ function ThemePreview({
         ))}
       </Stack>
     </Stack>
-  );
-}
-
-interface MenuItemWithDescriptionProps {
-  item: React.ReactNode;
-  description: React.ReactNode;
-  value: string;
-}
-
-function MenuItemWithDescription({
-  item,
-  description,
-  value,
-}: MenuItemWithDescriptionProps) {
-  return (
-    <MenuItem value={value}>
-      <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {item}
-        </Typography>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            fontSize: "0.75rem",
-            textTransform: "none",
-            whiteSpace: "normal",
-            wordBreak: "break-word",
-            lineHeight: 1.3,
-            maxWidth: "100%",
-          }}
-        >
-          {description}
-        </Typography>
-      </Stack>
-    </MenuItem>
   );
 }
 
@@ -536,6 +501,8 @@ export function TransposeControl() {
   const yScale = useYScale();
   const expandedValues = useSelectedValues();
 
+  const [hasBeenTransposed, , , toggleHasBeenTransposed] = useBoolean(false);
+
   const handleTranspose = useEventCallback(() => {
     // First transpose the data
     transposeData();
@@ -546,8 +513,13 @@ export function TransposeControl() {
     yScale.resetScroll();
     // Reset expanded rows since they no longer make sense after transpose
     expandedValues.reset();
+
+    toggleHasBeenTransposed();
     trackEvent("Transpose Data", "");
   });
+
+  const currentRowConfig = hasBeenTransposed ? rowConfig : columnConfig;
+  const currentColumnConfig = hasBeenTransposed ? columnConfig : rowConfig;
 
   return (
     <Stack direction="column" spacing={1} width="100%">
@@ -560,8 +532,8 @@ export function TransposeControl() {
       </Button>
       <FormHelperText>
         Swap rows and columns in the visualization. Currently showing{" "}
-        <strong>{rowConfig.pluralLabel}</strong> as rows and{" "}
-        <strong>{columnConfig.pluralLabel}</strong> as columns.
+        <strong>{currentRowConfig.pluralLabel}</strong> as rows and{" "}
+        <strong>{currentColumnConfig.pluralLabel}</strong> as columns.
       </FormHelperText>
     </Stack>
   );
