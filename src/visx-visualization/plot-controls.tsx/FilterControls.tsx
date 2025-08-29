@@ -20,15 +20,16 @@ import {
   Typography,
   useEventCallback,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import {
-  FilterOrder,
+  Filter,
   useAllColumnSubFilters,
   useAllRowSubFilters,
   useAvailableColumnFilters,
   useAvailableRowFilters,
   useData,
 } from "../../contexts/DataContext";
+import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import {
   useFilterableFields,
   useGetFieldDisplayName,
@@ -71,9 +72,12 @@ function AddFilter() {
   );
   const disabled = availableFilters.length === 0;
 
+  const trackEvent = useTrackEvent();
+
   const onClick = useEventCallback(() => {
     if (availableFilters.length > 0) {
       addFilter(availableFilters[0]);
+      trackEvent(`Filter ${section}s`, `Added ${availableFilters[0]}`);
     }
   });
   return (
@@ -97,8 +101,12 @@ function useResetFilters() {
     section === "Column" ? s.columnFilters : s.rowFilters,
   );
   const disabled = currentFilters.length === 0;
+
+  const trackEvent = useTrackEvent();
+
   const onClick = useEventCallback(() => {
     resetFilters();
+     trackEvent("Reset Filters", "");
   });
   return { disabled, onClick };
 }
@@ -174,7 +182,9 @@ const useFilterItemActions = () => {
   return { editFilter, removeFilter, editSubFilters };
 };
 
-function FilterItem({ filter, index }: { filter: FilterOrder<string>; index: number }) {
+function FilterItem({ filter, index }: { filter: Filter<string>; index: number }) {
+  const [open, setOpen] = useState(false);
+
   const { editFilter, removeFilter, editSubFilters } = useFilterItemActions();
 
   const availableFilters = useAvailableFilters();
@@ -193,9 +203,11 @@ function FilterItem({ filter, index }: { filter: FilterOrder<string>; index: num
 
     if (selectedValues.includes("selectAll")) {
       editSubFilters(filter.key, []);
+      setOpen(false);
     }
     else if (selectedValues.includes("deselectAll")) {
       editSubFilters(filter.key, allSubFilters);
+      setOpen(false);
     }
     else {
       const excludedValues = allSubFilters.filter(v => !selectedValues.includes(v));
@@ -246,6 +258,9 @@ function FilterItem({ filter, index }: { filter: FilterOrder<string>; index: num
         <FormControl fullWidth sx={{ mt: 1 }}>
           <Select<(string | number | boolean)[]>
             multiple
+            open={open}
+            onClose={() => setOpen(false)}
+            onOpen={() => setOpen(true)}
             value={currentFilterValues}
             onChange={onSelectSubFilterChange}
             renderValue={(selected) => selected.join(", ")}
