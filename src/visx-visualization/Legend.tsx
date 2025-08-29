@@ -11,6 +11,7 @@ import {
   useIsNormalizedByRowOrColumn,
   useNormalization,
 } from "../contexts/NormalizationContext";
+import { useViewType } from "../contexts/ViewTypeContext";
 
 const legendThresholds = new Array(100).fill(0).map((_, i) => i / 100);
 
@@ -91,6 +92,8 @@ export default function Legend() {
   // Determine if we should use vertical layout based on panel width
   const isVertical = panelWidth < 128;
 
+  const isTraditionalView = useViewType().viewType === "traditional";
+
   const minColor = colors(0);
   const legendColors = legendThresholds.map((value) => [
     colors(value * maxValue),
@@ -104,6 +107,8 @@ export default function Legend() {
 
   const gradientDirection = isVertical ? "to top" : "to right";
   const gradientBackground = `linear-gradient(${gradientDirection}, ${legendColors.map(([c, position]) => `${c} ${position}`).join(", ")})`;
+
+  if (isTraditionalView) return null;
 
   return (
     <Box

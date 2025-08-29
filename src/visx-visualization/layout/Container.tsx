@@ -193,6 +193,11 @@ export default function VizContainerGrid() {
     [openContextMenu, closeContextMenu, closeTooltip, tooltipData],
   );
 
+  const transition = useMemo(() => {
+    if (!isTransitioning) return "none";
+    return "grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1), grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
+  }, [isTransitioning]);
+
   return (
     <ParentRefProvider value={parentRef}>
       <PanelRefProvider value={panelRefMap}>
@@ -211,9 +216,7 @@ export default function VizContainerGrid() {
                   gridTemplateColumns,
                   gridTemplateRows,
                   background: theme.palette.background.default,
-                  transition: isTransitioning
-                    ? "grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1), grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-                    : "none",
+                  transition,
                 }}
               >
                 {panelPropList.map(({ id, ref, Component, section }) => (
