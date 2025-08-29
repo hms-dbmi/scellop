@@ -4,11 +4,11 @@ import TopGraph from "../side-graphs/TopGraph";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function TopCenterPanel(
-  { id }: VisualizationPanelProps,
+  props: VisualizationPanelProps,
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   return (
-    <VisualizationPanel id={id} ref={ref}>
+    <VisualizationPanel {...props} ref={ref}>
       <TopGraph />
     </VisualizationPanel>
   );

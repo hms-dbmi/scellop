@@ -317,7 +317,7 @@ function CanvasHeatmapRenderer() {
           const yBar = yBackground + cellHeight - barHeight;
           ctx.fillStyle = theme.palette.background.default;
           ctx.fillRect(x, yBackground, cellWidth, cellHeight);
-          
+
           // Use column color if available, otherwise fall back to theme color
           const columnColor = columnColors?.[col];
           ctx.fillStyle = columnColor || theme.palette.text.primary;

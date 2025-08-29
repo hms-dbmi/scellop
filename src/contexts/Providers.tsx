@@ -2,6 +2,7 @@ import { Theme } from "@mui/material";
 import React, { PropsWithChildren } from "react";
 import { CellPopData, CellPopTheme } from "../cellpop-schema";
 import { GraphType } from "../utils/graph-types";
+import { ViewType } from "../utils/view-types";
 import { AutoColorAssignment } from "./AutoColorAssignment";
 import {
   AxisConfig,
@@ -31,6 +32,7 @@ import { ScaleProvider } from "./ScaleContext";
 import { SelectedDimensionProvider } from "./SelectedDimensionContext";
 import TemporalControlsProvider from "./TemporalControlsContext";
 import { TooltipDataProvider } from "./TooltipDataContext";
+import { ViewTypeProvider } from "./ViewTypeContext";
 
 interface CellPopConfigProps extends PropsWithChildren {
   data: CellPopData;
@@ -54,6 +56,7 @@ interface CellPopConfigProps extends PropsWithChildren {
     detail: string,
     extra?: Record<string, unknown>,
   ) => void;
+  viewType?: ViewType;
 }
 
 export function Providers({
@@ -75,60 +78,63 @@ export function Providers({
   sortableFields,
   tooltipFields,
   trackEvent,
+  viewType,
 }: CellPopConfigProps) {
   return (
     <EventTrackerProvider trackEvent={trackEvent}>
       <DisabledControlProvider disabledControls={disabledControls}>
-        <DataProvider initialData={data}>
-          <SelectedValuesProvider initialSelectedValues={selectedValues}>
-            <RowConfigProvider {...yAxisConfig}>
-              <ColumnConfigProvider {...xAxisConfig}>
-                <AutoColorAssignment>
-                  <TooltipDataProvider>
-                    <CellPopThemeProvider
-                      theme={theme}
-                      customTheme={customTheme}
-                    >
-                      <DimensionsProvider
-                        dimensions={dimensions}
-                        initialProportions={initialProportions}
+        <ViewTypeProvider viewType={viewType}>
+          <DataProvider initialData={data}>
+            <SelectedValuesProvider initialSelectedValues={selectedValues}>
+              <RowConfigProvider {...yAxisConfig}>
+                <ColumnConfigProvider {...xAxisConfig}>
+                  <AutoColorAssignment>
+                    <TooltipDataProvider>
+                      <CellPopThemeProvider
+                        theme={theme}
+                        customTheme={customTheme}
                       >
-                        <IndividualGraphTypeProvider
-                          initialLeftGraphType={leftGraphType}
-                          initialTopGraphType={topGraphType}
+                        <DimensionsProvider
+                          dimensions={dimensions}
+                          initialProportions={initialProportions}
                         >
-                          <NormalizationProvider
-                            initialNormalization={initialNormalization}
+                          <IndividualGraphTypeProvider
+                            initialLeftGraphType={leftGraphType}
+                            initialTopGraphType={topGraphType}
                           >
-                            <ScaleProvider>
-                              <ColorScaleProvider>
-                                <SelectedDimensionProvider
-                                  initialSelectedDimension={selectedDimension}
-                                >
-                                  <MetadataConfigProvider
-                                    fieldDisplayNames={fieldDisplayNames}
-                                    sortableFields={sortableFields}
-                                    tooltipFields={tooltipFields}
+                            <NormalizationProvider
+                              initialNormalization={initialNormalization}
+                            >
+                              <ScaleProvider>
+                                <ColorScaleProvider>
+                                  <SelectedDimensionProvider
+                                    initialSelectedDimension={selectedDimension}
                                   >
-                                    <ControlsVisibilityProvider>
-                                      <TemporalControlsProvider>
-                                        {children}
-                                      </TemporalControlsProvider>
-                                    </ControlsVisibilityProvider>
-                                  </MetadataConfigProvider>
-                                </SelectedDimensionProvider>
-                              </ColorScaleProvider>
-                            </ScaleProvider>
-                          </NormalizationProvider>
-                        </IndividualGraphTypeProvider>
-                      </DimensionsProvider>
-                    </CellPopThemeProvider>
-                  </TooltipDataProvider>
-                </AutoColorAssignment>
-              </ColumnConfigProvider>
-            </RowConfigProvider>
-          </SelectedValuesProvider>
-        </DataProvider>
+                                    <MetadataConfigProvider
+                                      fieldDisplayNames={fieldDisplayNames}
+                                      sortableFields={sortableFields}
+                                      tooltipFields={tooltipFields}
+                                    >
+                                      <ControlsVisibilityProvider>
+                                        <TemporalControlsProvider>
+                                          {children}
+                                        </TemporalControlsProvider>
+                                      </ControlsVisibilityProvider>
+                                    </MetadataConfigProvider>
+                                  </SelectedDimensionProvider>
+                                </ColorScaleProvider>
+                              </ScaleProvider>
+                            </NormalizationProvider>
+                          </IndividualGraphTypeProvider>
+                        </DimensionsProvider>
+                      </CellPopThemeProvider>
+                    </TooltipDataProvider>
+                  </AutoColorAssignment>
+                </ColumnConfigProvider>
+              </RowConfigProvider>
+            </SelectedValuesProvider>
+          </DataProvider>
+        </ViewTypeProvider>
       </DisabledControlProvider>
     </EventTrackerProvider>
   );

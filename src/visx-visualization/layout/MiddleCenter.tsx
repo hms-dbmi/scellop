@@ -4,11 +4,11 @@ import Heatmap from "../heatmap/Heatmap";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function MiddleCenterPanel(
-  { id }: VisualizationPanelProps,
+  props: VisualizationPanelProps,
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   return (
-    <VisualizationPanel id={id} ref={ref}>
+    <VisualizationPanel {...props} ref={ref}>
       <Heatmap />
     </VisualizationPanel>
   );

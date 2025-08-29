@@ -2,7 +2,10 @@ import Box, { BoxProps } from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
 import React, { ForwardedRef, PropsWithChildren } from "react";
 
-export interface VisualizationPanelProps extends PropsWithChildren, BoxProps {}
+export interface VisualizationPanelProps extends PropsWithChildren, BoxProps {
+  shouldRenderChildren?: boolean;
+  isTransitioning?: boolean;
+}
 
 const VisualizationPanelComponent = styled(Box)({
   position: "relative",
@@ -10,15 +13,44 @@ const VisualizationPanelComponent = styled(Box)({
   height: "100%",
 });
 
+const PanelContentWrapper = styled(Box)<{
+  shouldRender: boolean;
+  isTransitioning: boolean;
+}>(({ shouldRender, isTransitioning }) => ({
+  position: "relative",
+  width: "100%",
+  height: "100%",
+  opacity: shouldRender ? 1 : 0,
+  visibility: shouldRender ? "visible" : "hidden",
+  transition: isTransitioning
+    ? "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+    : "none",
+  pointerEvents: shouldRender ? "auto" : "none",
+}));
+
 export function VisualizationPanel(
-  { children, ...rest }: VisualizationPanelProps,
+  {
+    children,
+    shouldRenderChildren = true,
+    isTransitioning = false,
+    ...rest
+  }: VisualizationPanelProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
   return (
     <VisualizationPanelComponent ref={ref} {...rest}>
-      {children}
+      <PanelContentWrapper
+        shouldRender={shouldRenderChildren}
+        isTransitioning={isTransitioning}
+      >
+        {children}
+      </PanelContentWrapper>
     </VisualizationPanelComponent>
   );
 }
 
-export default React.forwardRef(VisualizationPanel);
+export default React.forwardRef(
+  VisualizationPanel,
+) as React.ForwardRefExoticComponent<
+  VisualizationPanelProps & React.RefAttributes<HTMLDivElement>
+>;

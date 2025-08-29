@@ -1,6 +1,15 @@
-import React, { RefObject, useCallback, useId, useMemo, useRef } from "react";
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { useDimensions } from "../../contexts/DimensionsContext";
+import { useViewType } from "../../contexts/ViewTypeContext";
 import Tooltip from "../Tooltip";
 
 import { ParentRefProvider } from "../../contexts/ContainerRefContext";
@@ -123,6 +132,26 @@ const usePanelProps = (id: string) => {
 export default function VizContainerGrid() {
   const { width, height, rowSizes, columnSizes, resizeColumn, resizeRow } =
     useDimensions();
+  const { viewType } = useViewType();
+
+  // Track when we're transitioning between view types
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const prevViewType = useRef(viewType);
+
+  // Trigger transition state when view type changes
+  useEffect(() => {
+    if (prevViewType.current !== viewType) {
+      setIsTransitioning(true);
+      prevViewType.current = viewType;
+
+      // Reset transition state after animation completes
+      const timeout = setTimeout(() => {
+        setIsTransitioning(false);
+      }, 450); // Slightly longer than the 400ms transition
+
+      return () => clearTimeout(timeout);
+    }
+  }, [viewType]);
 
   const theme = useTheme();
 
@@ -138,6 +167,19 @@ export default function VizContainerGrid() {
   const { tooltipData } = useTooltipData();
 
   const { panelPropList, panelRefMap } = usePanelProps(id);
+
+  // Determine which panels should render their children based on view type
+  const shouldRenderPanelChildren = useCallback(
+    (section: MappedPanelSection) => {
+      if (viewType === "traditional") {
+        // Only top row panels should render their children
+        return section.endsWith("_top");
+      }
+      // In default view, all panels render their children
+      return true;
+    },
+    [viewType],
+  );
 
   const onContextMenuOpenChange = useCallback(
     (open: boolean) => {
@@ -169,10 +211,19 @@ export default function VizContainerGrid() {
                   gridTemplateColumns,
                   gridTemplateRows,
                   background: theme.palette.background.default,
+                  transition: isTransitioning
+                    ? "grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1), grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                    : "none",
                 }}
               >
-                {panelPropList.map(({ id, ref, Component }) => (
-                  <Component key={id} id={id} ref={ref} />
+                {panelPropList.map(({ id, ref, Component, section }) => (
+                  <Component
+                    key={id}
+                    id={id}
+                    ref={ref}
+                    shouldRenderChildren={shouldRenderPanelChildren(section)}
+                    isTransitioning={isTransitioning}
+                  />
                 ))}
               </div>
               <VisualizationPanelResizer
@@ -189,11 +240,15 @@ export default function VizContainerGrid() {
                 index={0}
                 resize={resizeRow}
                 orientation="Y"
+                visible={viewType === "default"}
+                isTransitioning={isTransitioning}
               />
               <VisualizationPanelResizer
                 index={1}
                 resize={resizeRow}
                 orientation="Y"
+                visible={viewType === "default"}
+                isTransitioning={isTransitioning}
               />
               <Tooltip />
             </div>

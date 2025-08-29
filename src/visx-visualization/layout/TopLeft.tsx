@@ -4,11 +4,11 @@ import Legend from "../Legend";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function TopLeftPanel(
-  { id }: VisualizationPanelProps,
+  props: VisualizationPanelProps,
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   return (
-    <VisualizationPanel id={id} ref={ref}>
+    <VisualizationPanel {...props} ref={ref}>
       <Legend />
     </VisualizationPanel>
   );

@@ -1,15 +1,19 @@
 import React from "react";
 
+import { useViewType } from "../../contexts/ViewTypeContext";
+import ControlsModalTrigger from "../controls/ControlsModalTrigger";
 import { TopGraphScale } from "../side-graphs/TopGraph";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function TopRightPanel(
-  { id }: VisualizationPanelProps,
+  props: VisualizationPanelProps,
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
+  const isTraditional = useViewType().viewType === "traditional";
   return (
-    <VisualizationPanel id={id} ref={ref}>
+    <VisualizationPanel {...props} ref={ref}>
       <TopGraphScale />
+      {isTraditional && <ControlsModalTrigger />}
     </VisualizationPanel>
   );
 }

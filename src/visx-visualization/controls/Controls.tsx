@@ -1,5 +1,6 @@
 import React, { ChangeEvent, useId } from "react";
 import { useColorScale } from "../../contexts/ColorScaleContext";
+import { useViewType } from "../../contexts/ViewTypeContext";
 import {
   HEATMAP_THEMES_LIST,
   HeatmapTheme,
@@ -106,6 +107,42 @@ function ThemePreview({
         ))}
       </Stack>
     </Stack>
+  );
+}
+
+interface MenuItemWithDescriptionProps {
+  item: React.ReactNode;
+  description: React.ReactNode;
+  value: string;
+}
+
+function MenuItemWithDescription({
+  item,
+  description,
+  value,
+}: MenuItemWithDescriptionProps) {
+  return (
+    <MenuItem value={value}>
+      <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {item}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{
+            fontSize: "0.75rem",
+            textTransform: "none",
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            lineHeight: 1.3,
+            maxWidth: "100%",
+          }}
+        >
+          {description}
+        </Typography>
+      </Stack>
+    </MenuItem>
   );
 }
 
@@ -525,6 +562,90 @@ export function TransposeControl() {
         Swap rows and columns in the visualization. Currently showing{" "}
         <strong>{rowConfig.pluralLabel}</strong> as rows and{" "}
         <strong>{columnConfig.pluralLabel}</strong> as columns.
+      </FormHelperText>
+    </Stack>
+  );
+}
+
+export function ViewTypeControl() {
+  const { viewType, setTraditional, setDefault } = useViewType();
+  const setTopGraphType = useSetTopGraphType();
+  const trackEvent = useTrackEvent();
+
+  const handleViewTypeChange = useEventCallback((event: SelectChangeEvent) => {
+    const newViewType = event.target.value as "traditional" | "default";
+    if (newViewType === "traditional") {
+      setTraditional();
+      setTopGraphType("Stacked Bars (Categorical)");
+    } else {
+      setDefault();
+    }
+    trackEvent("Change View Type", newViewType);
+  });
+
+  const id = useId();
+
+  return (
+    <Stack direction="column" spacing={1} width="100%">
+      <FormControl fullWidth>
+        <InputLabel id={id}>View Type</InputLabel>
+        <Select
+          labelId={id}
+          id={`${id}-select`}
+          value={viewType}
+          onChange={handleViewTypeChange}
+          variant="outlined"
+          label="View Type"
+          sx={{ textTransform: "capitalize", minWidth: 200 }}
+        >
+          <MenuItem value="default">
+            <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Default
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  fontSize: "0.75rem",
+                  textTransform: "none",
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                  lineHeight: 1.3,
+                  maxWidth: "100%",
+                }}
+              >
+                Standard 3x3 grid layout with all panels visible
+              </Typography>
+            </Stack>
+          </MenuItem>
+          <MenuItem value="traditional">
+            <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Traditional
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  fontSize: "0.75rem",
+                  textTransform: "none",
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                  lineHeight: 1.3,
+                  maxWidth: "100%",
+                }}
+              >
+                Simplified layout focusing on only the top stacked bar chart.
+              </Typography>
+            </Stack>
+          </MenuItem>
+        </Select>
+      </FormControl>
+      <FormHelperText>
+        Select the layout view type. Traditional view shows only the top row of
+        panels with larger heatmap proportions, while default view shows all
+        panels in a 3x3 grid.
       </FormHelperText>
     </Stack>
   );

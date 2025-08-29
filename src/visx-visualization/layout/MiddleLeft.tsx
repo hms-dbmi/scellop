@@ -4,11 +4,11 @@ import LeftGraph from "../side-graphs/LeftGraph";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function MiddleLeftPanel(
-  { id }: VisualizationPanelProps,
+  props: VisualizationPanelProps,
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   return (
-    <VisualizationPanel id={id} ref={ref} overflow="none">
+    <VisualizationPanel {...props} ref={ref} overflow="none">
       <LeftGraph />
     </VisualizationPanel>
   );

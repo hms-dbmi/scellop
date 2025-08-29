@@ -5,7 +5,8 @@ export type DisableableControls =
   | "graphType"
   | "selection"
   | "theme"
-  | "normalization";
+  | "normalization"
+  | "viewType";
 
 interface DisabledControlContextType {
   disabledControls: DisableableControls[];
@@ -28,6 +29,9 @@ export const useSelectionControlIsDisabled = () =>
 
 export const useNormalizationControlIsDisabled = () =>
   useDisabledControls().includes("normalization");
+
+export const useViewTypeControlIsDisabled = () =>
+  useDisabledControls().includes("viewType");
 
 export function DisabledControlProvider({
   children,

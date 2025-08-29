@@ -6,14 +6,14 @@ import RowSelectionControls from "../heatmap/RowSelectionControls";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function MiddleRightPanel(
-  { id }: VisualizationPanelProps,
+  props: VisualizationPanelProps,
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   const { width, height } = usePanelDimensions("right_middle");
 
   return (
     <VisualizationPanel
-      id={id}
+      {...props}
       ref={ref}
       sx={{
         overflowY: "hidden",

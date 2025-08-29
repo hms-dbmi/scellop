@@ -19,6 +19,7 @@ import {
   ThemeControl,
   TopGraphTypeControl,
   TransposeControl,
+  ViewTypeControl,
   ZoomBandwidthControl,
 } from "./Controls";
 import {
@@ -285,6 +286,7 @@ export default function ControlsModalTabs({
               height="100%"
             >
               <ThemeControl />
+              <ViewTypeControl />
               <HeatmapThemeControl />
               <NormalizationControl />
               <Divider flexItem />

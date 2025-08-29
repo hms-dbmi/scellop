@@ -4,12 +4,12 @@ import ControlsModalTrigger from "../controls/ControlsModalTrigger";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function BottomRightPanel(
-  { id }: VisualizationPanelProps,
+  props: VisualizationPanelProps,
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   return (
     <VisualizationPanel
-      id={id}
+      {...props}
       ref={ref}
       display="flex"
       flexDirection="column"

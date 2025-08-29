@@ -4,11 +4,11 @@ import { LeftGraphScale } from "../side-graphs/LeftGraph";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function BottomLeftPanel(
-  { id }: VisualizationPanelProps,
+  props: VisualizationPanelProps,
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   return (
-    <VisualizationPanel id={id} ref={ref}>
+    <VisualizationPanel {...props} ref={ref}>
       <LeftGraphScale />
     </VisualizationPanel>
   );

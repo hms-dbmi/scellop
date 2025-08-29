@@ -12,6 +12,8 @@ interface VisualizationPanelResizerProps {
   index: number;
   resize: (newSize: number, index: number) => void;
   orientation: Orientation;
+  visible?: boolean;
+  isTransitioning?: boolean;
 }
 
 const orientationStyles = {
@@ -55,6 +57,8 @@ export default function VisualizationPanelResizer({
   index,
   resize,
   orientation,
+  visible = true,
+  isTransitioning = false,
 }: VisualizationPanelResizerProps) {
   const parentRef = useParentRef();
   const { rowSizes, columnSizes } = useDimensions();
@@ -145,11 +149,15 @@ export default function VisualizationPanelResizer({
         display: "block",
         position: "absolute",
         zIndex: 100,
-        pointerEvents: "auto",
+        pointerEvents: visible ? "auto" : "none",
         backgroundColor: theme.palette.action.hover,
         top: 0,
         left: 0,
-        transition: "background-color 0.3s, box-shadow 0.3s",
+        opacity: visible ? 1 : 0,
+        visibility: visible ? "visible" : "hidden",
+        transition: isTransitioning
+          ? "background-color 0.3s, box-shadow 0.3s, opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          : "background-color 0.3s, box-shadow 0.3s",
         "&.active": {
           backgroundColor: theme.palette.action.active,
         },

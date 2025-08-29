@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { createContext, useContext } from "../utils/context";
 import { Setter } from "../utils/types";
+import { useViewType } from "./ViewTypeContext";
 import {
   HorizontalPanelSection,
   MappedPanelSection,
@@ -32,6 +33,8 @@ const DimensionsContext = createContext<DimensionsContextType | null>(
 export type GridSizeTuple = [number, number, number];
 
 export const INITIAL_PROPORTIONS: GridSizeTuple = [0.3, 0.4, 0.3];
+export const TRADITIONAL_COLUMN_PROPORTIONS: GridSizeTuple = [0.05, 0.9, 0.05];
+export const TRADITIONAL_ROW_PROPORTIONS: GridSizeTuple = [1, 0, 0];
 const MIN_PANEL_SIZE = 48;
 
 // Helper function to get the initial size of the panels
@@ -63,14 +66,37 @@ export function DimensionsProvider({
     INITIAL_PROPORTIONS,
   ],
 }: DimensionsProviderProps) {
+  const { viewType } = useViewType();
+
+  // Determine the appropriate proportions based on view type
+  const getProportionsForViewType = useCallback(() => {
+    if (viewType === "traditional") {
+      return [TRADITIONAL_COLUMN_PROPORTIONS, TRADITIONAL_ROW_PROPORTIONS];
+    }
+    return [initialColumnProportions, initialRowProportions];
+  }, [viewType, initialColumnProportions, initialRowProportions]);
+
+  const [currentProportions, setCurrentProportions] = useState(() => {
+    const [colProps, rowProps] = getProportionsForViewType();
+    return { column: colProps, row: rowProps };
+  });
+
   const [columnSizes, setColumnSizes] = useState<GridSizeTuple>(
-    getInitialSize(width, initialColumnProportions),
+    getInitialSize(width, currentProportions.column),
   );
   const [rowSizes, setRowSizes] = useState<GridSizeTuple>(
-    getInitialSize(height, initialRowProportions),
+    getInitialSize(height, currentProportions.row),
   );
 
   const dimensionsRef = useRef({ width, height });
+
+  // Update proportions when view type changes
+  useEffect(() => {
+    const [newColProps, newRowProps] = getProportionsForViewType();
+    setCurrentProportions({ column: newColProps, row: newRowProps });
+    setColumnSizes(getInitialSize(width, newColProps));
+    setRowSizes(getInitialSize(height, newRowProps));
+  }, [viewType, getProportionsForViewType, width, height]);
 
   // Update the column and row sizes when container dimensions change,
   // keeping proportions between the panels
