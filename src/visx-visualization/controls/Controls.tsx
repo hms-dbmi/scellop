@@ -39,6 +39,7 @@ import {
   useThemeControlIsDisabled,
 } from "../../contexts/DisabledControlProvider";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
+import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import {
   GRAPH_TYPES,
   GRAPH_TYPE_DESCRIPTIONS,
@@ -429,9 +430,10 @@ export function TransposeControl() {
 
   const rowConfig = useRowConfig();
   const columnConfig = useColumnConfig();
-
+  
   const xScale = useXScale();
   const yScale = useYScale();
+  const expandedValues = useSelectedValues();
 
   const handleTranspose = useEventCallback(() => {
     // First transpose the data
@@ -441,6 +443,8 @@ export function TransposeControl() {
     // Reset scroll positions to avoid invalid states
     xScale.resetScroll();
     yScale.resetScroll();
+    // Reset expanded rows since they no longer make sense after transpose
+    expandedValues.reset();
     trackEvent("Transpose Data", "");
   });
 
