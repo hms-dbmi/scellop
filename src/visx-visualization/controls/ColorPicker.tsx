@@ -84,6 +84,13 @@ export function ColorPicker({
   ) => {
     const selectedColor = event.target.value;
     onColorChange(selectedColor);
+  };
+
+  const handleNativeColorSelect = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const selectedColor = event.target.value;
+    onColorChange(selectedColor);
     handleClose();
   };
 
@@ -162,6 +169,7 @@ export function ColorPicker({
                 type="color"
                 value={color || "#ffffff"}
                 onChange={handleNativeColorChange}
+                onBlur={handleNativeColorSelect}
                 style={{ display: "none" }}
               />
             </Box>
