@@ -1,6 +1,8 @@
 import { Theme } from "@mui/material";
 import React, { PropsWithChildren } from "react";
 import { CellPopData, CellPopTheme } from "../cellpop-schema";
+import { GraphType } from "../utils/graph-types";
+import { AutoColorAssignment } from "./AutoColorAssignment";
 import {
   AxisConfig,
   ColumnConfigProvider,
@@ -22,7 +24,7 @@ import {
 } from "./DisabledControlProvider";
 import { EventTrackerProvider } from "./EventTrackerProvider";
 import { SelectedValuesProvider } from "./ExpandedValuesContext";
-import { GraphType, GraphTypeProvider } from "./GraphTypeContext";
+import { IndividualGraphTypeProvider } from "./IndividualGraphTypeContext";
 import { MetadataConfigProvider } from "./MetadataConfigContext";
 import { NormalizationProvider } from "./NormalizationContext";
 import { ScaleProvider } from "./ScaleContext";
@@ -37,7 +39,8 @@ interface CellPopConfigProps extends PropsWithChildren {
   xAxis: AxisConfig;
   yAxis: AxisConfig;
   selectedDimension?: "X" | "Y";
-  graphType?: GraphType;
+  leftGraphType?: GraphType;
+  topGraphType?: GraphType;
   selectedValues?: string[];
   normalization?: "Row" | "Column" | "Log";
   customTheme?: Theme;
@@ -58,7 +61,8 @@ export function Providers({
   data,
   dimensions,
   theme,
-  graphType = "Bars",
+  leftGraphType = "Bars",
+  topGraphType = "Bars",
   selectedValues = [],
   selectedDimension = "Y",
   xAxis: xAxisConfig,
@@ -79,40 +83,48 @@ export function Providers({
           <SelectedValuesProvider initialSelectedValues={selectedValues}>
             <RowConfigProvider {...yAxisConfig}>
               <ColumnConfigProvider {...xAxisConfig}>
-                <TooltipDataProvider>
-                  <CellPopThemeProvider theme={theme} customTheme={customTheme}>
-                    <DimensionsProvider
-                      dimensions={dimensions}
-                      initialProportions={initialProportions}
+                <AutoColorAssignment>
+                  <TooltipDataProvider>
+                    <CellPopThemeProvider
+                      theme={theme}
+                      customTheme={customTheme}
                     >
-                      <GraphTypeProvider initialGraphType={graphType}>
-                        <NormalizationProvider
-                          initialNormalization={initialNormalization}
+                      <DimensionsProvider
+                        dimensions={dimensions}
+                        initialProportions={initialProportions}
+                      >
+                        <IndividualGraphTypeProvider
+                          initialLeftGraphType={leftGraphType}
+                          initialTopGraphType={topGraphType}
                         >
-                          <ScaleProvider>
-                            <ColorScaleProvider>
-                              <SelectedDimensionProvider
-                                initialSelectedDimension={selectedDimension}
-                              >
-                                <MetadataConfigProvider
-                                  fieldDisplayNames={fieldDisplayNames}
-                                  sortableFields={sortableFields}
-                                  tooltipFields={tooltipFields}
+                          <NormalizationProvider
+                            initialNormalization={initialNormalization}
+                          >
+                            <ScaleProvider>
+                              <ColorScaleProvider>
+                                <SelectedDimensionProvider
+                                  initialSelectedDimension={selectedDimension}
                                 >
-                                  <ControlsVisibilityProvider>
-                                    <TemporalControlsProvider>
-                                      {children}
-                                    </TemporalControlsProvider>
-                                  </ControlsVisibilityProvider>
-                                </MetadataConfigProvider>
-                              </SelectedDimensionProvider>
-                            </ColorScaleProvider>
-                          </ScaleProvider>
-                        </NormalizationProvider>
-                      </GraphTypeProvider>
-                    </DimensionsProvider>
-                  </CellPopThemeProvider>
-                </TooltipDataProvider>
+                                  <MetadataConfigProvider
+                                    fieldDisplayNames={fieldDisplayNames}
+                                    sortableFields={sortableFields}
+                                    tooltipFields={tooltipFields}
+                                  >
+                                    <ControlsVisibilityProvider>
+                                      <TemporalControlsProvider>
+                                        {children}
+                                      </TemporalControlsProvider>
+                                    </ControlsVisibilityProvider>
+                                  </MetadataConfigProvider>
+                                </SelectedDimensionProvider>
+                              </ColorScaleProvider>
+                            </ScaleProvider>
+                          </NormalizationProvider>
+                        </IndividualGraphTypeProvider>
+                      </DimensionsProvider>
+                    </CellPopThemeProvider>
+                  </TooltipDataProvider>
+                </AutoColorAssignment>
               </ColumnConfigProvider>
             </RowConfigProvider>
           </SelectedValuesProvider>

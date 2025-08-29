@@ -6,7 +6,7 @@ import React from "react";
 import { useRowCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
-import { useGraphType } from "../../contexts/GraphTypeContext";
+import { useIsLeftViolins } from "../../contexts/IndividualGraphTypeContext";
 import { useYScale } from "../../contexts/ScaleContext";
 import HeatmapYAxis from "../heatmap/HeatmapYAxis";
 import Bars from "./Bars";
@@ -17,7 +17,7 @@ import { useCountsScale } from "./hooks";
 const useXAxisCountsScale = () => {
   const { width, height } = usePanelDimensions("left_middle");
   const rowCounts = useRowCounts();
-  const violins = useGraphType((s) => s.graphType === "Violins");
+  const violins = useIsLeftViolins();
   const { tickLabelSize } = useYScale();
   const domainMax = violins ? 100 : (max(Object.values(rowCounts)) ?? 0);
   const rangeMax = width - tickLabelSize;
@@ -55,7 +55,7 @@ export function LeftGraphScale() {
   const axisScale = xScale.copy().range([width, tickLabelSize * 1.25]);
   const axisTotalWidth = width - tickLabelSize;
 
-  const violins = useGraphType((s) => s.graphType === "Violins");
+  const violins = useIsLeftViolins();
   const theme = useTheme();
   if (violins) {
     return null;
@@ -92,11 +92,11 @@ function LeftViolin() {
 export default function LeftGraph() {
   const { height, width } = usePanelDimensions("left_middle");
 
-  const violins = useGraphType((s) => s.graphType === "Violins");
+  const violins = useIsLeftViolins();
   return (
     <Stack direction="row" width={width} height={height} overflow="hidden">
       <HeatmapYAxis />
-      <YAxisLabel height={height} side="left" />
+      <YAxisLabel height={height} />
       {violins ? <LeftViolin /> : <LeftBar />}
     </Stack>
   );

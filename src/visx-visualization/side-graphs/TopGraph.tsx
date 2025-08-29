@@ -6,7 +6,10 @@ import { AxisRight } from "@visx/axis";
 import { formatPrefix, max } from "d3";
 import { useColumnCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
-import { useGraphType } from "../../contexts/GraphTypeContext";
+import {
+  useIsTopViolins,
+  useTopGraphType,
+} from "../../contexts/IndividualGraphTypeContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import HeatmapXAxis from "../heatmap/HeatmapXAxis";
 import Bars from "./Bars";
@@ -18,9 +21,9 @@ const useColumnCountsScale = () => {
   const { height, width } = usePanelDimensions("center_top");
   const columnCounts = useColumnCounts();
   const { tickLabelSize } = useXScale();
-  const { graphType } = useGraphType();
+  const topGraphType = useTopGraphType();
   const domainMax =
-    graphType === "Violins" ? 100 : (max(Object.values(columnCounts)) ?? 0);
+    topGraphType === "Violins" ? 100 : (max(Object.values(columnCounts)) ?? 0);
   const rangeMax = height - tickLabelSize;
   return [
     useCountsScale([domainMax, 0], [height - tickLabelSize, 0]),
@@ -57,7 +60,7 @@ export function TopGraphScale() {
 
   const theme = useTheme();
 
-  const violins = useGraphType((s) => s.graphType === "Violins");
+  const violins = useIsTopViolins();
 
   if (violins) {
     return null;
@@ -94,7 +97,7 @@ function TopViolin() {
  * Container component for the top graph.
  */
 export default function TopGraph() {
-  const violins = useGraphType((s) => s.graphType === "Violins");
+  const violins = useIsTopViolins();
   const { height } = usePanelDimensions("center_top");
 
   return (

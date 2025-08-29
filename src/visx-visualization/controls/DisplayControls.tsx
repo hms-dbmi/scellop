@@ -41,7 +41,13 @@ import {
   Typography,
   useEventCallback,
 } from "@mui/material";
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import React, {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   useColumnConfig,
   useRowConfig,
@@ -49,8 +55,45 @@ import {
 import { useData } from "../../contexts/DataContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
+import { initializeDefaultColors } from "../../utils/axis-colors";
 import InfoTooltip from "../InfoTooltip";
+import { ColorPicker } from "./ColorPicker";
 import { usePlotControlsContext } from "./PlotControlsContext";
+
+function useColorConfig() {
+  const section = usePlotControlsContext();
+  return section === "Column" ? useColumnConfig() : useRowConfig();
+}
+
+function useSetItemColor() {
+  const config = useColorConfig();
+  const items = useItems();
+  const label = usePluralItemLabel();
+  const trackEvent = useTrackEvent();
+
+  return useCallback(
+    (item: string, color: string) => {
+      // If color is empty and no colors are set, generate defaults
+      if (
+        !color &&
+        (!config.colors || Object.keys(config.colors).length === 0)
+      ) {
+        const defaultColors = initializeDefaultColors(items, config.colors);
+        config.setColors(defaultColors);
+        trackEvent(`Reset ${label} colors to default`, item);
+      } else if (!color) {
+        // Remove the color for this item
+        config.removeColor(item);
+        trackEvent(`Reset ${label} color`, item);
+      } else {
+        // Set the specific color for this item
+        config.setColor(item, color);
+        trackEvent(`Set ${label} color`, `${item}: ${color}`);
+      }
+    },
+    [config, items, label, trackEvent],
+  );
+}
 
 function useItems() {
   const rows = useData((s) => s.rowOrder);
@@ -345,8 +388,8 @@ export function DisplayControls() {
                 display: "grid",
                 gap: 0.5,
                 gridTemplateColumns: canBeExpanded
-                  ? "minmax(0, 1fr) 48px 48px"
-                  : "minmax(0, 1fr) 48px",
+                  ? "minmax(0, 1fr) 48px 48px 48px"
+                  : "minmax(0, 1fr) 48px 48px",
                 gridTemplateRows: "auto",
                 position: "relative",
                 "& > *": {
@@ -424,10 +467,19 @@ export function DisplayControls() {
               >
                 <Visibility sx={{ fontSize: "1rem" }} />
               </StickyColumnHeader>
+              <StickyColumnHeader
+                gridRow={1}
+                gridColumn={3}
+                ariaLabel={`Set colors for ${section} items`}
+                topOffset={topStickySectionHeight}
+                textCenter
+              >
+                Color
+              </StickyColumnHeader>
               {canBeExpanded && (
                 <StickyColumnHeader
                   gridRow={1}
-                  gridColumn={3}
+                  gridColumn={4}
                   ariaLabel={`Toggle between displaying ${section} items as heatmap cells or a bar plot.`}
                   topOffset={topStickySectionHeight}
                   textCenter
@@ -551,6 +603,15 @@ function DisplayItem({ item }: DisplayItemProps) {
   const toggleExpansion = useToggleExpansion();
   const isExpanded = useSelectedValues((s) => s.selectedValues.has(item));
 
+  // Color management
+  const colorConfig = useColorConfig();
+  const setItemColor = useSetItemColor();
+
+  const getItemColor = (itemName: string) => {
+    if (!colorConfig.colors) return undefined;
+    return colorConfig.colors[itemName] || undefined;
+  };
+
   return (
     <Box
       style={style}
@@ -559,7 +620,7 @@ function DisplayItem({ item }: DisplayItemProps) {
       sx={{
         display: "grid",
         gridRow: "auto",
-        gridColumn: `span ${canBeExpanded ? 3 : 2}`,
+        gridColumn: `span ${canBeExpanded ? 4 : 3}`,
         gridTemplateColumns: "subgrid",
         borderBottom: "1px solid",
         borderColor: "divider",
@@ -639,9 +700,26 @@ function DisplayItem({ item }: DisplayItemProps) {
           size="small"
         />
       </Box>
+      <Box
+        gridColumn={3}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "40px",
+        }}
+        role="cell"
+      >
+        <ColorPicker
+          color={getItemColor(item)}
+          onColorChange={(color) => setItemColor(item, color)}
+          tooltip={`Set color for ${item}`}
+          size={24}
+        />
+      </Box>
       {canBeExpanded && (
         <Box
-          gridColumn={3}
+          gridColumn={4}
           sx={{
             display: "flex",
             justifyContent: "center",

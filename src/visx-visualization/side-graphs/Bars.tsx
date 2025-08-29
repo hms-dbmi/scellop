@@ -17,11 +17,15 @@ import {
   useRowMaxes,
 } from "../../contexts/DataContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
-import { useGraphType } from "../../contexts/GraphTypeContext";
+import {
+  useLeftGraphType,
+  useTopGraphType,
+} from "../../contexts/IndividualGraphTypeContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import { EXPANDED_ROW_PADDING } from "../../hooks/useYScaleCreator";
+import { getColorForValue } from "../../utils/categorical-colors";
 import { useBarsDragHandler } from "./BarsDragHandler";
 import ExpandedAxes from "./ExpandedAxes";
 
@@ -92,7 +96,17 @@ export default function Bars({
   const { setRowOrder, setColumnOrder } = useData();
   const normalization = useNormalization((s) => s.normalization);
   const colorScale = useColorScale();
-  const { graphType } = useGraphType();
+  const leftGraphType = useLeftGraphType();
+  const topGraphType = useTopGraphType();
+
+  // Use the appropriate graph type based on orientation
+  const currentGraphType =
+    orientation === "rows" ? leftGraphType : topGraphType;
+
+  // Get axis configurations for colors
+  const rowConfig = useRowConfig();
+  const columnConfig = useColumnConfig();
+  const axisConfig = orientation === "rows" ? rowConfig : columnConfig;
 
   // Get data for stacked bars - use appropriate data map based on normalization
   const dataMap = useFractionDataMap(normalization);
@@ -179,7 +193,10 @@ export default function Bars({
       // Create segments based on graph type
       const segments = [];
 
-      if (graphType === "Stacked Bars") {
+      if (
+        currentGraphType === "Stacked Bars (Categorical)" ||
+        currentGraphType === "Stacked Bars (Continuous)"
+      ) {
         // Create stacked segments
         let currentOffset = 0;
 
@@ -215,15 +232,27 @@ export default function Bars({
             const segmentWidth = isVertical ? barSize : segmentLength;
             const segmentHeight = isVertical ? segmentLength : barSize;
 
-            // Get color based on normalization
+            // Get color based on graph type and normalization
             let color: string;
-            if (normalization === "None") {
-              color = colorScale.countsScale(cellValue);
+            if (currentGraphType === "Stacked Bars (Categorical)") {
+              // Use individual colors for categorical stacked bars
+              const oppositeAxisConfig =
+                orientation === "columns" ? rowConfig : columnConfig;
+              color = getColorForValue(
+                stackValue,
+                stackValues,
+                oppositeAxisConfig.colors,
+              );
             } else {
-              // For normalized data, use percentage scale
-              const normalizedValue =
-                normalization === "Row" ? cellValue / totalValue : cellValue;
-              color = colorScale.percentageScale(normalizedValue);
+              // Use heatmap color scale for continuous stacked bars
+              if (normalization === "None") {
+                color = colorScale.countsScale(cellValue);
+              } else {
+                // For normalized data, use percentage scale
+                const normalizedValue =
+                  normalization === "Row" ? cellValue / totalValue : cellValue;
+                color = colorScale.percentageScale(normalizedValue);
+              }
             }
 
             segments.push({
@@ -250,6 +279,11 @@ export default function Bars({
         const barWidth = isVertical ? barSize : barLength;
         const barHeight = isVertical ? barLength : barSize;
 
+        // Get color for the bar - use axis colors if configured, otherwise default
+        const color = axisConfig.colors
+          ? getColorForValue(key, orderedValues, axisConfig.colors)
+          : theme.palette.text.primary;
+
         segments.push({
           x,
           y,
@@ -257,7 +291,7 @@ export default function Bars({
           height: barHeight,
           value: totalValue,
           stackValue: key, // Use the bar key as stack value for consistency
-          color: theme.palette.text.primary, // Use default color for simple bars
+          color,
         });
       }
 
@@ -285,8 +319,12 @@ export default function Bars({
     removedStackValues,
     colorScale,
     normalization,
-    graphType,
+    currentGraphType,
     theme.palette.text.primary,
+    axisConfig.colors,
+    rowConfig.colors,
+    columnConfig.colors,
+    orderedValues,
   ]);
 
   // Create axes for expanded values
@@ -469,7 +507,11 @@ export default function Bars({
           ...metadataValues,
         };
 
-        if (hitSegment && graphType === "Stacked Bars") {
+        if (
+          hitSegment &&
+          (currentGraphType === "Stacked Bars (Continuous)" ||
+            currentGraphType === "Stacked Bars (Categorical)")
+        ) {
           const segmentLabel = orientation === "columns" ? "Row" : "Column";
           tooltipData[`${segmentLabel} Value`] = hitSegment.stackValue;
           tooltipData["Segment Count"] = hitSegment.value;

@@ -59,6 +59,9 @@ function CanvasHeatmapRenderer() {
   const rowMaxes = useRowMaxes();
   const theme = useTheme();
 
+  // Get column colors for bar rendering
+  const columnColors = useColumnConfig((s) => s.colors);
+
   const { openTooltip, closeTooltip } = useSetTooltipData();
   const { setRowOrder, setColumnOrder } = useData();
 
@@ -314,7 +317,10 @@ function CanvasHeatmapRenderer() {
           const yBar = yBackground + cellHeight - barHeight;
           ctx.fillStyle = theme.palette.background.default;
           ctx.fillRect(x, yBackground, cellWidth, cellHeight);
-          ctx.fillStyle = theme.palette.text.primary;
+          
+          // Use column color if available, otherwise fall back to theme color
+          const columnColor = columnColors?.[col];
+          ctx.fillStyle = columnColor || theme.palette.text.primary;
           ctx.fillRect(x, yBar, cellWidth, barHeight);
         });
       } else {
@@ -355,6 +361,7 @@ function CanvasHeatmapRenderer() {
     yScale.scroll,
     width,
     height,
+    columnColors,
   ]);
 
   // Handle wheel scrolling for zoomed axes

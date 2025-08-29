@@ -20,6 +20,9 @@ export interface AxisConfig {
   // What size (in pixels) to set the scale bandwidth to when it is zoomed.
   // Defaults to 32.
   zoomedBandwidth?: number;
+  // A mapping of item names to their assigned colors.
+  // This ensures colors remain stable regardless of item order.
+  colors?: Record<string, string>;
 }
 
 interface InitializedAxisConfig extends AxisConfig {
@@ -33,6 +36,9 @@ interface AxisConfigActions {
   zoomOut: () => void;
   toggleZoom: () => void;
   setZoomBandwidth: (zoomSize: number) => void;
+  setColors: (colors: Record<string, string>) => void;
+  setColor: (itemName: string, color: string) => void;
+  removeColor: (itemName: string) => void;
 }
 
 export type AxisConfigStore = InitializedAxisConfig & AxisConfigActions;
@@ -54,6 +60,17 @@ const createAxisConfigStore =
         zoomIn: () => set({ zoomed: true }),
         zoomOut: () => set({ zoomed: false }),
         toggleZoom: () => set({ zoomed: !get().zoomed }),
+        setColors: (colors: Record<string, string>) => set({ colors }),
+        setColor: (itemName: string, color: string) => {
+          const colors = get().colors ?? {};
+          set({ colors: { ...colors, [itemName]: color } });
+        },
+        removeColor: (itemName: string) => {
+          const colors = get().colors ?? {};
+          const newColors = { ...colors };
+          delete newColors[itemName];
+          set({ colors: newColors });
+        },
       })),
     );
   };

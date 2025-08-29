@@ -41,13 +41,18 @@ import {
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import {
+  useLeftGraphType,
+  useSetLeftGraphType,
+  useSetTopGraphType,
+  useTopGraphType,
+} from "../../contexts/IndividualGraphTypeContext";
+import { useNormalization } from "../../contexts/NormalizationContext";
+import { useXScale, useYScale } from "../../contexts/ScaleContext";
+import {
   GRAPH_TYPES,
   GRAPH_TYPE_DESCRIPTIONS,
   GraphType,
-  useGraphType,
-} from "../../contexts/GraphTypeContext";
-import { useNormalization } from "../../contexts/NormalizationContext";
-import { useXScale, useYScale } from "../../contexts/ScaleContext";
+} from "../../utils/graph-types";
 import {
   NORMALIZATIONS,
   NORMALIZATION_DESCRIPTIONS,
@@ -199,13 +204,14 @@ export function ThemeControl() {
   );
 }
 
-export function GraphTypeControl() {
-  const { graphType, setGraphType } = useGraphType();
+export function LeftGraphTypeControl() {
+  const leftGraphType = useLeftGraphType();
+  const setLeftGraphType = useSetLeftGraphType();
   const trackEvent = useTrackEvent();
   const changeGraphType = useEventCallback((event: SelectChangeEvent) => {
     const newGraphType = event.target.value as GraphType;
-    setGraphType(newGraphType);
-    trackEvent("Change Graph Type", newGraphType);
+    setLeftGraphType(newGraphType);
+    trackEvent("Change Left Graph Type", newGraphType);
   });
   const fractionIsDisabled = useGraphTypeControlIsDisabled();
   const id = useId();
@@ -217,14 +223,14 @@ export function GraphTypeControl() {
   return (
     <Stack direction="column" spacing={1} width="100%">
       <FormControl fullWidth>
-        <InputLabel id={id}>Graph Type</InputLabel>
+        <InputLabel id={id}>Left Graph Type</InputLabel>
         <Select
           labelId={id}
           id={`${id}-select`}
-          value={graphType}
+          value={leftGraphType}
           onChange={changeGraphType}
           variant="outlined"
-          label="Graph Type"
+          label="Left Graph Type"
           sx={{ minWidth: 200 }}
         >
           {GRAPH_TYPES.map((type) => (
@@ -253,10 +259,68 @@ export function GraphTypeControl() {
         </Select>
       </FormControl>
       <FormHelperText>
-        Select the type of graph to display in the side panels. &quot;Bars&quot;
-        shows simple bar charts, &quot;Stacked Bars&quot; shows segmented bars
-        with colors matching the heatmap cells, and &quot;Violins&quot; shows
-        violin plots representing data distributions.
+        Select the type of graph to display in the left panel.
+      </FormHelperText>
+    </Stack>
+  );
+}
+
+export function TopGraphTypeControl() {
+  const topGraphType = useTopGraphType();
+  const setTopGraphType = useSetTopGraphType();
+  const trackEvent = useTrackEvent();
+  const changeGraphType = useEventCallback((event: SelectChangeEvent) => {
+    const newGraphType = event.target.value as GraphType;
+    setTopGraphType(newGraphType);
+    trackEvent("Change Top Graph Type", newGraphType);
+  });
+  const fractionIsDisabled = useGraphTypeControlIsDisabled();
+  const id = useId();
+
+  if (fractionIsDisabled) {
+    return null;
+  }
+
+  return (
+    <Stack direction="column" spacing={1} width="100%">
+      <FormControl fullWidth>
+        <InputLabel id={id}>Top Graph Type</InputLabel>
+        <Select
+          labelId={id}
+          id={`${id}-select`}
+          value={topGraphType}
+          onChange={changeGraphType}
+          variant="outlined"
+          label="Top Graph Type"
+          sx={{ minWidth: 200 }}
+        >
+          {GRAPH_TYPES.map((type) => (
+            <MenuItem key={type} value={type}>
+              <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  {type}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.75rem",
+                    textTransform: "none",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word",
+                    lineHeight: 1.3,
+                    maxWidth: "100%",
+                  }}
+                >
+                  {GRAPH_TYPE_DESCRIPTIONS[type]}
+                </Typography>
+              </Stack>
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormHelperText>
+        Select the type of graph to display in the top panel.
       </FormHelperText>
     </Stack>
   );
@@ -430,7 +494,7 @@ export function TransposeControl() {
 
   const rowConfig = useRowConfig();
   const columnConfig = useColumnConfig();
-  
+
   const xScale = useXScale();
   const yScale = useYScale();
   const expandedValues = useSelectedValues();

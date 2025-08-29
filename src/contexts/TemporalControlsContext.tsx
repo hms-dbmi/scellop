@@ -19,14 +19,14 @@ import {
 } from "./DisabledControlProvider";
 import { useTrackEvent } from "./EventTrackerProvider";
 import { useExpandedValuesHistory } from "./ExpandedValuesContext";
-import { useGraphTypeHistory } from "./GraphTypeContext";
+import { useIndividualGraphTypeHistory } from "./IndividualGraphTypeContext";
 import { useNormalizationHistory } from "./NormalizationContext";
 import { useSelectedDimensionHistory } from "./SelectedDimensionContext";
 
 function useTemporalActions() {
   const themeHistory = useThemeHistory();
   const selectedDimensionHistory = useSelectedDimensionHistory();
-  const graphTypeHistory = useGraphTypeHistory();
+  const graphTypeHistory = useIndividualGraphTypeHistory();
   const dataHistory = useDataHistory();
   const expandedHistory = useExpandedValuesHistory();
   const normalizationHistory = useNormalizationHistory();
