@@ -22,7 +22,7 @@ export interface SortOrder<T> {
   direction: SortDirection;
 }
 
-export interface FilterOrder<T> {
+export interface Filter<T> {
   key: T;
   values: (string | number | boolean)[];
 }
@@ -37,8 +37,8 @@ interface DataContextState {
   columnOrder: string[];
   rowSortOrder: SortOrder<string>[];
   columnSortOrder: SortOrder<string>[];
-  rowFilters: FilterOrder<string>[];
-  columnFilters: FilterOrder<string>[];
+  rowFilters: Filter<string>[];
+  columnFilters: Filter<string>[];
   filteredRows: Set<string>;
   filteredColumns: Set<string>;
   rowSortInvalidated: boolean;
@@ -146,11 +146,11 @@ interface DataContextActions {
   /**
    * 
    */
-  setRowFilters: (filters: FilterOrder<string>[]) => void;
+  setRowFilters: (filters: Filter<string>[]) => void;
   /**
    * 
    */
-  setColumnFilters: (filters: FilterOrder<string>[]) => void;
+  setColumnFilters: (filters: Filter<string>[]) => void;
   /**
    * Add filter Row
    */
@@ -273,14 +273,14 @@ const applySortOrders = (
 
 const applyFilters = (
     array: string[],
-    filters: FilterOrder<string>[],
+    filters: Filter<string>[],
     state: DataContextStore,
     row: boolean,
-): string[] => {
+): Set<string> => {
   const metadata = row ? state.data.metadata.rows : state.data.metadata.cols;
-  let discarded = [] as string[];
+  let discarded = new Set<string>;
 
-  const activeFilters = filters.filter(f => f.values.length !== 0)
+  const activeFilters = filters.filter(f => f.values.length !== 0);
   
   if (activeFilters.length === 0) {
     return discarded;
@@ -292,12 +292,11 @@ const applyFilters = (
       const itemMetadata = metadata?.[item];
       let itemValue = itemMetadata?.[filter.key] ?? "undefined";
       if (filter.values.includes(itemValue)) {
-        discarded.push(item);
+        discarded.add(item);
         break;
       }
     }
   }
-  discarded = Array.from(new Set(discarded));
   return discarded;
 }
 
@@ -313,8 +312,8 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
       columnOrder: initialData.colNames,
       rowSortInvalidated: false,
       columnSortInvalidated: false,
-      rowFilters: [] as FilterOrder<RowKey>[],
-      columnFilters: [] as FilterOrder<ColumnKey>[],
+      rowFilters: [] as Filter<RowKey>[],
+      columnFilters: [] as Filter<ColumnKey>[],
       filteredRows: new Set<string>(),
       filteredColumns: new Set<string>(),
       resetRemovedRows: () => {
@@ -498,17 +497,17 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
           return { rowOrder, rowSortInvalidated: false };
         });
       },
-      setRowFilters: (filters: FilterOrder<string>[]) => {
+      setRowFilters: (filters: Filter<string>[]) => {
         set((state) => {
           const rowFilters = filters;
-          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          const filteredRows = applyFilters(state.data.rowNames, rowFilters, state, true);
           return { rowFilters, filteredRows };
         });
       },
-      setColumnFilters: (filters: FilterOrder<string>[]) => {
+      setColumnFilters: (filters: Filter<string>[]) => {
         set((state) => {
           const columnFilters = filters;
-          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          const filteredColumns = applyFilters(state.data.colNames, columnFilters, state, false);
           return { columnFilters, filteredColumns };
         });
       },
@@ -532,7 +531,7 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
             }
             return filter;
           });
-          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          const filteredRows = applyFilters(state.data.rowNames, rowFilters, state, true);
           return { rowFilters, filteredRows };
         });
       },
@@ -544,7 +543,7 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
             }
             return filter;
           });
-          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          const filteredColumns = applyFilters(state.data.colNames, columnFilters, state, false);
           return { columnFilters, filteredColumns };
         });
       },
@@ -552,7 +551,7 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
         set((state) => {
           const rowFilters = [...state.rowFilters];
           rowFilters[index] = {key: newKey, values: []};
-          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          const filteredRows = applyFilters(state.data.rowNames, rowFilters, state, true);
           return { rowFilters, filteredRows };
         });
       },
@@ -560,21 +559,21 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
         set((state) => {
           const columnFilters = [...state.columnFilters];
           columnFilters[index] = {key: newKey, values: []};
-          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          const filteredColumns = applyFilters(state.data.colNames, columnFilters, state, false);
           return { columnFilters, filteredColumns };
         });
       },
       removeRowFilter: (key: string) => {
         set((state) => {
           const rowFilters = state.rowFilters.filter((s) => s.key !== key);
-          const filteredRows = new Set(applyFilters(state.data.rowNames, rowFilters, state, true));
+          const filteredRows = applyFilters(state.data.rowNames, rowFilters, state, true);
           return { rowFilters, filteredRows };
         });
       },
       removeColumnFilter: (key: string) => {
         set((state) => {
           const columnFilters = state.columnFilters.filter((s) => s.key !== key);
-          const filteredColumns = new Set(applyFilters(state.data.colNames, columnFilters, state, false));
+          const filteredColumns = applyFilters(state.data.colNames, columnFilters, state, false);
           return { columnFilters, filteredColumns };
         });
       },
@@ -741,7 +740,7 @@ export const useMetadataLookup = () => {
   );
 };
 
-const useMetadataKeys = (direction: "row" | "column") => {
+export const useMetadataKeys = (direction: "row" | "column") => {
   return useData(direction === "row" ? getRowSortKeys : getColumnSortKeys);
 };
 
@@ -859,6 +858,10 @@ export function sortFilterValues(values: (string | number | boolean)[]) {
   });
   return valuesCopy;
 }
+
+// export const useAllFilters = (direction: "row" | "column") => {
+//   return useData(direction === "row" ? getRowFilterKeys : getColumnFilterKeys);
+// };
 
 export const useAvailableRowFilters = () => {
   const rowFilterKeys = useData(getRowFilterKeys);
