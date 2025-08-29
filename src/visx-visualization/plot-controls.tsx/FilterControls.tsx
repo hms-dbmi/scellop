@@ -1,24 +1,6 @@
 import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
   Add,
   Close,
-  DragHandle,
   ExpandMoreRounded,
   FilterAlt,
   Restore,
@@ -30,7 +12,6 @@ import {
   Button,
   Divider,
   FormControl,
-  Icon,
   IconButton,
   MenuItem,
   Select,
@@ -48,7 +29,6 @@ import {
   useAvailableRowFilters,
   useData,
 } from "../../contexts/DataContext";
-import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import {
   useFilterableFields,
   useGetFieldDisplayName,
@@ -125,40 +105,12 @@ function useResetFilters() {
 
 export function FilterControls() {
   const section = usePlotControlsContext();
-  const { filters, setFilters } = useData((s) => ({
-    filters: section === "Column" ? s.columnFilters : s.rowFilters,
-    setFilters: section === "Column" ? s.setColumnFilters : s.setRowFilters,
-  }));
-
-  const trackEvent = useTrackEvent();
+  const filters = useData((s) => 
+    section === "Column" ? s.columnFilters : s.rowFilters
+  );
 
   const allowedFilters = useFilterableFields(filters.map((filter) => filter.key));
   const filteredFilters = filters.filter((filter) => allowedFilters.includes(filter.key));
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-
-  const handleDragEnd = useEventCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!active || !over) {
-      return;
-    }
-
-    if (active.id !== over.id) {
-      const oldIndex = filters.findIndex((filter) => filter.key === active.id);
-      const newIndex = filters.findIndex((filter) => filter.key === over.id);
-
-      const newFilters = arrayMove(filters, oldIndex, newIndex);
-
-      setFilters(newFilters);
-      trackEvent("Update Filters", section, { newFilters });
-    }
-  });
 
   return (
     <Accordion
@@ -188,22 +140,11 @@ export function FilterControls() {
         <Typography variant="body2">
           Filter columns by selecting which fields to show from the metadata fields.
         </Typography>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={filters.map((f) => f.key)}
-            strategy={verticalListSortingStrategy}
-          >
-            <Stack spacing={1}>
-              {filteredFilters.map((filter, i) => (
-                <FilterItem key={filter.key} filter={filter} index={i} />
-              ))}
-            </Stack>
-          </SortableContext>
-        </DndContext>
+        <Stack spacing={1} sx={{ pl: 4}}>
+          {filteredFilters.map((filter, i) => (
+            <FilterItem key={filter.key} filter={filter} index={i} />
+          ))}
+        </Stack>  
         <Stack direction="column">
           <AddFilter />
           <LeftAlignedButton
@@ -234,14 +175,6 @@ const useFilterItemActions = () => {
 };
 
 function FilterItem({ filter, index }: { filter: FilterOrder<string>; index: number }) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: filter.key });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   const { editFilter, removeFilter, editSubFilters } = useFilterItemActions();
 
   const availableFilters = useAvailableFilters();
@@ -277,15 +210,8 @@ function FilterItem({ filter, index }: { filter: FilterOrder<string>; index: num
   const getFieldDisplayName = useGetFieldDisplayName();
 
   return (
-    <Stack key={filter.key} style={style} ref={setNodeRef} spacing={1}>
+    <Stack key={filter.key} spacing={1}>
       <Stack direction="row" alignItems="center" spacing={1}>
-        <Icon
-          component={DragHandle}
-          {...attributes}
-          {...listeners}
-          sx={{ cursor: "pointer", mr: 2 }}
-          tabIndex={0}
-        />
         <Typography variant="subtitle1" noWrap sx={{ flexShrink: 0 }}>
           Filter By
         </Typography>
@@ -313,7 +239,7 @@ function FilterItem({ filter, index }: { filter: FilterOrder<string>; index: num
           <Close />
         </Button>
       </Stack>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ pl: 6, pr: 5 }}>
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ pl: 2, pr: 6 }}>
         <Typography variant="body2" noWrap sx={{ flexShrink: 0 }}>
           {"Values"}
         </Typography>
