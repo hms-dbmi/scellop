@@ -93,6 +93,7 @@
     "@vitessce/zarr": "^3.6.7",
     "d3": "^7.9.0",
     "d3-scale-chromatic": "^3.1.0",
+    "html2canvas": "^1.4.1",
     "proxy-memoize": "^3.0.1",
     "zundo": "^2.3.0"
   },

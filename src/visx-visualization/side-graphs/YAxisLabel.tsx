@@ -25,9 +25,8 @@ export default function YAxisLabel({ height }: YAxisLabelProps) {
       noWrap
       top={height / 2}
       sx={{
-        writingMode: "vertical-lr",
-        transform: "rotate(180deg) translateY(50%)",
-        // Necessary for the axis zoom control to be positioned over the axis
+        // Workaround for html2canvas not working with writingMode
+        transform: "rotate(-90deg) translateY(-100%) translateX(50%)",
         zIndex: "100 !important",
       }}
     >

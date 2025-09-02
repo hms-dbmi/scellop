@@ -6,7 +6,7 @@ import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import React, { useCallback, useState } from "react";
-import { PlotControlSection } from ".";
+import { ExportControls, PlotControlSection } from ".";
 import {
   useColumnConfig,
   useRowConfig,
@@ -276,6 +276,17 @@ export default function ControlsModalTabs({
             onClick={(event) => handleChange(event, 2)}
             onTabSelect={(event) => handleChange(event, 2)}
           />
+          <Tab
+            label="Export"
+            id="export-settings-tab"
+            aria-controls="export-settings-panel"
+            sx={{
+              justifyContent: isMobile ? "center" : "flex-start",
+              alignItems: isMobile ? "center" : "flex-start",
+              textAlign: isMobile ? "center" : "left",
+              minWidth: isMobile ? 0 : "auto",
+            }}
+          />
         </Tabs>
 
         {/* Horizontal sub-items */}
@@ -329,6 +340,16 @@ export default function ControlsModalTabs({
             aria-labelledby="column-settings-tab"
           >
             <PlotControlSection value="Column" />
+          </TabPanel>
+          <TabPanel
+            value={value}
+            index={3}
+            id="export-settings-panel"
+            aria-labelledby="export-settings-tab"
+          >
+            <Stack px={2} spacing={2} alignItems="start" flexGrow={1}>
+              <ExportControls />
+            </Stack>
           </TabPanel>
         </Box>
 
