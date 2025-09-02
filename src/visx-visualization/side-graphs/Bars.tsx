@@ -24,9 +24,9 @@ import {
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
+import { useBarsDragHandler } from "../../hooks/useDragHandler";
 import { EXPANDED_ROW_PADDING } from "../../hooks/useYScaleCreator";
 import { getColorForValue } from "../../utils/categorical-colors";
-import { useBarsDragHandler } from "./BarsDragHandler";
 import ExpandedAxes from "./ExpandedAxes";
 
 interface BarsProps {

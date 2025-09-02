@@ -15,8 +15,8 @@ import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
+import { useViolinDragHandler } from "../../hooks/useDragHandler";
 import { LEFT_MARGIN, TOP_MARGIN } from "./constants";
-import { useViolinDragHandler } from "./ViolinDragHandler";
 
 type Side = "top" | "left";
 

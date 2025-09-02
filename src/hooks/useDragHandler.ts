@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ScaleBand } from "../../contexts/types";
+import { ScaleBand } from "../contexts/types";
 
 // Common drag state interface
 export interface DragState<T = unknown> {
