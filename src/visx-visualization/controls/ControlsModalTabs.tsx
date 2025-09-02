@@ -75,6 +75,14 @@ const rowSubItems = [
     },
   },
   {
+    id: "row-filters",
+    label: "Filters",
+    onClick: (e: React.MouseEvent) => {
+      e.preventDefault();
+      scrollToSection("filter-options-Row");
+    },
+  },
+  {
     id: "row-display",
     label: "Display Options",
     onClick: (e: React.MouseEvent) => {
@@ -90,6 +98,14 @@ const columnSubItems = [
     onClick: (e: React.MouseEvent) => {
       e.preventDefault();
       scrollToSection("sort-options-Column");
+    },
+  },
+  {
+    id: "column-filters",
+    label: "Filters",
+    onClick: (e: React.MouseEvent) => {
+      e.preventDefault();
+      scrollToSection("filter-options-Column");
     },
   },
   {

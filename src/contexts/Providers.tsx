@@ -50,6 +50,7 @@ interface CellPopConfigProps extends PropsWithChildren {
   initialProportions?: [GridSizeTuple, GridSizeTuple];
   fieldDisplayNames?: Record<string, string>;
   sortableFields?: string[];
+  filterableFields?: string[];
   tooltipFields?: string[];
   trackEvent?: (
     event: string,
@@ -76,6 +77,7 @@ export function Providers({
   initialProportions = [INITIAL_PROPORTIONS, INITIAL_PROPORTIONS],
   fieldDisplayNames,
   sortableFields,
+  filterableFields,
   tooltipFields,
   trackEvent,
   viewType,
@@ -114,6 +116,7 @@ export function Providers({
                                       fieldDisplayNames={fieldDisplayNames}
                                       sortableFields={sortableFields}
                                       tooltipFields={tooltipFields}
+                                      filterableFields={filterableFields}
                                     >
                                       <ControlsVisibilityProvider>
                                         <TemporalControlsProvider>
