@@ -39,7 +39,17 @@ export function useYScaleCreator(
       const collapsedHeight = scale.bandwidth();
       scale.lookup = (num: number) => {
         const eachBand = scale.bandwidth();
-        const index = Math.floor((effectiveHeight - num) / eachBand);
+        // Add half bandwidth to center the cell boundaries
+        const index = Math.floor(
+          (effectiveHeight - (num + eachBand / 2)) / eachBand,
+        );
+
+        const maxIndex = scale.domain().length - 1;
+
+        if (index > maxIndex) {
+          return scale.domain()[maxIndex];
+        }
+
         return scale.domain()[index];
       };
       return [scale, expandedHeight, collapsedHeight];
@@ -195,7 +205,8 @@ export function useYScaleCreator(
           const eachBand = scale.bandwidth();
           const diff = num - bottom;
 
-          const index = Math.floor(diff / eachBand);
+          // Add half bandwidth to center the cell boundaries
+          const index = Math.floor((diff + eachBand / 2) / eachBand);
           return scale.domain()[index];
         }
       }
