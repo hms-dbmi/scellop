@@ -20,6 +20,7 @@ import {
   useRowConfig,
 } from "../../contexts/AxisConfigContext";
 import { DisplayControls } from "./DisplayControls";
+import { FilterControls } from "./FilterControls";
 import { JumpToSection } from "./JumpToSection";
 import {
   PlotControlsSection,
@@ -52,6 +53,8 @@ function PlotControlSection({
       >
         <Divider />
         <SortControls />
+        <Divider />
+        <FilterControls />
         <Divider />
         <DisplayControls />
       </div>

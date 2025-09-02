@@ -6,16 +6,22 @@ import {
   useRowConfig,
 } from "../../contexts/AxisConfigContext";
 import {
-  useColumnSorts,
+  useAllColumnSubFilters,
+  useAllRowSubFilters,
+  useColumnSortKeys,
   useData,
+  useMetadataKeys,
   useMoveColumnToEnd,
   useMoveColumnToStart,
   useMoveRowToEnd,
   useMoveRowToStart,
-  useRowSorts,
+  useRowSortKeys,
 } from "../../contexts/DataContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
+import {
+  useGetFieldDisplayName,
+} from "../../contexts/MetadataConfigContext";
 import {
   useSetTooltipData,
   useTooltipData,
@@ -129,6 +135,55 @@ const RestoreHiddenColumns = () => {
     </ContextMenuItem>
   );
 };
+const ResetSorts = () => {
+  const { setRowSortOrder, setColumnSortOrder, rowSortOrder, columnSortOrder } =
+    useData((s) => ({
+      setRowSortOrder: s.setRowSortOrder,
+      setColumnSortOrder: s.setColumnSortOrder,
+      rowSortOrder: s.rowSortOrder,
+      columnSortOrder: s.columnSortOrder,
+    }));
+
+  const trackEvent = useTrackEvent();
+
+  const handleClick = useEventCallback(() => {
+    setRowSortOrder([]);
+    setColumnSortOrder([]);
+    trackEvent("Reset Sorts", "");
+  });
+
+  if (!rowSortOrder.length && !columnSortOrder.length) {
+    return null;
+  }
+
+  return <ContextMenuItem onClick={handleClick}>Reset Sorts</ContextMenuItem>;
+};
+
+const ResetFilters = () => {
+  const { setRowFilters, setColumnFilters, rowFilters, columnFilters } = useData(
+    (s) => ({
+      setRowFilters: s.setRowFilters,
+      setColumnFilters: s.setColumnFilters,
+      rowFilters: s.rowFilters,
+      columnFilters: s.columnFilters,
+    })
+  );
+
+  const trackEvent = useTrackEvent();
+
+  const handleClick = useEventCallback(() => {
+    setRowFilters([]);
+    setColumnFilters([]);
+    trackEvent("Reset Filters", "");
+  });
+
+  if (!rowFilters.length && !columnFilters.length) {
+    return null;
+  }
+
+  return <ContextMenuItem onClick={handleClick}>Reset Filters</ContextMenuItem>;
+};
+
 
 const ExpandRow = () => {
   const { tooltipData } = useTooltipData();
@@ -240,8 +295,8 @@ const SortDimension = ({ dimension }: { dimension: "row" | "column" }) => {
       rowSortOrder: s.rowSortOrder,
     };
   });
-  const rowSortOrders = useRowSorts();
-  const colSortOrders = useColumnSorts();
+  const rowSortOrders = useRowSortKeys();
+  const colSortOrders = useColumnSortKeys();
 
   const sort = dimension === "row" ? sortRows : sortColumns;
   const sortOrders = dimension === "row" ? rowSortOrders : colSortOrders;
@@ -252,6 +307,24 @@ const SortDimension = ({ dimension }: { dimension: "row" | "column" }) => {
 
   const trackEvent = useTrackEvent();
 
+  const getFieldDisplayName = useGetFieldDisplayName();
+
+  const handleSelect = (order: string, direction: "asc" | "desc") => {
+    const sortExists = currentSortOrder.some((s) => s.key === order && s.direction === direction);
+    const sortOppositeExists = currentSortOrder.some((s) => s.key === order && s.direction !== direction);
+
+    if (sortExists) {
+      sort(currentSortOrder.filter((s) => !(s.key === order && s.direction === direction)));
+      trackEvent(`Sort ${label}s`, `Removed ${order} ${direction}`);
+    } else if (sortOppositeExists) {
+      sort(currentSortOrder.map((s) => s.key === order ? { key: order, direction } : s));
+      trackEvent(`Sort ${label}s`, `Changed Direction ${order} ${direction}`);
+    } else {
+      sort([...currentSortOrder, { key: order, direction }]);
+      trackEvent(`Sort ${label}s`, `Added ${order} ${direction}`);
+    }
+  }
+
   return (
     <ContextMenu.Sub>
       <ContextMenuSubTrigger>
@@ -260,18 +333,125 @@ const SortDimension = ({ dimension }: { dimension: "row" | "column" }) => {
       <ContextMenu.Portal>
         <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
           {sortOrders.map((order) => (
-            <ContextMenuItem
-              key={order.key + order.direction}
-              onClick={() => {
-                sort([order]);
-                trackEvent(`Sort ${label}s`, `${order.key} ${order.direction}`);
-              }}
-            >
-              {order.key.charAt(0).toUpperCase()}
-              {order.key.slice(1).replace("_", " ")}{" "}
-              {order.direction === "asc" ? "Ascending" : "Descending"}
-              {currentSortOrder.includes(order) && <RightSlot>✓</RightSlot>}
-            </ContextMenuItem>
+            <ContextMenu.Sub key={order}>
+              <ContextMenuSubTrigger>
+                {getFieldDisplayName(order)}
+              </ContextMenuSubTrigger>
+              <ContextMenu.Portal>
+                <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+                  {(["asc", "desc"] as const).map((direction) => (
+                    <ContextMenuItem 
+                      key={order + direction}
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        handleSelect(order, direction)
+                      }}
+                    >
+                      <ContextMenu.CheckboxItem 
+                        // checked={currentSortOrder.includes({key: order, direction: direction})}
+                        checked={currentSortOrder.some((s) => s.key === order && s.direction === direction)}
+                      >
+                        <ContextMenu.ItemIndicator>✓</ContextMenu.ItemIndicator>
+                      </ContextMenu.CheckboxItem>
+                      {direction === "asc" ? "Ascending" : "Descending"}
+                    </ContextMenuItem>
+                  ))}
+                </ContextMenuSubContent>
+              </ContextMenu.Portal>
+            </ContextMenu.Sub>
+          ))}
+        </ContextMenuSubContent>
+      </ContextMenu.Portal>
+    </ContextMenu.Sub>
+  );
+};
+
+const FilterDimension = ({ dimension }: { dimension: "row" | "column" }) => {
+  const addFilter = useData((s) => 
+    dimension === "row" ? s.addRowFilter : s.addColumnFilter,
+  )
+  const removeFilter = useData((s) => 
+    dimension === "row" ? s.removeRowFilter : s.removeColumnFilter,
+  )
+  const editSubFilters = useData((s) => 
+    dimension === "row" ? s.editRowSubFilters : s.editColumnSubFilters,
+  )
+
+  const allFilters = useMetadataKeys(dimension);
+  const currentFilters =  useData((s) =>
+    dimension === "row" ? s.rowFilters : s.columnFilters,
+  );
+  const currentFilterKeys = currentFilters.map(f => f.key);
+
+  const currentFilterValues = (key: string) => currentFilters.find(f => f.key === key)?.values ?? [];
+
+  const getFieldDisplayName = useGetFieldDisplayName();
+
+  const useAllSubFilters = (key: string) => {
+    const rows = useAllRowSubFilters(key);
+    const columns = useAllColumnSubFilters(key);
+    return dimension === "row" ? rows : columns;
+  }
+
+  const { label: rowLabel } = useRowConfig();
+  const columnLabel = useColumnConfig((store) => store.label);
+  const label = dimension === "row" ? rowLabel : columnLabel;
+
+  const trackEvent = useTrackEvent();
+
+  const handleSelect = (filter: string, subfilter: string | number | boolean) => {
+    if (!currentFilterKeys.includes(filter)) {
+      addFilter(filter);
+      editSubFilters(filter, [subfilter]);
+      trackEvent(`Filter ${label}s`, `Added ${filter} - ${subfilter}`);
+    } else {
+      const currValues = currentFilterValues(filter)
+      if (currValues.includes(subfilter)) {
+        const newValues = currValues.filter(item => item !== subfilter);
+        trackEvent(`Filter ${label}s`, `Removed ${filter} - ${subfilter}`);
+        if (newValues.length === 0) {
+          removeFilter(filter);
+        } else {
+          editSubFilters(filter, newValues);
+        }
+      } else {
+        editSubFilters(filter, [...currValues, subfilter]);
+        trackEvent(`Filter ${label}s`, `Added ${filter} - ${subfilter}`);
+      }
+    }
+  }
+  
+  return (
+    <ContextMenu.Sub>
+      <ContextMenuSubTrigger>
+        Filter {label}s <RightSlot>&rsaquo;</RightSlot>
+      </ContextMenuSubTrigger>
+      <ContextMenu.Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          {allFilters.map((filter) => (
+            <ContextMenu.Sub key={filter}>
+              <ContextMenuSubTrigger>
+                {getFieldDisplayName(filter)}
+              </ContextMenuSubTrigger>
+              <ContextMenu.Portal>
+                <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+                  {useAllSubFilters(filter).map((subfilter) => (
+                    <ContextMenuItem 
+                      key={filter + "-" + subfilter}
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        handleSelect(filter, subfilter);
+                      }}
+                    >
+                      <ContextMenu.CheckboxItem checked={!currentFilterValues(filter).includes(subfilter)}>
+                        <ContextMenu.ItemIndicator>✓</ContextMenu.ItemIndicator>
+                      </ContextMenu.CheckboxItem>
+                      {subfilter}
+                    </ContextMenuItem>
+                  ))}
+                </ContextMenuSubContent>
+              </ContextMenu.Portal>
+            </ContextMenu.Sub>
           ))}
         </ContextMenuSubContent>
       </ContextMenu.Portal>
@@ -301,9 +481,9 @@ const ContextMenuComponent = () => {
       <ContextMenuContent>
         <ContextMenuLabel>Global Actions</ContextMenuLabel>
         <RestoreHiddenRows />
-        <SortDimension dimension="row" />
         <RestoreHiddenColumns />
-        <SortDimension dimension="column" />
+        <ResetSorts />
+        <ResetFilters />
         {hasRow && (
           <>
             <ContextMenuSeparator />
@@ -313,6 +493,8 @@ const ContextMenuComponent = () => {
             <MoveToEnd dimension="row" />
             <ExpandRow />
             <CollapseRows />
+            <SortDimension dimension="row" />
+            <FilterDimension dimension="row" />
           </>
         )}
         {hasColumn && (
@@ -322,6 +504,8 @@ const ContextMenuComponent = () => {
             <HideColumn />
             <MoveToStart dimension="column" />
             <MoveToEnd dimension="column" />
+            <SortDimension dimension="column" />
+            <FilterDimension dimension="column" />
           </>
         )}
       </ContextMenuContent>

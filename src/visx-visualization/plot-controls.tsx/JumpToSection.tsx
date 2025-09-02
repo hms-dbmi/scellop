@@ -1,4 +1,4 @@
-import { Sort, Visibility } from "@mui/icons-material";
+import { FilterAlt, Sort, Visibility } from "@mui/icons-material";
 import { Link, Typography } from "@mui/material";
 import React from "react";
 export function JumpToSection({ section }: { section: string }) {
@@ -27,6 +27,22 @@ export function JumpToSection({ section }: { section: string }) {
         }}
       >
         <Sort /> Sorts
+      </Link>
+      {" | "}
+      <Link
+        href={`#filter-options-${section}`}
+        display="flex"
+        alignItems="center"
+        underline="none"
+        gap={1}
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById(`filter-options-${section}`)?.scrollIntoView({
+            behavior: "smooth",
+          });
+        }}
+      >
+        <FilterAlt /> Filters
       </Link>
       {" | "}
       <Link
