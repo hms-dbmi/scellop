@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useId } from "react";
+import MenuItemWithDescription from "../../components/MenuItemWithDescription";
 import { useColorScale } from "../../contexts/ColorScaleContext";
 import { useViewType } from "../../contexts/ViewTypeContext";
 import {
@@ -234,29 +235,15 @@ export function LeftGraphTypeControl() {
           variant="outlined"
           label="Left Graph Type"
           sx={{ minWidth: 200 }}
+          renderValue={(value) => value as string}
         >
           {GRAPH_TYPES.map((type) => (
-            <MenuItem key={type} value={type}>
-              <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {type}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    fontSize: "0.75rem",
-                    textTransform: "none",
-                    whiteSpace: "normal",
-                    wordBreak: "break-word",
-                    lineHeight: 1.3,
-                    maxWidth: "100%",
-                  }}
-                >
-                  {GRAPH_TYPE_DESCRIPTIONS[type]}
-                </Typography>
-              </Stack>
-            </MenuItem>
+            <MenuItemWithDescription
+              key={type}
+              value={type}
+              title={type}
+              description={GRAPH_TYPE_DESCRIPTIONS[type]}
+            />
           ))}
         </Select>
       </FormControl>
@@ -295,29 +282,15 @@ export function TopGraphTypeControl() {
           variant="outlined"
           label="Top Graph Type"
           sx={{ minWidth: 200 }}
+          renderValue={(value) => value as string}
         >
           {GRAPH_TYPES.map((type) => (
-            <MenuItem key={type} value={type}>
-              <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {type}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    fontSize: "0.75rem",
-                    textTransform: "none",
-                    whiteSpace: "normal",
-                    wordBreak: "break-word",
-                    lineHeight: 1.3,
-                    maxWidth: "100%",
-                  }}
-                >
-                  {GRAPH_TYPE_DESCRIPTIONS[type]}
-                </Typography>
-              </Stack>
-            </MenuItem>
+            <MenuItemWithDescription
+              key={type}
+              value={type}
+              title={type}
+              description={GRAPH_TYPE_DESCRIPTIONS[type]}
+            />
           ))}
         </Select>
       </FormControl>
@@ -353,6 +326,7 @@ export function NormalizationControl() {
           variant="outlined"
           label="Heatmap Normalization"
           sx={{ textTransform: "capitalize", minWidth: 200 }}
+          renderValue={(value) => value as string}
           MenuProps={{
             PaperProps: {
               sx: {
@@ -366,35 +340,17 @@ export function NormalizationControl() {
           }}
         >
           {NORMALIZATIONS.map((normalization) => (
-            <MenuItem
+            <MenuItemWithDescription
               key={normalization}
               value={normalization}
+              title={normalization}
+              description={NORMALIZATION_DESCRIPTIONS[normalization]}
               sx={{
                 textTransform: "capitalize",
-                maxWidth: "100%", // Limit width to prevent overly wide dropdowns
-                whiteSpace: "normal", // Allow text wrapping
+                maxWidth: "100%",
+                whiteSpace: "normal",
               }}
-            >
-              <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {normalization}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    fontSize: "0.75rem",
-                    textTransform: "none",
-                    whiteSpace: "normal",
-                    wordBreak: "break-word",
-                    lineHeight: 1.3,
-                    maxWidth: "100%",
-                  }}
-                >
-                  {NORMALIZATION_DESCRIPTIONS[normalization]}
-                </Typography>
-              </Stack>
-            </MenuItem>
+            />
           ))}
         </Select>
       </FormControl>
@@ -569,49 +525,18 @@ export function ViewTypeControl() {
           variant="outlined"
           label="View Type"
           sx={{ textTransform: "capitalize", minWidth: 200 }}
+          renderValue={(value) => value as string}
         >
-          <MenuItem value="default">
-            <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                Default
-              </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{
-                  fontSize: "0.75rem",
-                  textTransform: "none",
-                  whiteSpace: "normal",
-                  wordBreak: "break-word",
-                  lineHeight: 1.3,
-                  maxWidth: "100%",
-                }}
-              >
-                Standard 3x3 grid layout with all panels visible
-              </Typography>
-            </Stack>
-          </MenuItem>
-          <MenuItem value="traditional">
-            <Stack direction="column" spacing={0.5} sx={{ width: "100%" }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                Traditional
-              </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{
-                  fontSize: "0.75rem",
-                  textTransform: "none",
-                  whiteSpace: "normal",
-                  wordBreak: "break-word",
-                  lineHeight: 1.3,
-                  maxWidth: "100%",
-                }}
-              >
-                Simplified layout focusing on only the top stacked bar chart.
-              </Typography>
-            </Stack>
-          </MenuItem>
+          <MenuItemWithDescription
+            value="default"
+            title="Default"
+            description="Standard 3x3 grid layout with all panels visible"
+          />
+          <MenuItemWithDescription
+            value="traditional"
+            title="Traditional"
+            description="Simplified layout focusing on only the top stacked bar chart."
+          />
         </Select>
       </FormControl>
       <FormHelperText>
