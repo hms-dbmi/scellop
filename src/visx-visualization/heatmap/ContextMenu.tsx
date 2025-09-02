@@ -1,4 +1,10 @@
-import { useEventCallback } from "@mui/material";
+import {
+  ArrowDownward,
+  ArrowUpward,
+  Close,
+  Restore,
+} from "@mui/icons-material";
+import { Box, Stack, Typography, useEventCallback } from "@mui/material";
 import {
   CheckboxItem,
   ItemIndicator,
@@ -336,12 +342,25 @@ const MoveToEnd = ({ dimension }: { dimension: "Row" | "Column" }) => {
 };
 
 const SortDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
-  const { sortColumns, sortRows, colSortOrder, rowSortOrder } = useData((s) => {
+  const {
+    sortColumns,
+    sortRows,
+    colSortOrder,
+    rowSortOrder,
+    rowSortInvalidated,
+    columnSortInvalidated,
+    revalidateRowSort,
+    revalidateColumnSort,
+  } = useData((s) => {
     return {
       sortColumns: s.setColumnSortOrder,
       sortRows: s.setRowSortOrder,
       colSortOrder: s.columnSortOrder,
       rowSortOrder: s.rowSortOrder,
+      rowSortInvalidated: s.rowSortInvalidated,
+      columnSortInvalidated: s.columnSortInvalidated,
+      revalidateRowSort: s.revalidateRowSort,
+      revalidateColumnSort: s.revalidateColumnSort,
     };
   });
   const rowSortOrders = useRowSortKeys();
@@ -353,6 +372,10 @@ const SortDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
   const columnLabel = useColumnConfig((store) => store.label);
   const label = dimension === "Row" ? rowLabel : columnLabel;
   const currentSortOrder = dimension === "Row" ? rowSortOrder : colSortOrder;
+  const isInvalidated =
+    dimension === "Row" ? rowSortInvalidated : columnSortInvalidated;
+  const revalidateSort =
+    dimension === "Row" ? revalidateRowSort : revalidateColumnSort;
 
   const trackEvent = useTrackEvent();
 
@@ -393,36 +416,110 @@ const SortDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
       </ContextMenuSubTrigger>
       <Portal>
         <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
-          {sortOrders.map((order) => (
-            <SubMenu key={order}>
-              <ContextMenuSubTrigger>
-                {getFieldDisplayName(order)}
-              </ContextMenuSubTrigger>
-              <Portal>
-                <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
-                  {(["asc", "desc"] as const).map((direction) => (
-                    <ContextMenuItem
-                      key={order + direction}
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        handleSelect(order, direction);
-                      }}
-                    >
-                      <CheckboxItem
-                        // checked={currentSortOrder.includes({key: order, direction: direction})}
-                        checked={currentSortOrder.some(
-                          (s) => s.key === order && s.direction === direction,
-                        )}
-                      >
-                        <ItemIndicator>✓</ItemIndicator>
-                      </CheckboxItem>
-                      {direction === "asc" ? "Ascending" : "Descending"}
-                    </ContextMenuItem>
-                  ))}
-                </ContextMenuSubContent>
-              </Portal>
-            </SubMenu>
-          ))}
+          {currentSortOrder.length > 0 && (
+            <>
+              <ContextMenuLabel>{label} Sort Order</ContextMenuLabel>
+              {isInvalidated && (
+                <ContextMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    revalidateSort();
+                    trackEvent(`Revalidate ${label} Sort`, "");
+                  }}
+                  style={{
+                    opacity: 0.9,
+                    cursor: "pointer",
+                  }}
+                >
+                  <Stack alignItems="center" direction="row" spacing={1}>
+                    <Restore />
+                    <Typography>Revalidate Sorts</Typography>
+                  </Stack>
+                </ContextMenuItem>
+              )}
+              {currentSortOrder.map((sort, index) => (
+                <ContextMenuItem
+                  key={`current-sort-${sort.key}-${sort.direction}`}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    if (isInvalidated) return;
+                    const newSortOrder = currentSortOrder.filter(
+                      (s) =>
+                        !(s.key === sort.key && s.direction === sort.direction),
+                    );
+                    (dimension === "Row" ? sortRows : sortColumns)(
+                      newSortOrder,
+                    );
+                    trackEvent(
+                      `Remove Sort ${label}`,
+                      `${sort.key} ${sort.direction}`,
+                    );
+                  }}
+                  style={{
+                    opacity: isInvalidated ? 0.5 : 0.8,
+                    cursor: isInvalidated ? "default" : "pointer",
+                  }}
+                >
+                  <Stack alignItems="center" direction="row" width="100%">
+                    <Box>
+                      <Typography display="inline-block">
+                        {index + 1}: {getFieldDisplayName(sort.key)}{" "}
+                      </Typography>
+                    </Box>
+
+                    {sort.direction === "asc" ? (
+                      <ArrowUpward />
+                    ) : (
+                      <ArrowDownward />
+                    )}
+
+                    <Box ml="auto">
+                      <Close />
+                    </Box>
+                  </Stack>
+                </ContextMenuItem>
+              ))}
+              <ContextMenuSeparator />
+            </>
+          )}
+          {!isInvalidated &&
+            sortOrders.map((order) => (
+              <SubMenu key={order}>
+                <ContextMenuSubTrigger>
+                  {getFieldDisplayName(order)}
+                </ContextMenuSubTrigger>
+                <Portal>
+                  <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+                    {(["asc", "desc"] as const).map((direction) => {
+                      const sortIndex = currentSortOrder.findIndex(
+                        (s) => s.key === order && s.direction === direction,
+                      );
+                      const sortOrder = sortIndex >= 0 ? sortIndex + 1 : null;
+
+                      return (
+                        <ContextMenuItem
+                          key={order + direction}
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            handleSelect(order, direction);
+                          }}
+                        >
+                          <span
+                            style={{
+                              minWidth: "20px",
+                              display: "inline-block",
+                            }}
+                          >
+                            {sortOrder ? `${sortOrder}.` : ""}
+                          </span>
+                          {direction === "asc" ? "Ascending" : "Descending"}
+                        </ContextMenuItem>
+                      );
+                    })}
+                  </ContextMenuSubContent>
+                </Portal>
+              </SubMenu>
+            ))}
         </ContextMenuSubContent>
       </Portal>
     </SubMenu>
