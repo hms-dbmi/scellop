@@ -32,6 +32,12 @@ interface InitializedAxisConfig extends AxisConfig {
 interface AxisConfigActions {
   setLabel: (label: string) => void;
   setCreateHref: (createHref: (tick: string) => string) => void;
+  setCreateSubtitle: (
+    createSubtitle: (
+      value: string,
+      metadataValues?: Record<string, string | number>,
+    ) => string,
+  ) => void;
   zoomIn: () => void;
   zoomOut: () => void;
   toggleZoom: () => void;
@@ -39,6 +45,7 @@ interface AxisConfigActions {
   setColors: (colors: Record<string, string>) => void;
   setColor: (itemName: string, color: string) => void;
   removeColor: (itemName: string) => void;
+  setPluralLabel: (pluralLabel: string) => void;
 }
 
 export type AxisConfigStore = InitializedAxisConfig & AxisConfigActions;
@@ -53,9 +60,16 @@ const createAxisConfigStore =
         setLabel: (label: string) => set({ label }),
         setCreateHref: (createHref: (tick: string) => string) =>
           set({ createHref }),
+        setCreateSubtitle: (
+          createSubtitle: (
+            value: string,
+            metadataValues?: Record<string, string | number>,
+          ) => string,
+        ) => set({ createSubtitle }),
         get pluralLabel() {
           return initialArgs.pluralLabel ?? `${this.label}s`;
         },
+        setPluralLabel: (pluralLabel: string) => set({ pluralLabel }),
         setZoomBandwidth: (zoomedBandwidth: number) => set({ zoomedBandwidth }),
         zoomIn: () => set({ zoomed: true }),
         zoomOut: () => set({ zoomed: false }),
@@ -104,6 +118,7 @@ export const useSwapAxisConfigs = () => {
       pluralLabel: rowConfigState.pluralLabel,
       zoomed: rowConfigState.zoomed,
       zoomedBandwidth: rowConfigState.zoomedBandwidth,
+      colors: rowConfigState.colors,
     };
 
     const currentColumnState = {
@@ -114,10 +129,12 @@ export const useSwapAxisConfigs = () => {
       pluralLabel: columnConfigState.pluralLabel,
       zoomed: columnConfigState.zoomed,
       zoomedBandwidth: columnConfigState.zoomedBandwidth,
+      colors: columnConfigState.colors,
     };
 
     // Apply swapped configurations
     rowConfigState.setLabel(currentColumnState.label);
+    rowConfigState.setPluralLabel(currentColumnState.pluralLabel);
     if (currentColumnState.createHref) {
       rowConfigState.setCreateHref(currentColumnState.createHref);
     }
@@ -125,14 +142,27 @@ export const useSwapAxisConfigs = () => {
     if (currentColumnState.zoomed !== rowConfigState.zoomed) {
       rowConfigState.toggleZoom();
     }
+    if (currentColumnState.colors) {
+      rowConfigState.setColors(currentColumnState.colors);
+    }
+    if (currentColumnState.createSubtitle) {
+      rowConfigState.setCreateSubtitle(currentColumnState.createSubtitle);
+    }
 
     columnConfigState.setLabel(currentRowState.label);
+    columnConfigState.setPluralLabel(currentRowState.pluralLabel);
     if (currentRowState.createHref) {
       columnConfigState.setCreateHref(currentRowState.createHref);
     }
     columnConfigState.setZoomBandwidth(currentRowState.zoomedBandwidth ?? 32);
     if (currentRowState.zoomed !== columnConfigState.zoomed) {
       columnConfigState.toggleZoom();
+    }
+    if (currentRowState.colors) {
+      columnConfigState.setColors(currentRowState.colors);
+    }
+    if (currentRowState.createSubtitle) {
+      columnConfigState.setCreateSubtitle(currentRowState.createSubtitle);
     }
   };
 };
