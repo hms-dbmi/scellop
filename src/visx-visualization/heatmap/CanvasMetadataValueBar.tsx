@@ -390,6 +390,7 @@ export default function CanvasMetadataValueBar({
     const font = `${theme.typography.fontSize}px ${theme.typography.fontFamily}`;
 
     // Draw bars and text
+    // First pass: draw all non-dragged bars
     bars.forEach((bar) => {
       const {
         value,
@@ -404,30 +405,26 @@ export default function CanvasMetadataValueBar({
       const isDraggedBar = isDragging && draggedSegment === bar;
       const isTargetBar = isDragging && targetSegment === bar;
 
+      // Skip dragged bar in first pass - we'll draw it on top
+      if (isDraggedBar) return;
+
       // Draw bar with drag/target highlighting
-      if (isDraggedBar) {
-        ctx.fillStyle = theme.palette.primary.light;
-      } else if (isTargetBar) {
+      if (isTargetBar) {
         // Make target more visible with a stronger highlight
         ctx.fillStyle = theme.palette.secondary.main;
-        ctx.globalAlpha = 0.3; // Semi-transparent highlight
+        ctx.globalAlpha = 0.4; // Semi-transparent highlight
       } else {
         ctx.fillStyle = color;
+        ctx.globalAlpha = isDragging ? 0.6 : 1.0; // Dim other bars when dragging
       }
 
       ctx.fillRect(xVal, yVal, barWidth, Math.ceil(barHeight));
 
       // Reset alpha for subsequent draws
-      if (isTargetBar) {
-        ctx.globalAlpha = 1.0;
-      }
+      ctx.globalAlpha = 1.0;
 
-      // Draw borders around dragged and target bars
-      if (isDraggedBar) {
-        ctx.strokeStyle = theme.palette.primary.main;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(xVal, yVal, barWidth, Math.ceil(barHeight));
-      } else if (isTargetBar) {
+      // Draw borders around target bars
+      if (isTargetBar) {
         // Draw a more prominent target indicator
         ctx.strokeStyle = theme.palette.secondary.main;
         ctx.lineWidth = 3;
@@ -489,6 +486,95 @@ export default function CanvasMetadataValueBar({
         }
       }
     });
+
+    // Second pass: draw the dragged bar on top for better visibility
+    if (isDragging && draggedSegment) {
+      const bar = draggedSegment;
+      const {
+        value,
+        height: barHeight,
+        width: barWidth,
+        x: xVal,
+        y: yVal,
+      } = bar;
+
+      // Draw the dragged bar with enhanced highlighting
+      ctx.save();
+
+      // Add a subtle drop shadow effect first
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = theme.palette.grey[600];
+      const shadowOffset = 3;
+      ctx.fillRect(
+        xVal + shadowOffset,
+        yVal + shadowOffset,
+        barWidth,
+        Math.ceil(barHeight),
+      );
+
+      // Draw the main dragged bar
+      ctx.globalAlpha = 0.9; // Slightly transparent to show it's being moved
+      ctx.fillStyle = theme.palette.primary.main;
+      ctx.fillRect(xVal, yVal, barWidth, Math.ceil(barHeight));
+
+      // Add a prominent border
+      ctx.globalAlpha = 1.0;
+      ctx.strokeStyle = theme.palette.primary.dark;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(xVal, yVal, barWidth, Math.ceil(barHeight));
+
+      // Add an inner highlight border
+      ctx.strokeStyle = theme.palette.primary.light;
+      ctx.lineWidth = 1;
+      const inset = 2;
+      ctx.strokeRect(
+        xVal + inset,
+        yVal + inset,
+        barWidth - inset * 2,
+        Math.ceil(barHeight) - inset * 2,
+      );
+
+      ctx.restore();
+
+      // Draw metadata label text for dragged bar
+      if (sortOrder.length === 1) {
+        const shortenedValue =
+          value.toString().length > 20
+            ? value.toString().slice(0, 10) + "..."
+            : value;
+
+        // Use contrast text color for better readability on the highlighted background
+        ctx.fillStyle = theme.palette.primary.contrastText;
+        ctx.font = font;
+
+        const textY = (() => {
+          if (axis === "X") {
+            return yVal + barHeight / 2;
+          }
+          if (bars.length === 1) {
+            return yVal + barHeight / 1.5;
+          } else {
+            return yVal + barHeight / 2;
+          }
+        })();
+
+        if (axis === "X") {
+          // Rotated text for X axis
+          ctx.save();
+          ctx.translate(xVal + barWidth / 2, textY + cellWidth + 8);
+          ctx.rotate(Math.PI / 2);
+          ctx.textAlign = "start";
+          ctx.textBaseline = "middle";
+          ctx.fillText(String(shortenedValue), 0, 0);
+          ctx.restore();
+        } else {
+          // Horizontal text for Y axis
+          ctx.textAlign = "start";
+          ctx.textBaseline = "middle";
+          ctx.fillText(String(shortenedValue), xVal + cellWidth + 8, textY);
+        }
+      }
+    }
 
     ctx.restore(); // End the scroll transform
 
@@ -798,8 +884,13 @@ export default function CanvasMetadataValueBar({
   // Determine cursor style based on drag state
   const getCursorStyle = useCallback(() => {
     if (isDragging) {
-      return targetSegment ? "copy" : "grabbing";
+      if (targetSegment) {
+        return "copy"; // Show copy cursor when over a valid drop target
+      } else {
+        return "grabbing"; // Show grabbing cursor when dragging
+      }
     }
+    // Show grab cursor when hovering over draggable elements
     return "grab";
   }, [isDragging, targetSegment]);
 

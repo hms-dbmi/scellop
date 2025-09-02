@@ -23,7 +23,7 @@ import { useTooltipFields } from "../../contexts/MetadataConfigContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
-import { useCanvasDragHandler } from "./CanvasDragHandler";
+import { useCanvasDragHandler } from "../shared/UnifiedDragHandler";
 
 const useCurrentNormalizedScale = () => {
   const normalization = useNormalization((s) => s.normalization);
