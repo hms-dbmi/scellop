@@ -13,7 +13,12 @@ const VisualizationPanelComponent = styled(Box)({
   height: "100%",
 });
 
-const PanelContentWrapper = styled(Box)<{
+const propsToSkip = ["shouldRender", "isTransitioning"];
+
+const PanelContentWrapper = styled(Box, {
+  shouldForwardProp: (prop) =>
+    !propsToSkip.includes(prop as (typeof propsToSkip)[number]),
+})<{
   shouldRender: boolean;
   isTransitioning: boolean;
 }>(({ shouldRender, isTransitioning }) => ({
