@@ -11,8 +11,11 @@ interface IndividualGraphTypeProps {
 interface IndividualGraphTypeStore {
   leftGraphType: GraphType;
   topGraphType: GraphType;
+  previousTopGraphType: GraphType | null;
   setLeftGraphType: (graphType: GraphType) => void;
   setTopGraphType: (graphType: GraphType) => void;
+  setTopGraphTypeForTraditional: (graphType: GraphType) => void;
+  restorePreviousTopGraphType: () => void;
 }
 
 const createIndividualGraphTypeStore = ({
@@ -23,10 +26,21 @@ const createIndividualGraphTypeStore = ({
     temporal((set) => ({
       leftGraphType: initialLeftGraphType,
       topGraphType: initialTopGraphType,
+      previousTopGraphType: null,
       setLeftGraphType: (graphType: GraphType) =>
         set({ leftGraphType: graphType }),
       setTopGraphType: (graphType: GraphType) =>
         set({ topGraphType: graphType }),
+      setTopGraphTypeForTraditional: (graphType: GraphType) =>
+        set((state) => ({
+          previousTopGraphType: state.topGraphType,
+          topGraphType: graphType,
+        })),
+      restorePreviousTopGraphType: () =>
+        set((state) => ({
+          topGraphType: state.previousTopGraphType || state.topGraphType,
+          previousTopGraphType: null,
+        })),
     })),
   );
 };
@@ -53,6 +67,12 @@ export const useSetLeftGraphType = () =>
 
 export const useSetTopGraphType = () =>
   useIndividualGraphType((s) => s.setTopGraphType);
+
+export const useSetTopGraphTypeForTraditional = () =>
+  useIndividualGraphType((s) => s.setTopGraphTypeForTraditional);
+
+export const useRestorePreviousTopGraphType = () =>
+  useIndividualGraphType((s) => s.restorePreviousTopGraphType);
 
 // Type checking hooks for left graph
 export const useIsLeftViolins = () =>

@@ -108,8 +108,9 @@ export default function Bars({
   const columnConfig = useColumnConfig();
   const axisConfig = orientation === "rows" ? rowConfig : columnConfig;
 
-  // Get data for stacked bars - use appropriate data map based on normalization
-  const dataMap = useFractionDataMap(normalization);
+  // Get data for stacked bars - always use raw counts regardless of normalization
+  const rawDataMap = useFractionDataMap("None"); // Always use raw counts for stacked bars
+  const normalizedDataMap = useFractionDataMap(normalization); // For color scaling when needed
 
   // Get the opposite dimension values for stacking
   const stackValues = useData((s) =>
@@ -206,12 +207,12 @@ export default function Bars({
         );
 
         for (const stackValue of activeStackValues) {
-          // Get the cell value for this combination
+          // Get the cell value for this combination - always use raw counts for stacking
           const cellKey =
             orientation === "columns"
               ? `${stackValue}-${key}`
               : `${key}-${stackValue}`;
-          const cellValue = dataMap[cellKey as keyof typeof dataMap] || 0;
+          const cellValue = rawDataMap[cellKey as keyof typeof rawDataMap] || 0;
 
           if (cellValue > 0) {
             // Scale the segment value
@@ -248,9 +249,11 @@ export default function Bars({
               if (normalization === "None") {
                 color = colorScale.countsScale(cellValue);
               } else {
-                // For normalized data, use percentage scale
+                // For normalized data, use percentage scale with normalized value
                 const normalizedValue =
-                  normalization === "Row" ? cellValue / totalValue : cellValue;
+                  normalizedDataMap[
+                    cellKey as keyof typeof normalizedDataMap
+                  ] || 0;
                 color = colorScale.percentageScale(normalizedValue);
               }
             }
@@ -310,7 +313,8 @@ export default function Bars({
   }, [
     orientation,
     data,
-    dataMap,
+    rawDataMap,
+    normalizedDataMap,
     categoricalScale,
     numericalScale,
     domainLimit,

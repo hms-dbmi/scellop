@@ -44,8 +44,10 @@ import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import {
   useLeftGraphType,
+  useRestorePreviousTopGraphType,
   useSetLeftGraphType,
   useSetTopGraphType,
+  useSetTopGraphTypeForTraditional,
   useTopGraphType,
 } from "../../contexts/IndividualGraphTypeContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
@@ -497,16 +499,18 @@ export function TransposeControl() {
 
 export function ViewTypeControl() {
   const { viewType, setTraditional, setDefault } = useViewType();
-  const setTopGraphType = useSetTopGraphType();
+  const setTopGraphTypeForTraditional = useSetTopGraphTypeForTraditional();
+  const restorePreviousTopGraphType = useRestorePreviousTopGraphType();
   const trackEvent = useTrackEvent();
 
   const handleViewTypeChange = useEventCallback((event: SelectChangeEvent) => {
     const newViewType = event.target.value as "traditional" | "default";
     if (newViewType === "traditional") {
       setTraditional();
-      setTopGraphType("Stacked Bars (Categorical)");
+      setTopGraphTypeForTraditional("Stacked Bars (Categorical)");
     } else {
       setDefault();
+      restorePreviousTopGraphType();
     }
     trackEvent("Change View Type", newViewType);
   });

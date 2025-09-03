@@ -15,7 +15,10 @@ import React from "react";
 import {
   useColumnConfig,
   useRowConfig,
+  useSwapAxisConfigs,
 } from "../../contexts/AxisConfigContext";
+import { useSetTheme } from "../../contexts/CellPopThemeContext";
+import { useColorScale } from "../../contexts/ColorScaleContext";
 import {
   useAllColumnSubFilters,
   useAllRowSubFilters,
@@ -27,14 +30,28 @@ import {
   useMoveRowToEnd,
   useMoveRowToStart,
   useRowSortKeys,
+  useTranspose,
 } from "../../contexts/DataContext";
+import {
+  useNormalizationControlIsDisabled,
+  useThemeControlIsDisabled,
+} from "../../contexts/DisabledControlProvider";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
+import {
+  useRestorePreviousTopGraphType,
+  useSetTopGraphTypeForTraditional,
+} from "../../contexts/IndividualGraphTypeContext";
 import { useGetFieldDisplayName } from "../../contexts/MetadataConfigContext";
+import { useNormalization } from "../../contexts/NormalizationContext";
+import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import {
   useSetTooltipData,
   useTooltipData,
 } from "../../contexts/TooltipDataContext";
+import { useViewType } from "../../contexts/ViewTypeContext";
+import { HEATMAP_THEMES_LIST, HeatmapTheme } from "../../utils/heatmap-themes";
+import { NORMALIZATIONS } from "../../utils/normalizations";
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -526,6 +543,56 @@ const SortDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
   );
 };
 
+const useAllSubFilters = (key: string, dimension: "Row" | "Column") => {
+  const rows = useAllRowSubFilters(key);
+  const columns = useAllColumnSubFilters(key);
+  return dimension === "Row" ? rows : columns;
+};
+
+const FilterSubMenu = ({
+  filter,
+  dimension,
+  getFieldDisplayName,
+  currentFilterValues,
+  handleSelect,
+}: {
+  filter: string;
+  dimension: "Row" | "Column";
+  getFieldDisplayName: (key: string) => string;
+  currentFilterValues: (key: string) => (string | number | boolean)[];
+  handleSelect: (filter: string, subfilter: string | number | boolean) => void;
+}) => {
+  const allSubFilters = useAllSubFilters(filter, dimension);
+
+  return (
+    <SubMenu key={filter}>
+      <ContextMenuSubTrigger>
+        {getFieldDisplayName(filter)}
+      </ContextMenuSubTrigger>
+      <Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          {allSubFilters.map((subfilter) => (
+            <ContextMenuItem
+              key={filter + "-" + subfilter}
+              onSelect={(e) => {
+                e.preventDefault();
+                handleSelect(filter, subfilter);
+              }}
+            >
+              <CheckboxItem
+                checked={!currentFilterValues(filter).includes(subfilter)}
+              >
+                <ItemIndicator>✓</ItemIndicator>
+              </CheckboxItem>
+              {subfilter}
+            </ContextMenuItem>
+          ))}
+        </ContextMenuSubContent>
+      </Portal>
+    </SubMenu>
+  );
+};
+
 const FilterDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
   const addFilter = useData((s) =>
     dimension === "Row" ? s.addRowFilter : s.addColumnFilter,
@@ -547,12 +614,6 @@ const FilterDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
     currentFilters.find((f) => f.key === key)?.values ?? [];
 
   const getFieldDisplayName = useGetFieldDisplayName();
-
-  const useAllSubFilters = (key: string) => {
-    const rows = useAllRowSubFilters(key);
-    const columns = useAllColumnSubFilters(key);
-    return dimension === "Row" ? rows : columns;
-  };
 
   const { label: rowLabel } = useRowConfig();
   const columnLabel = useColumnConfig((store) => store.label);
@@ -593,37 +654,232 @@ const FilterDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
       <Portal>
         <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
           {allFilters.map((filter) => (
-            <SubMenu key={filter}>
-              <ContextMenuSubTrigger>
-                {getFieldDisplayName(filter)}
-              </ContextMenuSubTrigger>
-              <Portal>
-                <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
-                  {useAllSubFilters(filter).map((subfilter) => (
-                    <ContextMenuItem
-                      key={filter + "-" + subfilter}
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        handleSelect(filter, subfilter);
-                      }}
-                    >
-                      <CheckboxItem
-                        checked={
-                          !currentFilterValues(filter).includes(subfilter)
-                        }
-                      >
-                        <ItemIndicator>✓</ItemIndicator>
-                      </CheckboxItem>
-                      {subfilter}
-                    </ContextMenuItem>
-                  ))}
-                </ContextMenuSubContent>
-              </Portal>
-            </SubMenu>
+            <FilterSubMenu
+              key={filter}
+              filter={filter}
+              dimension={dimension}
+              getFieldDisplayName={getFieldDisplayName}
+              currentFilterValues={currentFilterValues}
+              handleSelect={handleSelect}
+            />
           ))}
         </ContextMenuSubContent>
       </Portal>
     </SubMenu>
+  );
+};
+
+const HeatmapThemeSelect = () => {
+  const { setHeatmapTheme, heatmapTheme, isInverted, toggleInvert } =
+    useColorScale();
+  const trackEvent = useTrackEvent();
+
+  const handleThemeChange = (theme: HeatmapTheme) => {
+    setHeatmapTheme(theme);
+    trackEvent("Change Heatmap Theme", theme);
+  };
+
+  const handleInvertToggle = () => {
+    toggleInvert();
+    trackEvent("Toggle Heatmap Theme Invert", isInverted ? "false" : "true");
+  };
+
+  return (
+    <SubMenu>
+      <ContextMenuSubTrigger>
+        Heatmap Theme <RightSlot>&rsaquo;</RightSlot>
+      </ContextMenuSubTrigger>
+      <Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          <ContextMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              handleInvertToggle();
+            }}
+          >
+            <CheckboxItem checked={isInverted}>
+              <ItemIndicator>✓</ItemIndicator>
+            </CheckboxItem>
+            Invert Theme
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          {HEATMAP_THEMES_LIST.map((theme) => (
+            <ContextMenuItem
+              key={theme}
+              onSelect={(e) => {
+                e.preventDefault();
+                handleThemeChange(theme);
+              }}
+            >
+              <CheckboxItem checked={heatmapTheme === theme}>
+                <ItemIndicator>✓</ItemIndicator>
+              </CheckboxItem>
+              <span style={{ textTransform: "capitalize" }}>{theme}</span>
+            </ContextMenuItem>
+          ))}
+        </ContextMenuSubContent>
+      </Portal>
+    </SubMenu>
+  );
+};
+
+const NormalizationSelect = () => {
+  const normalizationIsDisabled = useNormalizationControlIsDisabled();
+  const { normalization, setNormalization } = useNormalization();
+  const trackEvent = useTrackEvent();
+
+  const handleNormalizationChange = (
+    selectedNormalization: (typeof NORMALIZATIONS)[number],
+  ) => {
+    setNormalization(selectedNormalization);
+    trackEvent("Change Heatmap Normalization", selectedNormalization);
+  };
+
+  if (normalizationIsDisabled) {
+    return null;
+  }
+
+  return (
+    <SubMenu>
+      <ContextMenuSubTrigger>
+        Normalization <RightSlot>&rsaquo;</RightSlot>
+      </ContextMenuSubTrigger>
+      <Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          {NORMALIZATIONS.map((norm) => (
+            <ContextMenuItem
+              key={norm}
+              onSelect={(e) => {
+                e.preventDefault();
+                handleNormalizationChange(norm);
+              }}
+            >
+              <CheckboxItem checked={normalization === norm}>
+                <ItemIndicator>✓</ItemIndicator>
+              </CheckboxItem>
+              <span style={{ textTransform: "capitalize" }}>{norm}</span>
+            </ContextMenuItem>
+          ))}
+        </ContextMenuSubContent>
+      </Portal>
+    </SubMenu>
+  );
+};
+
+const ThemeToggle = () => {
+  const themeIsDisabled = useThemeControlIsDisabled();
+  const { currentTheme, setTheme } = useSetTheme();
+  const trackEvent = useTrackEvent();
+
+  const handleThemeToggle = () => {
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    trackEvent("Change Visualization Theme", newTheme);
+  };
+
+  if (themeIsDisabled) {
+    return null;
+  }
+
+  return (
+    <ContextMenuItem
+      onSelect={(e) => {
+        e.preventDefault();
+        handleThemeToggle();
+      }}
+    >
+      <CheckboxItem checked={currentTheme === "dark"}>
+        <ItemIndicator>✓</ItemIndicator>
+      </CheckboxItem>
+      Dark Theme
+    </ContextMenuItem>
+  );
+};
+
+const ViewTypeSelect = () => {
+  const { viewType, setTraditional, setDefault } = useViewType();
+  const setTopGraphTypeForTraditional = useSetTopGraphTypeForTraditional();
+  const restorePreviousTopGraphType = useRestorePreviousTopGraphType();
+  const trackEvent = useTrackEvent();
+
+  const handleViewTypeChange = (newViewType: "traditional" | "default") => {
+    if (newViewType === "traditional") {
+      setTraditional();
+      setTopGraphTypeForTraditional("Stacked Bars (Categorical)");
+    } else {
+      setDefault();
+      restorePreviousTopGraphType();
+    }
+    trackEvent("Change View Type", newViewType);
+  };
+
+  return (
+    <SubMenu>
+      <ContextMenuSubTrigger>
+        View Type <RightSlot>&rsaquo;</RightSlot>
+      </ContextMenuSubTrigger>
+      <Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          <ContextMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              handleViewTypeChange("default");
+            }}
+          >
+            <CheckboxItem checked={viewType === "default"}>
+              <ItemIndicator>✓</ItemIndicator>
+            </CheckboxItem>
+            Default
+          </ContextMenuItem>
+          <ContextMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              handleViewTypeChange("traditional");
+            }}
+          >
+            <CheckboxItem checked={viewType === "traditional"}>
+              <ItemIndicator>✓</ItemIndicator>
+            </CheckboxItem>
+            Traditional
+          </ContextMenuItem>
+        </ContextMenuSubContent>
+      </Portal>
+    </SubMenu>
+  );
+};
+
+const TransposeAction = () => {
+  const transposeData = useTranspose();
+  const swapAxisConfigs = useSwapAxisConfigs();
+  const trackEvent = useTrackEvent();
+
+  const xScale = useXScale();
+  const yScale = useYScale();
+  const expandedValues = useSelectedValues();
+
+  const handleTranspose = () => {
+    // First transpose the data
+    transposeData();
+    // Then swap the axis configurations
+    swapAxisConfigs();
+    // Reset scroll positions to avoid invalid states
+    xScale.resetScroll();
+    yScale.resetScroll();
+    // Reset expanded rows since they no longer make sense after transpose
+    expandedValues.reset();
+
+    trackEvent("Transpose Data", "");
+  };
+
+  return (
+    <ContextMenuItem
+      onSelect={(e) => {
+        e.preventDefault();
+        handleTranspose();
+      }}
+    >
+      Transpose Rows and Columns
+    </ContextMenuItem>
   );
 };
 
@@ -652,6 +908,11 @@ const ContextMenuComponent = () => {
         <RestoreHiddenColumns />
         <ResetSorts />
         <ResetFilters />
+        <HeatmapThemeSelect />
+        <NormalizationSelect />
+        <ViewTypeSelect />
+        <ThemeToggle />
+        <TransposeAction />
         {hasRow && (
           <>
             <ContextMenuSeparator />
