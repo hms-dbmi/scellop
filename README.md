@@ -1,13 +1,31 @@
-> **_NOTE:_**  This project is a work in progress.
-
 # CellPop: Cell Type Composition Explorer
-CellPop is a visualization tool for cell type compositions. It is an NPM package that exports various functions and to create a D3 visualization from various file types.
+CellPop is an interactive visualization tool for cell type compositions. Easily compare your cell type compositions with different visual encodings, filter and sort on metadata, and export for communication.
 
 
 ## Why CellPop? 
 Cell type populations are commonly shown with stacked bar charts. However, scaling the number of samples and cell types in these visualizations create issues with analyzing these charts. CellPop alleviates this by presenting a flexible heatmap and side views with extending layered bar charts.
 
-## How to run
+
+## Installs
+CellPop is available on [NPM](https://www.npmjs.com/package/cellpop) and [PyPI](https://pypi.org/project/cellpop/).
+
+
+```sh
+npm i cellpop
+```
+
+```sh
+pip install cellpop
+```
+
+## Demo
+A demo is available [here] [here](https://cellpop.netlify.app). How to use the CellPopComponent is shown [here](./demo/demo.tsx).
+
+The main view and interactions:
+![Screen shot of CellPop with 64 datasets and 61 celltypes.](assets/cellpop_example.png)
+
+
+## Set-up
 This project uses pnpm. 
 
 Install dependencies with:
@@ -20,20 +38,12 @@ Run the demo with:
 pnpm run dev
 ```
 
-## Demo
-The demo folder contains three demo's: 
-- The combination of index.jsx and demo.jsx are a React demo, using the HuBMAP data loaders and CellPopComponent, which includes the option bar.
-- Main.js is a JavaScript only demo that uses the HuBMAP data loaders and the mainVis function to create the visualization. 
-- Animation.js shows an animation of how a stacked bar chart converts to the CellPop view.
+Instructions for Python package are it's own [contributing guidelines](./python/CONTRIBUTING.md).
 
-
-The React demo is available [here](https://cellpop.netlify.com/).
-
-The main view and interactions:
-![Screen shot of cell pop with 29 samples and arrows explaining interactions.](assets/cellpop_example.png)
 
 ## Team
-[HiDIVE Lab](https://hidivelab.org)
+[HIDIVE Lab](https://hidivelab.org)
 - Thomas C. Smits (<tsmits@hms.harvard.edu>)
 - Nikolay Akhmetov (<nikolay_akhmetov@hms.harvard.edu>)
+- Tiffany Liaw (<tiffany_liaw@hms.harvard.edu>)
 - Nils Gehlenborg (<nils@hms.harvard.edu>)
