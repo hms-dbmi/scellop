@@ -2,6 +2,7 @@ import React, {
   PropsWithChildren,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -42,12 +43,26 @@ function getInitialSize(
   total: number,
   initialProportions: GridSizeTuple = INITIAL_PROPORTIONS,
 ): GridSizeTuple {
+  // Handle edge cases
+  if (total <= 0) {
+    return [0, 0, 0];
+  }
+
+  // Ensure proportions sum to 1 (or close to it due to floating point)
+  const proportionSum = initialProportions.reduce((sum, prop) => sum + prop, 0);
+  const normalizedProportions =
+    proportionSum > 0
+      ? initialProportions.map((prop) => prop / proportionSum)
+      : INITIAL_PROPORTIONS;
+
   // Calculate sizes and ensure they sum to exactly the total to avoid rounding errors
-  const sizes = initialProportions.map((prop) => Math.floor(total * prop));
+  const sizes = normalizedProportions.map((prop) => Math.floor(total * prop));
   // Assign any remaining pixels to the last panel to ensure total width is preserved
   const remainder = total - sizes.reduce((sum, size) => sum + size, 0);
   sizes[sizes.length - 1] += remainder;
-  return sizes as GridSizeTuple;
+
+  // Ensure no negative sizes
+  return sizes.map((size) => Math.max(0, size)) as GridSizeTuple;
 }
 
 function calculateProportions(total: number, sizes: GridSizeTuple) {
@@ -74,7 +89,7 @@ export function DimensionsProvider({
   const { viewType } = useViewType();
 
   // Determine the appropriate proportions based on view type
-  const getProportionsForViewType = useCallback(() => {
+  const targetProportions = useMemo(() => {
     if (viewType === "traditional") {
       return [TRADITIONAL_COLUMN_PROPORTIONS, TRADITIONAL_ROW_PROPORTIONS];
     }
@@ -82,7 +97,7 @@ export function DimensionsProvider({
   }, [viewType, initialColumnProportions, initialRowProportions]);
 
   const [currentProportions, setCurrentProportions] = useState(() => {
-    const [colProps, rowProps] = getProportionsForViewType();
+    const [colProps, rowProps] = targetProportions;
     return { column: colProps, row: rowProps };
   });
 
@@ -95,26 +110,47 @@ export function DimensionsProvider({
 
   const dimensionsRef = useRef({ width, height });
 
-  // Update proportions when view type changes
+  // Update proportions and sizes when view type or dimensions change
   useEffect(() => {
-    const [newColProps, newRowProps] = getProportionsForViewType();
-    setCurrentProportions({ column: newColProps, row: newRowProps });
-    setColumnSizes(getInitialSize(width, newColProps));
-    setRowSizes(getInitialSize(height, newRowProps));
-  }, [viewType, getProportionsForViewType, width, height]);
-
-  // Update the column and row sizes when container dimensions change,
-  // keeping proportions between the panels
-  useEffect(() => {
+    const [newColProps, newRowProps] = targetProportions;
     const previous = dimensionsRef.current;
-    setColumnSizes((columnSizes) =>
-      getInitialSize(width, calculateProportions(previous.width, columnSizes)),
-    );
-    setRowSizes((rowSizes) =>
-      getInitialSize(height, calculateProportions(previous.height, rowSizes)),
-    );
+
+    // Check if view type changed
+    const viewTypeChanged =
+      newColProps !== currentProportions.column ||
+      newRowProps !== currentProportions.row;
+
+    // Check if dimensions changed
+    const dimensionsChanged =
+      previous.width !== width || previous.height !== height;
+
+    if (viewTypeChanged) {
+      // View type changed - use new proportions
+      setCurrentProportions({ column: newColProps, row: newRowProps });
+      setColumnSizes(getInitialSize(width, newColProps));
+      setRowSizes(getInitialSize(height, newRowProps));
+    } else if (dimensionsChanged) {
+      // Only dimensions changed - preserve current proportions
+      setColumnSizes((columnSizes) =>
+        getInitialSize(
+          width,
+          calculateProportions(previous.width, columnSizes),
+        ),
+      );
+      setRowSizes((rowSizes) =>
+        getInitialSize(height, calculateProportions(previous.height, rowSizes)),
+      );
+    }
+
     dimensionsRef.current = { width, height };
-  }, [width, height]);
+  }, [
+    viewType,
+    targetProportions,
+    width,
+    height,
+    currentProportions.column,
+    currentProportions.row,
+  ]);
 
   const resize = useCallback(
     (setter: Setter<GridSizeTuple>) => (newSize: number, index: number) => {

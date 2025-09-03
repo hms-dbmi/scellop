@@ -62,7 +62,6 @@ export default function HeatmapYAxis() {
       height={y.range()[0]}
       style={{
         zIndex: 1,
-        borderRight: `1px solid ${theme.palette.text.primary}`,
       }}
       onWheel={handleWheel}
     >
