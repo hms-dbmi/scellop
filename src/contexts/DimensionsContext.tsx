@@ -42,7 +42,12 @@ function getInitialSize(
   total: number,
   initialProportions: GridSizeTuple = INITIAL_PROPORTIONS,
 ): GridSizeTuple {
-  return initialProportions.map((prop) => total * prop) as GridSizeTuple;
+  // Calculate sizes and ensure they sum to exactly the total to avoid rounding errors
+  const sizes = initialProportions.map((prop) => Math.floor(total * prop));
+  // Assign any remaining pixels to the last panel to ensure total width is preserved
+  const remainder = total - sizes.reduce((sum, size) => sum + size, 0);
+  sizes[sizes.length - 1] += remainder;
+  return sizes as GridSizeTuple;
 }
 
 function calculateProportions(total: number, sizes: GridSizeTuple) {
