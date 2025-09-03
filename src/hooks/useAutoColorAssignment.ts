@@ -7,14 +7,18 @@ import { initializeDefaultColors } from "../utils/axis-colors";
  * Hook that automatically assigns default colors to rows and columns
  * if they don't already have colors configured.
  * This runs once when the component mounts or when the data changes.
+ * @param enabled - Whether auto color assignment should be enabled (default: true)
  */
-export function useAutoColorAssignment() {
+export function useAutoColorAssignment(enabled = true) {
   const rows = useRows();
   const columns = useColumns();
   const rowConfig = useRowConfig();
   const columnConfig = useColumnConfig();
 
   useEffect(() => {
+    // Skip auto-assignment if disabled
+    if (!enabled) return;
+
     // Auto-assign colors for rows if none are configured
     if (rows.length > 0) {
       const hasRowColors =
@@ -30,9 +34,12 @@ export function useAutoColorAssignment() {
         rowConfig.setColors(defaultRowColors);
       }
     }
-  }, [rows, rowConfig]);
+  }, [rows, rowConfig, enabled]);
 
   useEffect(() => {
+    // Skip auto-assignment if disabled
+    if (!enabled) return;
+
     // Auto-assign colors for columns if none are configured
     if (columns.length > 0) {
       const hasColumnColors =
@@ -48,5 +55,5 @@ export function useAutoColorAssignment() {
         columnConfig.setColors(defaultColumnColors);
       }
     }
-  }, [columns, columnConfig]);
+  }, [columns, columnConfig, enabled]);
 }

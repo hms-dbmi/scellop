@@ -32,6 +32,7 @@ interface CellPopConfig {
     extra?: Record<string, unknown>,
   ) => void;
   viewType?: ViewType;
+  autoColor?: boolean;
 }
 
 export interface CellPopProps
@@ -59,6 +60,7 @@ export const CellPop = withParentSize(
     tooltipFields,
     trackEvent,
     viewType,
+    autoColor,
   }: CellPopProps) => {
     // If dimensions are provided, use them.
     // Otherwise, fall back to using parentWidth and parentHeight.
@@ -128,6 +130,7 @@ export const CellPop = withParentSize(
             tooltipFields={tooltipFields}
             trackEvent={trackEvent}
             viewType={viewType}
+            autoColor={autoColor}
           >
             <VizContainer />
           </Providers>

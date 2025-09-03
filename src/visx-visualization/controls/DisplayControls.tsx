@@ -65,6 +65,40 @@ function useColorConfig() {
   return section === "Column" ? useColumnConfig() : useRowConfig();
 }
 
+function GlobalColorControls() {
+  const setAllItemsColor = useSetAllItemsColor();
+  const pluralItemLabel = usePluralItemLabel();
+
+  return (
+    <ColorPicker
+      onColorChange={setAllItemsColor}
+      tooltip={`Apply a single color to all ${pluralItemLabel}`}
+      size={16}
+    />
+  );
+}
+
+function useSetAllItemsColor() {
+  const config = useColorConfig();
+  const items = useItems();
+  const label = usePluralItemLabel();
+  const trackEvent = useTrackEvent();
+
+  return useCallback(
+    (color: string) => {
+      if (color) {
+        config.setAllColors(color, items);
+        trackEvent(`Set all ${label} to single color`, color);
+      } else {
+        // Clear all colors
+        config.setColors({});
+        trackEvent(`Clear all ${label} colors`, `${items.length} ${label}`);
+      }
+    },
+    [config, items, label, trackEvent],
+  );
+}
+
 function useSetItemColor() {
   const config = useColorConfig();
   const items = useItems();
@@ -474,7 +508,7 @@ export function DisplayControls() {
                 topOffset={topStickySectionHeight}
                 textCenter
               >
-                Color
+                <GlobalColorControls />
               </StickyColumnHeader>
               {canBeExpanded && (
                 <StickyColumnHeader

@@ -58,6 +58,7 @@ interface CellPopConfigProps extends PropsWithChildren {
     extra?: Record<string, unknown>,
   ) => void;
   viewType?: ViewType;
+  autoColor?: boolean;
 }
 
 export function Providers({
@@ -81,6 +82,7 @@ export function Providers({
   tooltipFields,
   trackEvent,
   viewType,
+  autoColor = true,
 }: CellPopConfigProps) {
   return (
     <EventTrackerProvider trackEvent={trackEvent}>
@@ -90,7 +92,7 @@ export function Providers({
             <SelectedValuesProvider initialSelectedValues={selectedValues}>
               <RowConfigProvider {...yAxisConfig}>
                 <ColumnConfigProvider {...xAxisConfig}>
-                  <AutoColorAssignment>
+                  <AutoColorAssignment enabled={autoColor}>
                     <TooltipDataProvider>
                       <CellPopThemeProvider
                         theme={theme}

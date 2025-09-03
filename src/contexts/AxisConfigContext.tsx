@@ -46,6 +46,7 @@ interface AxisConfigActions {
   setColor: (itemName: string, color: string) => void;
   removeColor: (itemName: string) => void;
   setPluralLabel: (pluralLabel: string) => void;
+  setAllColors: (color: string, items: string[]) => void;
 }
 
 export type AxisConfigStore = InitializedAxisConfig & AxisConfigActions;
@@ -84,6 +85,13 @@ const createAxisConfigStore =
           const newColors = { ...colors };
           delete newColors[itemName];
           set({ colors: newColors });
+        },
+        setAllColors: (color: string, items: string[]) => {
+          const colors: Record<string, string> = {};
+          items.forEach((item) => {
+            colors[item] = color;
+          });
+          set({ colors });
         },
       })),
     );
