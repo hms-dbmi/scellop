@@ -8,7 +8,7 @@ import {
   useTheme,
 } from "@mui/material";
 import Typography from "@mui/material/Typography";
-import { defaultStyles, TooltipWithBounds } from "@visx/tooltip";
+import { defaultStyles, useTooltipInPortal } from "@visx/tooltip";
 import React, { useEffect } from "react";
 import { useParentRef } from "../contexts/ContainerRefContext";
 import {
@@ -49,18 +49,29 @@ export default function Tooltip() {
   const visualizationBounds = parentRef.current?.getBoundingClientRect();
   const theme = useTheme();
 
+  const { containerRef, TooltipInPortal } = useTooltipInPortal({
+    // Use document.body as the container
+    detectBounds: true,
+    scroll: true,
+  });
+
   useEffect(() => {
     if (!tooltipData) {
       closeTooltip();
     }
   }, [tooltipData, closeTooltip]);
 
+  useEffect(() => {
+    // Set the container to document.body
+    containerRef(document.body);
+  }, [containerRef]);
+
   if (!tooltipOpen || contextMenuOpen) {
     return null;
   }
 
   return (
-    <TooltipWithBounds
+    <TooltipInPortal
       top={tooltipTop - (visualizationBounds?.top ?? 0)}
       left={tooltipLeft - (visualizationBounds?.left ?? 0)}
       style={{
@@ -102,6 +113,6 @@ export default function Tooltip() {
           </Table>
         )}
       </Stack>
-    </TooltipWithBounds>
+    </TooltipInPortal>
   );
 }
