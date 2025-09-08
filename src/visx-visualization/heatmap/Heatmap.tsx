@@ -399,6 +399,7 @@ function Heatmap() {
       className="heatmap"
       style={{
         cursor: isDragging ? "grabbing" : "default",
+        outline: `1px solid ${theme.palette.text.primary}`,
       }}
     />
   );
