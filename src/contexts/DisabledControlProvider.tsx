@@ -2,10 +2,11 @@ import React, { PropsWithChildren } from "react";
 import { createContext, useContext } from "../utils/context";
 
 export type DisableableControls =
-  | "fraction"
+  | "graphType"
   | "selection"
   | "theme"
-  | "normalization";
+  | "normalization"
+  | "viewType";
 
 interface DisabledControlContextType {
   disabledControls: DisableableControls[];
@@ -20,14 +21,17 @@ export const useDisabledControls = () => useContext(DisabledControlContext);
 export const useThemeControlIsDisabled = () =>
   useDisabledControls().includes("theme");
 
-export const useFractionControlIsDisabled = () =>
-  useDisabledControls().includes("fraction");
+export const useGraphTypeControlIsDisabled = () =>
+  useDisabledControls().includes("graphType");
 
 export const useSelectionControlIsDisabled = () =>
   useDisabledControls().includes("selection");
 
 export const useNormalizationControlIsDisabled = () =>
   useDisabledControls().includes("normalization");
+
+export const useViewTypeControlIsDisabled = () =>
+  useDisabledControls().includes("viewType");
 
 export function DisabledControlProvider({
   children,

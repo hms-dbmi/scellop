@@ -1,7 +1,7 @@
 {
   "name": "cellpop",
   "private": false,
-  "version": "0.0.13",
+  "version": "0.0.14",
   "license": "MIT",
   "author": "Thomas Smits",
   "description": "A React component for visualizing cell populations in two-dimensional array data.",
@@ -46,6 +46,7 @@
     "prepare": "vite build"
   },
   "devDependencies": {
+    "@eslint/js": "^9.32.0",
     "@testing-library/react": "^16.3.0",
     "@types/d3": "^7.4.3",
     "@types/react": "^18.3.23",
@@ -92,6 +93,7 @@
     "@vitessce/zarr": "^3.6.7",
     "d3": "^7.9.0",
     "d3-scale-chromatic": "^3.1.0",
+    "html2canvas": "^1.4.1",
     "proxy-memoize": "^3.0.1",
     "zundo": "^2.3.0"
   },

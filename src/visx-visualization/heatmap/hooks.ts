@@ -1,25 +1,35 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { AxisConfig } from "../../contexts/AxisConfigContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 
 export function useOpenInNewTab(
-  createHref: ((tick: string) => string) | undefined,
+  createHref:
+    | ((
+        tick: string,
+        metadataValues?: Record<string, string | number>,
+      ) => string)
+    | undefined,
 ) {
   const trackEvent = useTrackEvent();
   return useCallback(
-    (tick: string) => {
-      const href = createHref?.(tick);
+    (tick: string, metadataValues?: Record<string, string | number>) => {
+      const href = createHref?.(tick, metadataValues);
       if (href) {
         trackEvent("Open in new tab", tick, { href });
         window.open(href, "_blank");
       }
     },
-    [createHref],
+    [createHref, trackEvent],
   );
 }
 
 export function useTickTitle(
-  createHref: ((tick: string) => string) | undefined,
+  createHref:
+    | ((
+        tick: string,
+        metadataValues?: Record<string, string | number>,
+      ) => string)
+    | undefined,
 ) {
   return useCallback(
     (tick: string) =>
@@ -38,31 +48,61 @@ export function useHeatmapAxis({ createHref }: AxisConfig) {
   return { openInNewTab, tickTitle, tickLabelStyle };
 }
 
-// Calculates the size of the tick labels if the axis is flipped,
-// so that the counts bars can be positioned correctly
-export function useSetTickLabelSize(
-  flipAxisPosition: boolean,
-  setTickLabelSize: (size: number) => void,
-  orientation: "x" | "y" = "x",
-  // Size is not actually used, but changes to this value let us know when to recalculate
-  size: number,
+/**
+ * Estimates text dimensions using canvas measureText
+ */
+function estimateTextDimensions(
+  text: string,
+  fontSize: number,
+  fontFamily: string,
 ) {
-  useEffect(() => {
-    if (flipAxisPosition) {
-      const ticks = document.getElementsByClassName(
-        `${orientation}-axis-tick-label`,
-      );
-      if (ticks.length > 0) {
-        const tickBounds = Array.from(ticks).map((t) =>
-          t.getBoundingClientRect(),
-        );
-        const maxSize = Math.max(
-          ...tickBounds.map((b) => (orientation === "x" ? b.height : b.width)),
-        );
-        setTickLabelSize(maxSize);
-      }
-    } else {
-      setTickLabelSize(0);
+  // Create a temporary canvas for text measurement
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return { width: text.length * fontSize * 0.6, height: fontSize };
+
+  ctx.font = `${fontSize}px ${fontFamily}`;
+  const metrics = ctx.measureText(text);
+
+  // Clean up the canvas
+  canvas.remove();
+
+  return {
+    width: metrics.width,
+    height: fontSize, // Approximate height based on font size
+  };
+}
+
+/**
+ * Calculates the estimated tick label size based on actual items and font properties
+ */
+export function useSetTickLabelSize(
+  setTickLabelSize: (size: number) => void,
+  orientation: "rows" | "columns" = "rows",
+  fontSize: number,
+  items: string[] = [],
+  fontFamily: string = "Roboto, Arial, sans-serif",
+) {
+  const estimatedSize = useMemo(() => {
+    if (items.length === 0) {
+      return 0;
     }
-  }, [flipAxisPosition, orientation, size]);
+
+    // Calculate dimensions for all tick labels
+    const dimensions = items.map((item) => {
+      // Apply same truncation as the actual component
+      const truncatedText =
+        item.length > 20 ? item.substring(0, 17) + "..." : item;
+      return estimateTextDimensions(truncatedText, fontSize, fontFamily);
+    });
+
+    const maxSize = Math.max(...dimensions.map((d) => d.width));
+
+    // Add padding for axis label and margins (same as original)
+    return maxSize + 48;
+  }, [orientation, fontSize, items, fontFamily]);
+
+  useEffect(() => {
+    setTickLabelSize(estimatedSize);
+  }, [estimatedSize, setTickLabelSize]);
 }

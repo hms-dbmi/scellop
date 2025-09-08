@@ -8,13 +8,13 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable", "ES2021"],
     "jsx": "react",
     "esModuleInterop": true,
     "declaration": true,
     "declarationMap": true,
     "outDir": "./dist-tsc",
-    "rootDir": "./src",
+    "rootDir": "./src"
   },
   "include": ["src", "src/utils"],
   "exclude": ["node_modules", "dist", "dist-tsc"]

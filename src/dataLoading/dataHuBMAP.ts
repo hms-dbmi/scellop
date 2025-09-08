@@ -1,14 +1,14 @@
 import { AnnDataSource, ObsSetsAnndataLoader } from "@vitessce/zarr";
 import {
+  DataOrdering,
   HuBMAPSearchHit,
-  MetaData,
+  Metadata,
   ObsSets,
-  dataOrdering,
 } from "../cellpop-schema";
 import { getCountsAndMetadataFromObsSetsList } from "./dataLoaders";
 import { loadDataWithCounts } from "./dataWrangling";
 
-export function loadHuBMAPData(uuids: string[], ordering?: dataOrdering) {
+export function loadHuBMAPData(uuids: string[], ordering?: DataOrdering) {
   const urls = uuids.map(getHubmapURL);
 
   const obsSetsListPromises = getPromiseData(urls);
@@ -50,7 +50,7 @@ export function loadHuBMAPData(uuids: string[], ordering?: dataOrdering) {
         const { counts, metadata: datasetMetadata } =
           getCountsAndMetadataFromObsSetsList(obsSetsList, hubmapIDsFiltered);
         const data = loadDataWithCounts(counts, undefined, ordering);
-        data.metadata = { rows: metadata, cols: datasetMetadata } as MetaData;
+        data.metadata = { rows: metadata, cols: datasetMetadata } as Metadata;
         return data;
       }
     })

@@ -1,63 +1,63 @@
+import Stack from "@mui/material/Stack";
 import { useTheme } from "@mui/material/styles";
 import { AxisBottom } from "@visx/axis";
 import { formatPrefix, max } from "d3";
 import React from "react";
-import { useRowConfig } from "../../contexts/AxisConfigContext";
 import { useRowCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
-import { useFraction } from "../../contexts/FractionContext";
+import { useIsLeftViolins } from "../../contexts/IndividualGraphTypeContext";
 import { useYScale } from "../../contexts/ScaleContext";
 import HeatmapYAxis from "../heatmap/HeatmapYAxis";
 import Bars from "./Bars";
 import Violins from "./Violin";
-import { LEFT_MULTIPLIER } from "./constants";
+import YAxisLabel from "./YAxisLabel";
 import { useCountsScale } from "./hooks";
 
 const useXAxisCountsScale = () => {
-  const { width } = usePanelDimensions("left_middle");
+  const { width, height } = usePanelDimensions("left_middle");
   const rowCounts = useRowCounts();
-  const fraction = useFraction((s) => s.fraction);
+  const violins = useIsLeftViolins();
   const { tickLabelSize } = useYScale();
-  const domainMax = fraction ? 100 : (max(Object.values(rowCounts)) ?? 0);
-  return useCountsScale(
-    [0, domainMax],
-    [0, width - tickLabelSize * LEFT_MULTIPLIER],
-  );
+  const domainMax = violins ? 100 : (max(Object.values(rowCounts)) ?? 0);
+  const rangeMax = width - tickLabelSize;
+  return [
+    useCountsScale([0, domainMax], [0, rangeMax]),
+    rangeMax,
+    height,
+  ] as const;
 };
 
 function LeftBar() {
-  const { width } = usePanelDimensions("left_middle");
-  const xScale = useXAxisCountsScale();
+  const [xScale, width, height] = useXAxisCountsScale();
   // Use same y scale as the heatmap
-  const { scale: yScale, nonExpandedSize } = useYScale();
+  const { scale: yScale } = useYScale();
   const selectedValues = useSelectedValues((s) => s.selectedValues);
 
   return (
-    <g className="bar-graph-left">
-      <Bars
-        orientation="horizontal"
-        categoricalScale={yScale}
-        numericalScale={xScale}
-        domainLimit={width}
-        selectedValues={selectedValues}
-        nonExpandedSize={nonExpandedSize}
-      />
-    </g>
+    <Bars
+      orientation="rows"
+      categoricalScale={yScale}
+      numericalScale={xScale}
+      domainLimit={width}
+      selectedValues={selectedValues}
+      width={width}
+      height={height}
+    />
   );
 }
 
 export function LeftGraphScale() {
   const { width, height } = usePanelDimensions("left_bottom");
-  const xScale = useXAxisCountsScale();
+  const [xScale] = useXAxisCountsScale();
   const { tickLabelSize } = useYScale();
 
   const axisScale = xScale.copy().range([width, tickLabelSize * 1.25]);
-  const axisTotalWidth = width - tickLabelSize * LEFT_MULTIPLIER;
+  const axisTotalWidth = width - tickLabelSize;
 
-  const fraction = useFraction((s) => s.fraction);
+  const violins = useIsLeftViolins();
   const theme = useTheme();
-  if (fraction) {
+  if (violins) {
     return null;
   }
   return (
@@ -90,14 +90,14 @@ function LeftViolin() {
  * Container component for the left graph.
  */
 export default function LeftGraph() {
-  const { width, height } = usePanelDimensions("left_middle");
+  const { height, width } = usePanelDimensions("left_middle");
 
-  const { fraction } = useFraction();
-  const flipAxisPosition = useRowConfig((store) => store.flipAxisPosition);
+  const violins = useIsLeftViolins();
   return (
-    <svg className="left-graph-container" height={height} width={width}>
-      {fraction ? <LeftViolin /> : <LeftBar />}
-      {flipAxisPosition && <HeatmapYAxis />}
-    </svg>
+    <Stack direction="row" width={width} height={height} overflow="hidden">
+      <HeatmapYAxis />
+      <YAxisLabel height={height} />
+      {violins ? <LeftViolin /> : <LeftBar />}
+    </Stack>
   );
 }

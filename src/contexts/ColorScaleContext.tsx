@@ -1,13 +1,15 @@
 import { scaleLinear } from "@visx/scale";
 import React, { PropsWithChildren, useMemo, useState } from "react";
+import useBoolean from "../hooks/useBoolean";
 import { createContext, useContext } from "../utils/context";
 import {
   HEATMAP_THEMES_LIST,
   HeatmapTheme,
   heatmapThemes,
+  heatmapThemesInverted,
 } from "../utils/heatmap-themes";
 import { useMaxCount } from "./DataContext";
-import { ScaleLinear } from "./ScaleContext";
+import { ScaleLinear } from "./types";
 
 // Color context does not have selection
 interface ColorScaleContext {
@@ -18,6 +20,8 @@ interface ColorScaleContext {
   maxLogValue: number;
   heatmapTheme: HeatmapTheme;
   setHeatmapTheme: (theme: HeatmapTheme) => void;
+  isInverted: boolean;
+  toggleInvert: () => void;
 }
 const ColorScaleContext = createContext<ColorScaleContext>("ColorScaleContext");
 export const useColorScale = () => useContext(ColorScaleContext);
@@ -32,9 +36,11 @@ export function ColorScaleProvider({ children }: PropsWithChildren) {
   const [heatmapTheme, setHeatmapTheme] = useState<HeatmapTheme>(
     HEATMAP_THEMES_LIST[0],
   );
+  const [isInverted, , , toggleInvert] = useBoolean(false);
 
   const colorScaleContext = useMemo(() => {
-    const theme = heatmapThemes[heatmapTheme];
+    const themeList = isInverted ? heatmapThemesInverted : heatmapThemes;
+    const theme = themeList[heatmapTheme];
 
     const domain = colorThresholds.map((_, idx) => idx / 255);
 
@@ -64,8 +70,10 @@ export function ColorScaleProvider({ children }: PropsWithChildren) {
       maxLogValue: maxLogCount,
       heatmapTheme,
       setHeatmapTheme,
-    };
-  }, [heatmapTheme, maxCount]);
+      isInverted,
+      toggleInvert,
+    } satisfies ColorScaleContext;
+  }, [heatmapTheme, maxCount, isInverted, toggleInvert]);
 
   return (
     <ColorScaleContext.Provider value={colorScaleContext}>

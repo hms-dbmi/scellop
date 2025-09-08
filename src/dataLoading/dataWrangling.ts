@@ -11,14 +11,14 @@
 import {
   CellPopData,
   CountsMatrixValue,
-  MetaData,
-  dataOrdering,
+  DataOrdering,
+  Metadata,
 } from "../cellpop-schema";
 
 export function loadDataWithCounts(
   counts: Record<string, Record<string, number>>,
-  metadata?: MetaData,
-  ordering?: dataOrdering,
+  metadata?: Metadata,
+  ordering?: DataOrdering,
 ) {
   const countsMatrix = getCountsMatrixFromCounts(counts);
   const data = {
@@ -34,8 +34,8 @@ export function loadDataWithCounts(
 
 export function loadDataWithCountsMatrix(
   countsMatrix: CountsMatrixValue[],
-  metadata?: MetaData,
-  ordering?: dataOrdering,
+  metadata?: Metadata,
+  ordering?: DataOrdering,
 ) {
   const data = { countsMatrix: countsMatrix } as CellPopData;
   loadDataWrapper(data, ordering);
@@ -64,7 +64,7 @@ function getCountsMatrixFromCounts(
  * and extend matrix
  * @param {*} data
  */
-function loadDataWrapper(data: CellPopData, ordering?: dataOrdering) {
+function loadDataWrapper(data: CellPopData, ordering?: DataOrdering) {
   getRowNames(data);
   getColNames(data);
   extendCountsMatrix(data);
@@ -76,8 +76,6 @@ function loadDataWrapper(data: CellPopData, ordering?: dataOrdering) {
       sortColNames(data, ordering.colNamesOrder);
     }
   }
-  wrapRowNames(data);
-  wrapColNames(data);
 }
 
 function getRowNames(data: CellPopData) {
@@ -123,26 +121,4 @@ function sortRowNames(data: CellPopData, rowNamesOrder: string[]) {
 
 function sortColNames(data: CellPopData, colNamesOrder: string[]) {
   data.colNames = sortNames(data.colNames, colNamesOrder);
-}
-
-export function wrapRowNames(data: CellPopData) {
-  data.rowNamesWrapped = data.rowNames.map((d) => {
-    return { row: d };
-  });
-}
-
-export function wrapColNames(data: CellPopData) {
-  data.colNamesWrapped = data.colNames.map((d) => {
-    return { col: d };
-  });
-}
-
-export function resetRowNames(data: CellPopData) {
-  data.rowNames = [...data.rowNamesRaw];
-  wrapRowNames(data);
-}
-
-export function resetColNames(data: CellPopData) {
-  data.colNames = [...data.colNamesRaw];
-  wrapColNames(data);
 }

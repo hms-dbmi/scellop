@@ -3,10 +3,19 @@ import React from "react";
 import Legend from "../Legend";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
-export default function TopLeftPanel({ id }: VisualizationPanelProps) {
+function TopLeftPanel(
+  props: VisualizationPanelProps,
+  ref: React.ForwardedRef<HTMLDivElement>,
+) {
   return (
-    <VisualizationPanel id={id}>
+    <VisualizationPanel {...props} ref={ref}>
       <Legend />
     </VisualizationPanel>
   );
 }
+
+export default React.forwardRef(
+  TopLeftPanel,
+) as React.ForwardRefExoticComponent<
+  VisualizationPanelProps & React.RefAttributes<HTMLDivElement>
+>;

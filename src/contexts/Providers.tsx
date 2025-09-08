@@ -1,6 +1,9 @@
 import { Theme } from "@mui/material";
 import React, { PropsWithChildren } from "react";
 import { CellPopData, CellPopTheme } from "../cellpop-schema";
+import { GraphType } from "../utils/graph-types";
+import { ViewType } from "../utils/view-types";
+import { AutoColorAssignment } from "./AutoColorAssignment";
 import {
   AxisConfig,
   ColumnConfigProvider,
@@ -8,6 +11,7 @@ import {
 } from "./AxisConfigContext";
 import { CellPopThemeProvider } from "./CellPopThemeContext";
 import { ColorScaleProvider } from "./ColorScaleContext";
+import ControlsVisibilityProvider from "./ControlsVisibilityContext";
 import { DataProvider } from "./DataContext";
 import {
   Dimensions,
@@ -21,12 +25,14 @@ import {
 } from "./DisabledControlProvider";
 import { EventTrackerProvider } from "./EventTrackerProvider";
 import { SelectedValuesProvider } from "./ExpandedValuesContext";
-import { FractionProvider } from "./FractionContext";
+import { IndividualGraphTypeProvider } from "./IndividualGraphTypeContext";
 import { MetadataConfigProvider } from "./MetadataConfigContext";
 import { NormalizationProvider } from "./NormalizationContext";
 import { ScaleProvider } from "./ScaleContext";
 import { SelectedDimensionProvider } from "./SelectedDimensionContext";
+import TemporalControlsProvider from "./TemporalControlsContext";
 import { TooltipDataProvider } from "./TooltipDataContext";
+import { ViewTypeProvider } from "./ViewTypeContext";
 
 interface CellPopConfigProps extends PropsWithChildren {
   data: CellPopData;
@@ -35,7 +41,8 @@ interface CellPopConfigProps extends PropsWithChildren {
   xAxis: AxisConfig;
   yAxis: AxisConfig;
   selectedDimension?: "X" | "Y";
-  fraction?: boolean;
+  leftGraphType?: GraphType;
+  topGraphType?: GraphType;
   selectedValues?: string[];
   normalization?: "Row" | "Column" | "Log";
   customTheme?: Theme;
@@ -50,6 +57,8 @@ interface CellPopConfigProps extends PropsWithChildren {
     detail: string,
     extra?: Record<string, unknown>,
   ) => void;
+  viewType?: ViewType;
+  autoColor?: boolean;
 }
 
 export function Providers({
@@ -57,7 +66,8 @@ export function Providers({
   data,
   dimensions,
   theme,
-  fraction = false,
+  leftGraphType = "Bars",
+  topGraphType = "Bars",
   selectedValues = [],
   selectedDimension = "Y",
   xAxis: xAxisConfig,
@@ -71,49 +81,65 @@ export function Providers({
   filterableFields,
   tooltipFields,
   trackEvent,
+  viewType,
+  autoColor = true,
 }: CellPopConfigProps) {
   return (
     <EventTrackerProvider trackEvent={trackEvent}>
       <DisabledControlProvider disabledControls={disabledControls}>
-        <DataProvider initialData={data}>
-          <SelectedValuesProvider initialSelectedValues={selectedValues}>
-            <RowConfigProvider {...yAxisConfig}>
-              <ColumnConfigProvider {...xAxisConfig}>
-                <TooltipDataProvider>
-                  <CellPopThemeProvider theme={theme} customTheme={customTheme}>
-                    <DimensionsProvider
-                      dimensions={dimensions}
-                      initialProportions={initialProportions}
-                    >
-                      <FractionProvider initialFraction={fraction}>
-                        <NormalizationProvider
-                          initialNormalization={initialNormalization}
+        <ViewTypeProvider viewType={viewType}>
+          <DataProvider initialData={data}>
+            <SelectedValuesProvider initialSelectedValues={selectedValues}>
+              <RowConfigProvider {...yAxisConfig}>
+                <ColumnConfigProvider {...xAxisConfig}>
+                  <AutoColorAssignment enabled={autoColor}>
+                    <TooltipDataProvider>
+                      <CellPopThemeProvider
+                        theme={theme}
+                        customTheme={customTheme}
+                      >
+                        <DimensionsProvider
+                          dimensions={dimensions}
+                          initialProportions={initialProportions}
                         >
-                          <ScaleProvider>
-                            <ColorScaleProvider>
-                              <SelectedDimensionProvider
-                                initialSelectedDimension={selectedDimension}
-                              >
-                                <MetadataConfigProvider
-                                  fieldDisplayNames={fieldDisplayNames}
-                                  sortableFields={sortableFields}
-                                  filterableFields={filterableFields}
-                                  tooltipFields={tooltipFields}
-                                >
-                                  {children}
-                                </MetadataConfigProvider>
-                              </SelectedDimensionProvider>
-                            </ColorScaleProvider>
-                          </ScaleProvider>
-                        </NormalizationProvider>
-                      </FractionProvider>
-                    </DimensionsProvider>
-                  </CellPopThemeProvider>
-                </TooltipDataProvider>
-              </ColumnConfigProvider>
-            </RowConfigProvider>
-          </SelectedValuesProvider>
-        </DataProvider>
+                          <IndividualGraphTypeProvider
+                            initialLeftGraphType={leftGraphType}
+                            initialTopGraphType={topGraphType}
+                          >
+                            <NormalizationProvider
+                              initialNormalization={initialNormalization}
+                            >
+                              <ScaleProvider>
+                                <ColorScaleProvider>
+                                  <SelectedDimensionProvider
+                                    initialSelectedDimension={selectedDimension}
+                                  >
+                                    <MetadataConfigProvider
+                                      fieldDisplayNames={fieldDisplayNames}
+                                      sortableFields={sortableFields}
+                                      tooltipFields={tooltipFields}
+                                      filterableFields={filterableFields}
+                                    >
+                                      <ControlsVisibilityProvider>
+                                        <TemporalControlsProvider>
+                                          {children}
+                                        </TemporalControlsProvider>
+                                      </ControlsVisibilityProvider>
+                                    </MetadataConfigProvider>
+                                  </SelectedDimensionProvider>
+                                </ColorScaleProvider>
+                              </ScaleProvider>
+                            </NormalizationProvider>
+                          </IndividualGraphTypeProvider>
+                        </DimensionsProvider>
+                      </CellPopThemeProvider>
+                    </TooltipDataProvider>
+                  </AutoColorAssignment>
+                </ColumnConfigProvider>
+              </RowConfigProvider>
+            </SelectedValuesProvider>
+          </DataProvider>
+        </ViewTypeProvider>
       </DisabledControlProvider>
     </EventTrackerProvider>
   );

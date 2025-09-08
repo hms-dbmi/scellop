@@ -1,22 +1,24 @@
-import { useTheme } from "@mui/material";
 import React, {
   PropsWithChildren,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { createContext, useContext } from "../utils/context";
 import { Setter } from "../utils/types";
+import { useViewType } from "./ViewTypeContext";
+import {
+  HorizontalPanelSection,
+  MappedPanelSection,
+  VerticalPanelSection,
+} from "./types";
 
 export interface Dimensions {
   width: number;
   height: number;
 }
-
-type VerticalPanelSection = "top" | "middle" | "bottom";
-type HorizontalPanelSection = "left" | "center" | "right";
-type MappedPanelSection = `${HorizontalPanelSection}_${VerticalPanelSection}`;
 
 interface DimensionsContextType extends Dimensions {
   columnSizes: GridSizeTuple;
@@ -32,13 +34,35 @@ const DimensionsContext = createContext<DimensionsContextType | null>(
 export type GridSizeTuple = [number, number, number];
 
 export const INITIAL_PROPORTIONS: GridSizeTuple = [0.3, 0.4, 0.3];
+export const TRADITIONAL_COLUMN_PROPORTIONS: GridSizeTuple = [0, 0.95, 0.05];
+export const TRADITIONAL_ROW_PROPORTIONS: GridSizeTuple = [1, 0, 0];
+const MIN_PANEL_SIZE = 48;
 
 // Helper function to get the initial size of the panels
 function getInitialSize(
   total: number,
   initialProportions: GridSizeTuple = INITIAL_PROPORTIONS,
 ): GridSizeTuple {
-  return initialProportions.map((prop) => total * prop) as GridSizeTuple;
+  // Handle edge cases
+  if (total <= 0) {
+    return [0, 0, 0];
+  }
+
+  // Ensure proportions sum to 1 (or close to it due to floating point)
+  const proportionSum = initialProportions.reduce((sum, prop) => sum + prop, 0);
+  const normalizedProportions =
+    proportionSum > 0
+      ? initialProportions.map((prop) => prop / proportionSum)
+      : INITIAL_PROPORTIONS;
+
+  // Calculate sizes and ensure they sum to exactly the total to avoid rounding errors
+  const sizes = normalizedProportions.map((prop) => Math.floor(total * prop));
+  // Assign any remaining pixels to the last panel to ensure total width is preserved
+  const remainder = total - sizes.reduce((sum, size) => sum + size, 0);
+  sizes[sizes.length - 1] += remainder;
+
+  // Ensure no negative sizes
+  return sizes.map((size) => Math.max(0, size)) as GridSizeTuple;
 }
 
 function calculateProportions(total: number, sizes: GridSizeTuple) {
@@ -56,42 +80,77 @@ interface DimensionsProviderProps extends PropsWithChildren {
  */
 export function DimensionsProvider({
   children,
-  dimensions: { width, height: unadjustedHeight },
+  dimensions: { width, height },
   initialProportions: [initialColumnProportions, initialRowProportions] = [
     INITIAL_PROPORTIONS,
     INITIAL_PROPORTIONS,
   ],
 }: DimensionsProviderProps) {
-  const theme = useTheme();
-  const toolbarHeight = theme.mixins.toolbar.minHeight ?? 0;
-  const height =
-    unadjustedHeight -
-    (typeof toolbarHeight === "number"
-      ? toolbarHeight
-      : parseInt(toolbarHeight)) -
-    parseInt(theme.spacing(4));
+  const { viewType } = useViewType();
+
+  // Determine the appropriate proportions based on view type
+  const targetProportions = useMemo(() => {
+    if (viewType === "traditional") {
+      return [TRADITIONAL_COLUMN_PROPORTIONS, TRADITIONAL_ROW_PROPORTIONS];
+    }
+    return [initialColumnProportions, initialRowProportions];
+  }, [viewType, initialColumnProportions, initialRowProportions]);
+
+  const [currentProportions, setCurrentProportions] = useState(() => {
+    const [colProps, rowProps] = targetProportions;
+    return { column: colProps, row: rowProps };
+  });
 
   const [columnSizes, setColumnSizes] = useState<GridSizeTuple>(
-    getInitialSize(width, initialColumnProportions),
+    getInitialSize(width, currentProportions.column),
   );
   const [rowSizes, setRowSizes] = useState<GridSizeTuple>(
-    getInitialSize(height, initialRowProportions),
+    getInitialSize(height, currentProportions.row),
   );
 
   const dimensionsRef = useRef({ width, height });
 
-  // Update the column and row sizes when container dimensions change,
-  // keeping proportions between the panels
+  // Update proportions and sizes when view type or dimensions change
   useEffect(() => {
+    const [newColProps, newRowProps] = targetProportions;
     const previous = dimensionsRef.current;
-    setColumnSizes((columnSizes) =>
-      getInitialSize(width, calculateProportions(previous.width, columnSizes)),
-    );
-    setRowSizes((rowSizes) =>
-      getInitialSize(height, calculateProportions(previous.height, rowSizes)),
-    );
+
+    // Check if view type changed
+    const viewTypeChanged =
+      newColProps !== currentProportions.column ||
+      newRowProps !== currentProportions.row;
+
+    // Check if dimensions changed
+    const dimensionsChanged =
+      previous.width !== width || previous.height !== height;
+
+    if (viewTypeChanged) {
+      // View type changed - use new proportions
+      setCurrentProportions({ column: newColProps, row: newRowProps });
+      setColumnSizes(getInitialSize(width, newColProps));
+      setRowSizes(getInitialSize(height, newRowProps));
+    } else if (dimensionsChanged) {
+      // Only dimensions changed - preserve current proportions
+      setColumnSizes((columnSizes) =>
+        getInitialSize(
+          width,
+          calculateProportions(previous.width, columnSizes),
+        ),
+      );
+      setRowSizes((rowSizes) =>
+        getInitialSize(height, calculateProportions(previous.height, rowSizes)),
+      );
+    }
+
     dimensionsRef.current = { width, height };
-  }, [width, height]);
+  }, [
+    viewType,
+    targetProportions,
+    width,
+    height,
+    currentProportions.column,
+    currentProportions.row,
+  ]);
 
   const resize = useCallback(
     (setter: Setter<GridSizeTuple>) => (newSize: number, index: number) => {
@@ -105,21 +164,54 @@ export function DimensionsProvider({
         if (newSize > totalSize) {
           return prev;
         }
+
+        // Calculate the minimum total space needed for all panels
+        const minTotalNeeded = MIN_PANEL_SIZE * 3;
+        if (totalSize < minTotalNeeded) {
+          return prev; // Not enough space to maintain minimums
+        }
+
         switch (index) {
-          case 0:
-            newSizes[0] = newSize;
-            newSizes[1] = newSizes[1] + oldSize - newSize;
-            if (newSizes[0] < 0 || newSizes[1] < 0) {
-              return prev;
+          case 0: {
+            // Resizing the first panel
+            const clampedNewSize = Math.max(
+              MIN_PANEL_SIZE,
+              Math.min(newSize, totalSize - 2 * MIN_PANEL_SIZE),
+            );
+            const deltaChange = clampedNewSize - oldSize;
+
+            newSizes[0] = clampedNewSize;
+            // Distribute the change to panel 1, but ensure it stays above minimum
+            const newPanel1Size = newSizes[1] - deltaChange;
+            if (newPanel1Size >= MIN_PANEL_SIZE) {
+              newSizes[1] = newPanel1Size;
+            } else {
+              // If panel 1 would go below minimum, take from panel 2
+              newSizes[1] = MIN_PANEL_SIZE;
+              newSizes[2] = totalSize - newSizes[0] - newSizes[1];
             }
             break;
-          case 1:
-            newSizes[1] = newSize - newSizes[0];
-            newSizes[2] = totalSize - newSize;
-            if (newSizes[1] < 0 || newSizes[2] < 0) {
-              return prev;
+          }
+          case 1: {
+            // Resizing based on the cumulative size of panels 0 and 1
+            const maxCumulative = totalSize - MIN_PANEL_SIZE; // Leave space for panel 2
+            const minCumulative = MIN_PANEL_SIZE + MIN_PANEL_SIZE; // Both panels 0 and 1 need minimum
+            const clampedCumulative = Math.max(
+              minCumulative,
+              Math.min(newSize, maxCumulative),
+            );
+
+            newSizes[1] = clampedCumulative - newSizes[0];
+            newSizes[2] = totalSize - clampedCumulative;
+
+            // Ensure panel 1 doesn't go below minimum
+            if (newSizes[1] < MIN_PANEL_SIZE) {
+              newSizes[1] = MIN_PANEL_SIZE;
+              newSizes[0] = clampedCumulative - MIN_PANEL_SIZE;
+              newSizes[2] = totalSize - clampedCumulative;
             }
             break;
+          }
         }
         return newSizes as [number, number, number];
       });

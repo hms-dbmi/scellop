@@ -56,10 +56,10 @@ function useCurrentFilterValues(key: string) {
   const allValues = useAllSubFilters(key);
   const currentValues = useData((s) =>
     section === "Column"
-      ? s.columnFilters.find(f => f.key === key)?.values ?? []
-      : s.rowFilters.find(f => f.key === key)?.values ?? []
+      ? (s.columnFilters.find((f) => f.key === key)?.values ?? [])
+      : (s.rowFilters.find((f) => f.key === key)?.values ?? []),
   );
-  const availableValues = allValues.filter(v => !currentValues.includes(v));
+  const availableValues = allValues.filter((v) => !currentValues.includes(v));
   return availableValues;
 }
 
@@ -106,23 +106,27 @@ function useResetFilters() {
 
   const onClick = useEventCallback(() => {
     resetFilters();
-     trackEvent("Reset Filters", "");
+    trackEvent("Reset Filters", "");
   });
   return { disabled, onClick };
 }
 
 export function FilterControls() {
   const section = usePlotControlsContext();
-  const filters = useData((s) => 
-    section === "Column" ? s.columnFilters : s.rowFilters
+  const filters = useData((s) =>
+    section === "Column" ? s.columnFilters : s.rowFilters,
   );
 
-  const allowedFilters = useFilterableFields(filters.map((filter) => filter.key));
-  const filteredFilters = filters.filter((filter) => allowedFilters.includes(filter.key));
+  const allowedFilters = useFilterableFields(
+    filters.map((filter) => filter.key),
+  );
+  const filteredFilters = filters.filter((filter) =>
+    allowedFilters.includes(filter.key),
+  );
 
   return (
     <Accordion
-      id={`filter-options-${usePlotControlsContext()}`}
+      id={`filter-options-${section}`}
       defaultExpanded
       elevation={0}
       disableGutters
@@ -146,13 +150,14 @@ export function FilterControls() {
 
       <AccordionDetails>
         <Typography variant="body2">
-          Filter columns by selecting which fields to show from the metadata fields.
+          Filter columns by selecting which fields to show from the metadata
+          fields.
         </Typography>
-        <Stack spacing={1} sx={{ pl: 4}}>
+        <Stack spacing={1} sx={{ pl: 4 }}>
           {filteredFilters.map((filter, i) => (
             <FilterItem key={filter.key} filter={filter} index={i} />
           ))}
-        </Stack>  
+        </Stack>
         <Stack direction="column">
           <AddFilter />
           <LeftAlignedButton
@@ -176,13 +181,19 @@ const useFilterItemActions = () => {
   const removeFilter = useData((s) =>
     section === "Column" ? s.removeColumnFilter : s.removeRowFilter,
   );
-  const editSubFilters = useData((s) => 
-    section === "Column" ? s.editColumnSubFilters : s.editRowSubFilters
+  const editSubFilters = useData((s) =>
+    section === "Column" ? s.editColumnSubFilters : s.editRowSubFilters,
   );
   return { editFilter, removeFilter, editSubFilters };
 };
 
-function FilterItem({ filter, index }: { filter: Filter<string>; index: number }) {
+function FilterItem({
+  filter,
+  index,
+}: {
+  filter: Filter<string>;
+  index: number;
+}) {
   const [open, setOpen] = useState(false);
 
   const { editFilter, removeFilter, editSubFilters } = useFilterItemActions();
@@ -196,24 +207,26 @@ function FilterItem({ filter, index }: { filter: Filter<string>; index: number }
     editFilter(index, key);
   });
 
-  const onSelectSubFilterChange = useEventCallback((event: SelectChangeEvent<(string | number | boolean)[]>) => {
-    const selectedValues = Array.isArray(event.target.value)
-      ? event.target.value
-      : [event.target.value];
+  const onSelectSubFilterChange = useEventCallback(
+    (event: SelectChangeEvent<(string | number | boolean)[]>) => {
+      const selectedValues = Array.isArray(event.target.value)
+        ? event.target.value
+        : [event.target.value];
 
-    if (selectedValues.includes("selectAll")) {
-      editSubFilters(filter.key, []);
-      setOpen(false);
-    }
-    else if (selectedValues.includes("deselectAll")) {
-      editSubFilters(filter.key, allSubFilters);
-      setOpen(false);
-    }
-    else {
-      const excludedValues = allSubFilters.filter(v => !selectedValues.includes(v));
-      editSubFilters(filter.key, excludedValues);
-    }
-  });
+      if (selectedValues.includes("selectAll")) {
+        editSubFilters(filter.key, []);
+        setOpen(false);
+      } else if (selectedValues.includes("deselectAll")) {
+        editSubFilters(filter.key, allSubFilters);
+        setOpen(false);
+      } else {
+        const excludedValues = allSubFilters.filter(
+          (v) => !selectedValues.includes(v),
+        );
+        editSubFilters(filter.key, excludedValues);
+      }
+    },
+  );
 
   const remove = useEventCallback(() => {
     removeFilter(filter.key);
@@ -227,11 +240,7 @@ function FilterItem({ filter, index }: { filter: Filter<string>; index: number }
         <Typography variant="subtitle1" noWrap sx={{ flexShrink: 0 }}>
           Filter By
         </Typography>
-        <Select
-          value={filter.key}
-          onChange={onSelectChange}
-          fullWidth
-        >
+        <Select value={filter.key} onChange={onSelectChange} fullWidth>
           {[filter.key, ...availableFilters].map((key) => (
             <MenuItem key={key} value={key}>
               {getFieldDisplayName(key)}
@@ -251,7 +260,12 @@ function FilterItem({ filter, index }: { filter: Filter<string>; index: number }
           <Close />
         </Button>
       </Stack>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ pl: 2, pr: 6 }}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        sx={{ pl: 2, pr: 6 }}
+      >
         <Typography variant="body2" noWrap sx={{ flexShrink: 0 }}>
           {"Values"}
         </Typography>
@@ -265,11 +279,15 @@ function FilterItem({ filter, index }: { filter: Filter<string>; index: number }
             onChange={onSelectSubFilterChange}
             renderValue={(selected) => selected.join(", ")}
           >
-            <MenuItem key="selectAll" value="selectAll">Select All</MenuItem>
-            <MenuItem key="deselectAll" value="deselectAll">Deselect All</MenuItem>
+            <MenuItem key="selectAll" value="selectAll">
+              Select All
+            </MenuItem>
+            <MenuItem key="deselectAll" value="deselectAll">
+              Deselect All
+            </MenuItem>
             <Divider />
             {allSubFilters.map((value) => (
-              <MenuItem key={value.toString()} value={value}>
+              <MenuItem key={value.toString()} value={String(value)}>
                 {value}
               </MenuItem>
             ))}

@@ -1,26 +1,22 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 
+import { useEventCallback } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Group } from "@visx/group";
 import { scaleBand, scaleLinear } from "@visx/scale";
 import { area } from "@visx/shape";
 import { curveNatural } from "d3";
 import {
   useColumns,
+  useData,
   useFractionDataMap,
   useRows,
 } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
-import { ScaleBand, useXScale, useYScale } from "../../contexts/ScaleContext";
+import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
-import { BackgroundStripe } from "./BackgroundStripe";
-import {
-  LEFT_MARGIN,
-  LEFT_MULTIPLIER,
-  TOP_MARGIN,
-  TOP_MULTIPLIER,
-} from "./constants";
+import { useViolinDragHandler } from "../../hooks/useDragHandler";
+import { LEFT_MARGIN, TOP_MARGIN } from "./constants";
 
 type Side = "top" | "left";
 
@@ -43,18 +39,6 @@ function useCategoricalScale(side: Side) {
   }
 }
 
-function getMultiplier(side: Side) {
-  switch (side) {
-    case "top":
-      return TOP_MULTIPLIER;
-    case "left":
-      return LEFT_MULTIPLIER;
-    default:
-      console.error("Invalid side in Violin.getMultiplier: ", side);
-      return 1;
-  }
-}
-
 /**
  * Casts NaN and Undefined to 0
  * @param value The value to handle
@@ -63,6 +47,25 @@ function getMultiplier(side: Side) {
 function handleNaN(value?: number) {
   return !value || isNaN(value) ? 0 : value;
 }
+/**
+ * Returns the values that position the violins (what gets reordered)
+ * The top violins are positioned by columns (each violin represents a column)
+ * The left violins are positioned by rows (each violin represents a row)
+ */
+const useViolinPositionValues = (side: Side) => {
+  const rows = useRows();
+  const columns = useColumns();
+  switch (side) {
+    case "top":
+      return columns; // Top violins are positioned by columns
+    case "left":
+      return rows; // Left violins are positioned by rows
+    default:
+      console.error("Invalid side in Violin.useViolinPositionValues: ", side);
+      return columns;
+  }
+};
+
 /**
  * Returns the domain categories for the given side
  * The domain for the top violins is the rows (since they show the proportion of each cell as a fraction of the row total)
@@ -95,8 +98,8 @@ function useViolinScale(side: Side) {
 
   return useMemo(() => {
     const topViolins = side === "top";
-    const rangeEnd = topViolins ? height * getMultiplier(side) : width;
-    const rangeStart = tickLabelSize * getMultiplier(side);
+    const rangeEnd = topViolins ? height : width;
+    const rangeStart = tickLabelSize;
     const margin = topViolins ? TOP_MARGIN : LEFT_MARGIN;
     const range: [number, number] = [rangeStart, rangeEnd + margin];
     return scaleBand({
@@ -151,10 +154,64 @@ function useViolinPanelDimensions(side: Side) {
 }
 
 export default function RevisedViolins({ side = "top" }: ViolinsProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const topViolins = side === "top";
   const entries = useEntries(side);
   const { scale: categoricalScale, tickLabelSize } = useCategoricalScale(side);
   const { width, height } = useViolinPanelDimensions(side);
+  const selectedValues = useSelectedValues((s) => s.selectedValues);
+  const theme = useTheme();
+  const { openTooltip, closeTooltip } = useSetTooltipData();
+  const orderedValues = useViolinPositionValues(side); // Values that position the violins
+  const { setRowOrder, setColumnOrder } = useData();
+
+  // Get the appropriate scale context based on side
+  // Top violins use X scale (positioned by columns), left violins use Y scale (positioned by rows)
+  const xScale = useXScale();
+  const yScale = useYScale();
+  const scaleContext = side === "top" ? xScale : yScale;
+
+  // Handle drag and drop reordering
+  const handleReorder = useCallback(
+    (draggedValue: string, targetValue: string) => {
+      if (draggedValue === targetValue) return;
+
+      if (side === "top") {
+        // Reordering columns (top violins are positioned by columns)
+        const newOrder = [...orderedValues];
+        const draggedIndex = newOrder.indexOf(draggedValue);
+        const targetIndex = newOrder.indexOf(targetValue);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          const [removed] = newOrder.splice(draggedIndex, 1);
+          newOrder.splice(targetIndex, 0, removed);
+          setColumnOrder(newOrder);
+        }
+      } else {
+        // Reordering rows (left violins are positioned by rows)
+        const newOrder = [...orderedValues];
+        const draggedIndex = newOrder.indexOf(draggedValue);
+        const targetIndex = newOrder.indexOf(targetValue);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          const [removed] = newOrder.splice(draggedIndex, 1);
+          newOrder.splice(targetIndex, 0, removed);
+          setRowOrder(newOrder);
+        }
+      }
+    },
+    [side, orderedValues, setColumnOrder, setRowOrder],
+  );
+
+  // Set up drag handling
+  const { isDragging, draggedValue } = useViolinDragHandler({
+    canvasRef,
+    scale: categoricalScale,
+    side,
+    onReorder: handleReorder, // Final reordering on drop (fallback)
+    onDragMove: handleReorder, // Real-time reordering during drag
+    scrollOffset: scaleContext.scroll,
+  });
 
   const violinScale = useViolinScale(side);
   const densityScale = scaleLinear({
@@ -188,99 +245,235 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
         )
         .curve(curveNatural);
     }
-  }, [densityScale, violinScale, side]);
+  }, [densityScale, violinScale, side, categoricalScale]);
 
-  const backgroundDimensions = useMemo(() => {
-    const rangeStart = topViolins ? height : width;
-    const multiplier = topViolins ? TOP_MULTIPLIER : LEFT_MULTIPLIER;
-    const rangeEnd = tickLabelSize * multiplier;
+  const violinData = useMemo(() => {
+    return Object.entries(entries)
+      .filter(([key]) => !selectedValues.has(key))
+      .map(([key, entry]) => {
+        const transformCoordinate = categoricalScale(key) ?? 0;
+        const pathData = violinAreaGenerator(entry) ?? "";
 
-    const y = topViolins ? rangeEnd : 0;
-    const x = topViolins ? 0 : rangeEnd;
+        // Calculate background dimensions
+        const rangeStart = topViolins ? height : width;
+        const rangeEnd = tickLabelSize;
+        const y = topViolins ? rangeEnd : 0;
+        const x = topViolins ? 0 : rangeEnd;
+        const w = topViolins
+          ? categoricalScale.bandwidth()
+          : rangeStart + LEFT_MARGIN;
+        const h = topViolins
+          ? rangeStart + TOP_MARGIN
+          : categoricalScale.bandwidth();
 
-    const w = topViolins
-      ? categoricalScale.bandwidth()
-      : rangeStart + LEFT_MARGIN;
+        return {
+          key,
+          entry,
+          transformCoordinate,
+          pathData,
+          backgroundDimensions: { x, y, width: w, height: h },
+        };
+      });
+  }, [
+    entries,
+    categoricalScale,
+    violinAreaGenerator,
+    selectedValues,
+    topViolins,
+    height,
+    width,
+    tickLabelSize,
+  ]);
 
-    const h = topViolins
-      ? rangeStart + TOP_MARGIN
-      : categoricalScale.bandwidth();
+  useLayoutEffect(() => {
+    if (!canvasRef.current) return;
 
-    return { x, y, width: w, height: h };
-  }, [width, height, topViolins, categoricalScale, tickLabelSize]);
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  return Object.entries(entries).map(([key, entry]) => (
-    <Violin
-      key={key}
-      entries={entry}
-      group={key}
-      areaGenerator={violinAreaGenerator}
-      side={side}
-      backgroundDimensions={backgroundDimensions}
-    />
-  ));
-}
+    // Save the current transformation matrix
+    ctx.save();
 
-interface ViolinProps {
-  entries: [string, number][];
-  group: string;
-  areaGenerator: ReturnType<typeof area<[string, number]>>;
-  side: Side;
-  backgroundDimensions: { x: number; y: number; width: number; height: number };
-}
+    // Apply scroll offset for zoomed axes
+    if (scaleContext.isZoomed) {
+      if (topViolins) {
+        ctx.translate(-scaleContext.scroll, 0);
+      } else {
+        ctx.translate(0, -scaleContext.scroll);
+      }
+    }
 
-function getTransform(scale: ScaleBand<string>, side: Side, group: string) {
-  const transformCoordinate = scale(group);
-  const transform =
-    side === "top"
-      ? `translate(${transformCoordinate}, 0)`
-      : `translate(0, ${transformCoordinate})`;
-  return transform;
-}
+    // Clear canvas with scroll offset
+    const clearX =
+      scaleContext.isZoomed && topViolins ? scaleContext.scroll : 0;
+    const clearY =
+      scaleContext.isZoomed && !topViolins ? scaleContext.scroll : 0;
+    ctx.clearRect(clearX, clearY, width, height);
 
-function Violin({
-  entries,
-  group,
-  areaGenerator,
-  side,
-  backgroundDimensions,
-}: ViolinProps) {
-  const selectedValues = useSelectedValues((s) => s.selectedValues);
-  const { scale: categoricalScale } = useCategoricalScale(side);
-  const theme = useTheme();
-  const { openTooltip, closeTooltip } = useSetTooltipData();
-  if (selectedValues.has(group)) {
-    return null;
-  }
+    violinData.forEach((violin) => {
+      ctx.save();
 
-  return (
-    <Group transform={getTransform(categoricalScale, side, group)}>
-      <BackgroundStripe
-        onMouseMove={(e) => {
-          const tooltip = {
-            title: group,
-            data: entries.reduce((acc, [key, value]) => {
+      // Apply transform
+      if (topViolins) {
+        ctx.translate(violin.transformCoordinate, 0);
+      } else {
+        ctx.translate(0, violin.transformCoordinate);
+      }
+
+      // Highlight dragged violin
+      const isDraggedViolin = isDragging && draggedValue === violin.key;
+
+      // Draw background stripe
+      const violinIndex = orderedValues.indexOf(violin.key);
+      const stripeColor =
+        violinIndex % 2 === 0
+          ? theme.palette.background.default
+          : theme.palette.mode === "dark"
+            ? theme.palette.grey[800]
+            : theme.palette.grey[50];
+
+      ctx.fillStyle = stripeColor;
+      ctx.fillRect(
+        violin.backgroundDimensions.x,
+        violin.backgroundDimensions.y,
+        violin.backgroundDimensions.width,
+        violin.backgroundDimensions.height,
+      );
+
+      // Draw violin path with drag highlight
+      if (violin.pathData) {
+        const path = new Path2D(violin.pathData);
+        ctx.fillStyle = isDraggedViolin
+          ? theme.palette.primary.main
+          : theme.palette.text.primary;
+        ctx.globalAlpha = isDraggedViolin ? 0.8 : 0.6;
+        ctx.fill(path);
+
+        // Add stroke highlight for dragged violin
+        if (isDraggedViolin) {
+          ctx.strokeStyle = theme.palette.primary.main;
+          ctx.lineWidth = 2;
+          ctx.stroke(path);
+        }
+
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.restore();
+    });
+
+    // Restore the transformation matrix
+    ctx.restore();
+  }, [
+    violinData,
+    width,
+    height,
+    theme,
+    topViolins,
+    orderedValues,
+    isDragging,
+    draggedValue,
+    scaleContext.isZoomed,
+    scaleContext.scroll,
+  ]);
+
+  // Hit detection for tooltips
+  const handleMouseMove = useEventCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!canvasRef.current) return;
+
+      // Don't show tooltip while dragging
+      if (isDragging) {
+        closeTooltip();
+        return;
+      }
+
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
+
+      // Adjust for scroll offset
+      if (scaleContext.isZoomed) {
+        if (topViolins) {
+          x += scaleContext.scroll;
+        } else {
+          y += scaleContext.scroll;
+        }
+      }
+
+      // Find which violin was hit
+      const hitViolin = violinData.find((violin) => {
+        const adjustedX = topViolins ? x - violin.transformCoordinate : x;
+        const adjustedY = topViolins ? y : y - violin.transformCoordinate;
+
+        return (
+          adjustedX >= violin.backgroundDimensions.x &&
+          adjustedX <=
+            violin.backgroundDimensions.x + violin.backgroundDimensions.width &&
+          adjustedY >= violin.backgroundDimensions.y &&
+          adjustedY <=
+            violin.backgroundDimensions.y + violin.backgroundDimensions.height
+        );
+      });
+
+      if (hitViolin) {
+        const tooltip = {
+          title: hitViolin.key,
+          data: [...hitViolin.entry]
+            .sort((a, b) => b[1] - a[1])
+            .reduce((acc, [key, value]) => {
               if (value === 0) {
                 return acc;
               }
               return { ...acc, [key]: (value * 100).toFixed(2) + "%" };
             }, {}),
-          };
-          openTooltip(tooltip, e.clientX, e.clientY);
-        }}
-        onMouseOut={closeTooltip}
-        {...backgroundDimensions}
-        value={group}
-        orientation={side === "top" ? "vertical" : "horizontal"}
-      />
-      <path
-        key={group}
-        d={areaGenerator(entries) ?? ""}
-        opacity={1}
-        fill={theme.palette.text.primary}
-        fillOpacity={0.6}
-        pointerEvents="none"
-      />
-    </Group>
+        };
+        openTooltip(tooltip, e.clientX, e.clientY);
+      } else {
+        closeTooltip();
+      }
+    },
+  );
+
+  const handleMouseLeave = useEventCallback(() => {
+    closeTooltip();
+  });
+
+  // Handle wheel scrolling for zoomed axes
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<HTMLCanvasElement>) => {
+      if (!scaleContext.isZoomed) return;
+
+      e.preventDefault();
+
+      scaleContext.setScroll((prev: number) => {
+        const maxScroll = Math.max(
+          0,
+          categoricalScale.range()[1] - (topViolins ? width : height),
+        );
+        const delta = topViolins ? e.deltaX : e.deltaY;
+        return Math.max(0, Math.min(maxScroll, prev + delta));
+      });
+    },
+    [scaleContext, categoricalScale, topViolins, width, height],
+  );
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={width}
+      height={height}
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "absolute",
+        cursor: isDragging ? "grabbing" : "grab",
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onWheel={handleWheel}
+    />
   );
 }

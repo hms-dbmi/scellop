@@ -7,11 +7,11 @@ import { CellPopData, CellPopTheme } from "./cellpop-schema";
 import { AxisConfig } from "./contexts/AxisConfigContext";
 import { OuterContainerRefProvider } from "./contexts/ContainerRefContext";
 import { Dimensions, GridSizeTuple } from "./contexts/DimensionsContext";
+import { DisableableControls } from "./contexts/DisabledControlProvider";
 import { Providers } from "./contexts/Providers";
 import { loadHuBMAPData } from "./dataLoading";
+import { ViewType } from "./utils/view-types";
 import VizContainer from "./visx-visualization/layout";
-
-type DisableableControls = "fraction" | "selection" | "theme";
 
 interface CellPopConfig {
   yAxis: AxisConfig;
@@ -31,6 +31,8 @@ interface CellPopConfig {
     detail: string,
     extra?: Record<string, unknown>,
   ) => void;
+  viewType?: ViewType;
+  autoColor?: boolean;
 }
 
 export interface CellPopProps
@@ -38,8 +40,6 @@ export interface CellPopProps
     CellPopConfig {
   data?: CellPopData;
 }
-
-const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
 
 export const CellPop = withParentSize(
   ({
@@ -59,6 +59,8 @@ export const CellPop = withParentSize(
     filterableFields,
     tooltipFields,
     trackEvent,
+    viewType,
+    autoColor,
   }: CellPopProps) => {
     // If dimensions are provided, use them.
     // Otherwise, fall back to using parentWidth and parentHeight.
@@ -74,7 +76,6 @@ export const CellPop = withParentSize(
 
     const handleClick = useCallback(
       (e: React.MouseEvent) => {
-        stopPropagation(e);
         onClick?.(e);
       },
       [onClick],
@@ -83,7 +84,28 @@ export const CellPop = withParentSize(
     const outerContainerRef = React.useRef<HTMLDivElement | null>(null);
 
     if (!data) {
-      return <Skeleton height="100%" width="100%" />;
+      return (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              initialProportions?.[0]
+                .map((size) => `${size * 100}%`)
+                .join(" ") || "repeat(3, 1fr)",
+            gridTemplateRows:
+              initialProportions?.[1]
+                .map((size) => `${size * 100}%`)
+                .join(" ") || "repeat(3, 1fr)",
+            gap: "8px",
+            height: "100%",
+            width: "100%",
+          }}
+        >
+          {Array.from({ length: 9 }).map((_, index) => (
+            <Skeleton key={index} height="100%" width="100%" />
+          ))}
+        </div>
+      );
     }
 
     return (
@@ -107,6 +129,8 @@ export const CellPop = withParentSize(
             filterableFields={filterableFields}
             tooltipFields={tooltipFields}
             trackEvent={trackEvent}
+            viewType={viewType}
+            autoColor={autoColor}
           >
             <VizContainer />
           </Providers>

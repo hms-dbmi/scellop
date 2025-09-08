@@ -218,8 +218,9 @@ export function SortControls() {
           <InvalidationAlert />
         ) : (
           <Typography variant="body2">
-            Customize how columns are sorted by selecting the primary sorting
-            field. Drag and reorder sorting fields to adjust their priority.
+            Customize how {section.toLowerCase()}s are sorted by selecting the
+            primary sorting field. Drag and reorder sorting fields to adjust
+            their priority.
           </Typography>
         )}
         <DndContext

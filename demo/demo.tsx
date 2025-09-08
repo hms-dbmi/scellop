@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { CellPop } from "../src/CellPopComponent";
 import { CellPopData } from "../src/cellpop-schema";
 import { loadHuBMAPData } from "../src/dataLoading/dataHuBMAP";
-import { testData, testData_200_300 } from "./testData";
+import { testData } from "./testData";
 
 import ScatterPlot from "@mui/icons-material/ScatterPlot";
 import TableChartIcon from "@mui/icons-material/TableChartRounded";
@@ -81,10 +81,9 @@ function Demo() {
           label: "Dataset",
           createHref: (row) =>
             `https://portal.hubmapconsortium.org/browse/${row}`,
-          flipAxisPosition: true,
           createSubtitle: (_, metadataValues) => {
-            const anatomy = metadataValues["anatomy"];
-            const assay = metadataValues["assay"];
+            const anatomy = metadataValues?.["anatomy"];
+            const assay = metadataValues?.["assay"];
             return `${anatomy} | ${assay}`;
           },
           icon: <TableChartIcon />,
@@ -93,9 +92,8 @@ function Demo() {
           label: "Cell Type",
           createHref: (col) =>
             `https://www.ebi.ac.uk/ols4/search?q=${col}&ontology=cl`,
-          flipAxisPosition: true,
           createSubtitle: (_, metadataValues) => {
-            return metadataValues["Cell Ontology Label"];
+            return String(metadataValues?.["Cell Ontology Label"] ?? "");
           },
           icon: <ScatterPlot />,
         }}

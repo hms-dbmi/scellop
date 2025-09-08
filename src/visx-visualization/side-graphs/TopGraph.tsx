@@ -1,66 +1,68 @@
 import React from "react";
 
+import Stack from "@mui/material/Stack";
 import { useTheme } from "@mui/material/styles";
 import { AxisRight } from "@visx/axis";
 import { formatPrefix, max } from "d3";
-import { useColumnConfig } from "../../contexts/AxisConfigContext";
 import { useColumnCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
-import { useFraction } from "../../contexts/FractionContext";
+import {
+  useIsTopViolins,
+  useTopGraphType,
+} from "../../contexts/IndividualGraphTypeContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import HeatmapXAxis from "../heatmap/HeatmapXAxis";
 import Bars from "./Bars";
-import Violins from "./Violin";
-import { TOP_MULTIPLIER } from "./constants";
 import { useCountsScale } from "./hooks";
+import Violins from "./Violin";
+import XAxisLabel from "./XAxisLabel";
 
 const useColumnCountsScale = () => {
-  const { height } = usePanelDimensions("center_top");
+  const { height, width } = usePanelDimensions("center_top");
   const columnCounts = useColumnCounts();
   const { tickLabelSize } = useXScale();
-  const fraction = useFraction((s) => s.fraction);
-  const domainMax = fraction ? 100 : (max(Object.values(columnCounts)) ?? 0);
-  return useCountsScale(
-    [domainMax, 0],
-    [height - tickLabelSize * TOP_MULTIPLIER, 0],
-  );
+  const topGraphType = useTopGraphType();
+  const domainMax =
+    topGraphType === "Violins" ? 100 : (max(Object.values(columnCounts)) ?? 0);
+  const rangeMax = height - tickLabelSize;
+  return [
+    useCountsScale([domainMax, 0], [height - tickLabelSize, 0]),
+    rangeMax,
+    width,
+  ] as const;
 };
 
 function TopBar() {
-  const { height } = usePanelDimensions("center_top");
   // Use same x scale as the heatmap
-  const { scale: xScale, nonExpandedSize } = useXScale();
-  const yScale = useColumnCountsScale();
+  const { scale: xScale } = useXScale();
+  const [yScale, height, width] = useColumnCountsScale();
 
   return (
-    <g className="bar-graph-top">
-      <Bars
-        orientation="vertical"
-        categoricalScale={xScale}
-        numericalScale={yScale}
-        domainLimit={height}
-        nonExpandedSize={nonExpandedSize}
-      />
-    </g>
+    <Bars
+      orientation="columns"
+      categoricalScale={xScale}
+      numericalScale={yScale}
+      domainLimit={height}
+      width={width}
+      height={height}
+    />
   );
 }
 
 export function TopGraphScale() {
   const { width, height } = usePanelDimensions("right_top");
-  const yScale = useColumnCountsScale();
+  const [yScale] = useColumnCountsScale();
   const { tickLabelSize } = useXScale();
 
-  const axisScale = yScale
-    .copy()
-    .range([tickLabelSize * TOP_MULTIPLIER, height]);
+  const axisScale = yScale.copy().range([tickLabelSize, height]);
 
-  const axisTotalHeight = height - tickLabelSize * TOP_MULTIPLIER;
+  const axisTotalHeight = height - tickLabelSize;
 
   const theme = useTheme();
 
-  const fraction = useFraction((s) => s.fraction);
+  const violins = useIsTopViolins();
 
-  if (fraction) {
+  if (violins) {
     return null;
   }
 
@@ -95,15 +97,14 @@ function TopViolin() {
  * Container component for the top graph.
  */
 export default function TopGraph() {
-  const { width, height } = usePanelDimensions("center_top");
+  const violins = useIsTopViolins();
+  const { height } = usePanelDimensions("center_top");
 
-  const flipAxisPosition = useColumnConfig((store) => store.flipAxisPosition);
-
-  const { fraction } = useFraction();
   return (
-    <svg className="top-graph-container" height={height} width={width}>
-      {fraction ? <TopViolin /> : <TopBar />}
-      {flipAxisPosition && <HeatmapXAxis />}
-    </svg>
+    <Stack direction="column" width="100%" height={height} overflow="hidden">
+      <HeatmapXAxis />
+      <XAxisLabel />
+      {violins ? <TopViolin /> : <TopBar />}
+    </Stack>
   );
 }

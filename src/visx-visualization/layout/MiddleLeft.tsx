@@ -3,10 +3,19 @@ import React from "react";
 import LeftGraph from "../side-graphs/LeftGraph";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
-export default function MiddleLeftPanel({ id }: VisualizationPanelProps) {
+function MiddleLeftPanel(
+  props: VisualizationPanelProps,
+  ref: React.ForwardedRef<HTMLDivElement>,
+) {
   return (
-    <VisualizationPanel id={id}>
+    <VisualizationPanel {...props} ref={ref} overflow="none">
       <LeftGraph />
     </VisualizationPanel>
   );
 }
+
+export default React.forwardRef(
+  MiddleLeftPanel,
+) as React.ForwardRefExoticComponent<
+  VisualizationPanelProps & React.RefAttributes<HTMLDivElement>
+>;

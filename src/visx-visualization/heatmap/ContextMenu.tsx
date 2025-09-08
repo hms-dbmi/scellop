@@ -1,10 +1,24 @@
-import { useEventCallback } from "@mui/material";
-import * as ContextMenu from "@radix-ui/react-context-menu";
+import {
+  ArrowDownward,
+  ArrowUpward,
+  Close,
+  Restore,
+} from "@mui/icons-material";
+import { Box, Stack, Typography, useEventCallback } from "@mui/material";
+import {
+  CheckboxItem,
+  ItemIndicator,
+  Portal,
+  Sub as SubMenu,
+} from "@radix-ui/react-context-menu";
 import React from "react";
 import {
   useColumnConfig,
   useRowConfig,
+  useSwapAxisConfigs,
 } from "../../contexts/AxisConfigContext";
+import { useSetTheme } from "../../contexts/CellPopThemeContext";
+import { useColorScale } from "../../contexts/ColorScaleContext";
 import {
   useAllColumnSubFilters,
   useAllRowSubFilters,
@@ -16,16 +30,28 @@ import {
   useMoveRowToEnd,
   useMoveRowToStart,
   useRowSortKeys,
+  useTranspose,
 } from "../../contexts/DataContext";
+import {
+  useNormalizationControlIsDisabled,
+  useThemeControlIsDisabled,
+} from "../../contexts/DisabledControlProvider";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import {
-  useGetFieldDisplayName,
-} from "../../contexts/MetadataConfigContext";
+  useRestorePreviousTopGraphType,
+  useSetTopGraphTypeForTraditional,
+} from "../../contexts/IndividualGraphTypeContext";
+import { useGetFieldDisplayName } from "../../contexts/MetadataConfigContext";
+import { useNormalization } from "../../contexts/NormalizationContext";
+import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import {
   useSetTooltipData,
   useTooltipData,
 } from "../../contexts/TooltipDataContext";
+import { useViewType } from "../../contexts/ViewTypeContext";
+import { HEATMAP_THEMES_LIST, HeatmapTheme } from "../../utils/heatmap-themes";
+import { NORMALIZATIONS } from "../../utils/normalizations";
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -91,6 +117,54 @@ const HideColumn = () => {
     );
   }
   return null;
+};
+
+const HideZeroedRows = () => {
+  const { removeZeroedValuesFromColumn } = useData();
+  const { tooltipData } = useTooltipData();
+  const pluralRowLabel = useRowConfig((store) => store.pluralLabel);
+  const columnLabel = useColumnConfig((store) => store.label);
+
+  const trackEvent = useTrackEvent();
+  const columnValue = tooltipData?.data?.[columnLabel] as string;
+
+  const onClick = useEventCallback(() => {
+    trackEvent(
+      `Hide Zeroed ${pluralRowLabel} from ${columnLabel}`,
+      columnValue,
+    );
+    removeZeroedValuesFromColumn(columnValue);
+  });
+
+  if (columnValue) {
+    return (
+      <ContextMenuItem onClick={onClick}>
+        Hide {pluralRowLabel} with no data for {columnLabel} {columnValue}
+      </ContextMenuItem>
+    );
+  }
+};
+
+const HideZeroedColumns = () => {
+  const { removeZeroedValuesFromRow } = useData();
+  const { tooltipData } = useTooltipData();
+  const rowLabel = useRowConfig((store) => store.label);
+  const pluralColumnLabel = useColumnConfig((store) => store.pluralLabel);
+  const trackEvent = useTrackEvent();
+  const rowValue = tooltipData?.data?.[rowLabel] as string;
+
+  const onClick = useEventCallback(() => {
+    trackEvent(`Hide Zeroed ${pluralColumnLabel} from ${rowLabel}`, rowValue);
+    removeZeroedValuesFromRow(rowValue);
+  });
+
+  if (rowValue) {
+    return (
+      <ContextMenuItem onClick={onClick}>
+        Hide {pluralColumnLabel} with no data for {rowLabel} {rowValue}
+      </ContextMenuItem>
+    );
+  }
 };
 
 const RestoreHiddenRows = () => {
@@ -160,14 +234,13 @@ const ResetSorts = () => {
 };
 
 const ResetFilters = () => {
-  const { setRowFilters, setColumnFilters, rowFilters, columnFilters } = useData(
-    (s) => ({
+  const { setRowFilters, setColumnFilters, rowFilters, columnFilters } =
+    useData((s) => ({
       setRowFilters: s.setRowFilters,
       setColumnFilters: s.setColumnFilters,
       rowFilters: s.rowFilters,
       columnFilters: s.columnFilters,
-    })
-  );
+    }));
 
   const trackEvent = useTrackEvent();
 
@@ -183,7 +256,6 @@ const ResetFilters = () => {
 
   return <ContextMenuItem onClick={handleClick}>Reset Filters</ContextMenuItem>;
 };
-
 
 const ExpandRow = () => {
   const { tooltipData } = useTooltipData();
@@ -225,7 +297,7 @@ const CollapseRows = () => {
   return <ContextMenuItem onClick={onClick}>Clear Selection</ContextMenuItem>;
 };
 
-const MoveToStart = ({ dimension }: { dimension: "row" | "column" }) => {
+const MoveToStart = ({ dimension }: { dimension: "Row" | "Column" }) => {
   const moveRowToStart = useMoveRowToStart();
   const moveColumnToStart = useMoveColumnToStart();
   const { tooltipData } = useTooltipData();
@@ -233,9 +305,9 @@ const MoveToStart = ({ dimension }: { dimension: "row" | "column" }) => {
   const rowLabel = useRowConfig((store) => store.label);
   const columnLabel = useColumnConfig((store) => store.label);
 
-  const move = dimension === "row" ? moveRowToStart : moveColumnToStart;
-  const label = dimension === "row" ? rowLabel : columnLabel;
-  const moveLabel = dimension === "row" ? "Top" : "Left";
+  const move = dimension === "Row" ? moveRowToStart : moveColumnToStart;
+  const label = dimension === "Row" ? rowLabel : columnLabel;
+  const moveLabel = dimension === "Row" ? "Top" : "Left";
 
   const value = tooltipData?.data?.[label] as string;
 
@@ -255,7 +327,7 @@ const MoveToStart = ({ dimension }: { dimension: "row" | "column" }) => {
   );
 };
 
-const MoveToEnd = ({ dimension }: { dimension: "row" | "column" }) => {
+const MoveToEnd = ({ dimension }: { dimension: "Row" | "Column" }) => {
   const moveRowToEnd = useMoveRowToEnd();
   const moveColumnToEnd = useMoveColumnToEnd();
 
@@ -264,9 +336,9 @@ const MoveToEnd = ({ dimension }: { dimension: "row" | "column" }) => {
 
   const columnLabel = useColumnConfig((store) => store.label);
 
-  const move = dimension === "row" ? moveRowToEnd : moveColumnToEnd;
-  const label = dimension === "row" ? rowLabel : columnLabel;
-  const moveLabel = dimension === "row" ? "Bottom" : "Right";
+  const move = dimension === "Row" ? moveRowToEnd : moveColumnToEnd;
+  const label = dimension === "Row" ? rowLabel : columnLabel;
+  const moveLabel = dimension === "Row" ? "Bottom" : "Right";
 
   const value = tooltipData?.data?.[label] as string;
 
@@ -286,128 +358,281 @@ const MoveToEnd = ({ dimension }: { dimension: "row" | "column" }) => {
   );
 };
 
-const SortDimension = ({ dimension }: { dimension: "row" | "column" }) => {
-  const { sortColumns, sortRows, colSortOrder, rowSortOrder } = useData((s) => {
+const SortDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
+  const {
+    sortColumns,
+    sortRows,
+    colSortOrder,
+    rowSortOrder,
+    rowSortInvalidated,
+    columnSortInvalidated,
+    revalidateRowSort,
+    revalidateColumnSort,
+  } = useData((s) => {
     return {
       sortColumns: s.setColumnSortOrder,
       sortRows: s.setRowSortOrder,
       colSortOrder: s.columnSortOrder,
       rowSortOrder: s.rowSortOrder,
+      rowSortInvalidated: s.rowSortInvalidated,
+      columnSortInvalidated: s.columnSortInvalidated,
+      revalidateRowSort: s.revalidateRowSort,
+      revalidateColumnSort: s.revalidateColumnSort,
     };
   });
   const rowSortOrders = useRowSortKeys();
   const colSortOrders = useColumnSortKeys();
 
-  const sort = dimension === "row" ? sortRows : sortColumns;
-  const sortOrders = dimension === "row" ? rowSortOrders : colSortOrders;
+  const sort = dimension === "Row" ? sortRows : sortColumns;
+  const sortOrders = dimension === "Row" ? rowSortOrders : colSortOrders;
   const { label: rowLabel } = useRowConfig();
   const columnLabel = useColumnConfig((store) => store.label);
-  const label = dimension === "row" ? rowLabel : columnLabel;
-  const currentSortOrder = dimension === "row" ? rowSortOrder : colSortOrder;
+  const label = dimension === "Row" ? rowLabel : columnLabel;
+  const currentSortOrder = dimension === "Row" ? rowSortOrder : colSortOrder;
+  const isInvalidated =
+    dimension === "Row" ? rowSortInvalidated : columnSortInvalidated;
+  const revalidateSort =
+    dimension === "Row" ? revalidateRowSort : revalidateColumnSort;
 
   const trackEvent = useTrackEvent();
 
   const getFieldDisplayName = useGetFieldDisplayName();
 
   const handleSelect = (order: string, direction: "asc" | "desc") => {
-    const sortExists = currentSortOrder.some((s) => s.key === order && s.direction === direction);
-    const sortOppositeExists = currentSortOrder.some((s) => s.key === order && s.direction !== direction);
+    const sortExists = currentSortOrder.some(
+      (s) => s.key === order && s.direction === direction,
+    );
+    const sortOppositeExists = currentSortOrder.some(
+      (s) => s.key === order && s.direction !== direction,
+    );
 
     if (sortExists) {
-      sort(currentSortOrder.filter((s) => !(s.key === order && s.direction === direction)));
+      sort(
+        currentSortOrder.filter(
+          (s) => !(s.key === order && s.direction === direction),
+        ),
+      );
       trackEvent(`Sort ${label}s`, `Removed ${order} ${direction}`);
     } else if (sortOppositeExists) {
-      sort(currentSortOrder.map((s) => s.key === order ? { key: order, direction } : s));
+      sort(
+        currentSortOrder.map((s) =>
+          s.key === order ? { key: order, direction } : s,
+        ),
+      );
       trackEvent(`Sort ${label}s`, `Changed Direction ${order} ${direction}`);
     } else {
       sort([...currentSortOrder, { key: order, direction }]);
       trackEvent(`Sort ${label}s`, `Added ${order} ${direction}`);
     }
-  }
+  };
 
   return (
-    <ContextMenu.Sub>
+    <SubMenu>
       <ContextMenuSubTrigger>
         Sort {label}s <RightSlot>&rsaquo;</RightSlot>
       </ContextMenuSubTrigger>
-      <ContextMenu.Portal>
+      <Portal>
         <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
-          {sortOrders.map((order) => (
-            <ContextMenu.Sub key={order}>
-              <ContextMenuSubTrigger>
-                {getFieldDisplayName(order)}
-              </ContextMenuSubTrigger>
-              <ContextMenu.Portal>
-                <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
-                  {(["asc", "desc"] as const).map((direction) => (
-                    <ContextMenuItem 
-                      key={order + direction}
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        handleSelect(order, direction)
-                      }}
-                    >
-                      <ContextMenu.CheckboxItem 
-                        // checked={currentSortOrder.includes({key: order, direction: direction})}
-                        checked={currentSortOrder.some((s) => s.key === order && s.direction === direction)}
-                      >
-                        <ContextMenu.ItemIndicator>✓</ContextMenu.ItemIndicator>
-                      </ContextMenu.CheckboxItem>
-                      {direction === "asc" ? "Ascending" : "Descending"}
-                    </ContextMenuItem>
-                  ))}
-                </ContextMenuSubContent>
-              </ContextMenu.Portal>
-            </ContextMenu.Sub>
-          ))}
+          {currentSortOrder.length > 0 && (
+            <>
+              <ContextMenuLabel>{label} Sort Order</ContextMenuLabel>
+              {isInvalidated && (
+                <ContextMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    revalidateSort();
+                    trackEvent(`Revalidate ${label} Sort`, "");
+                  }}
+                  style={{
+                    opacity: 0.9,
+                    cursor: "pointer",
+                  }}
+                >
+                  <Stack alignItems="center" direction="row" spacing={1}>
+                    <Restore />
+                    <Typography>Revalidate Sorts</Typography>
+                  </Stack>
+                </ContextMenuItem>
+              )}
+              {currentSortOrder.map((sort, index) => (
+                <ContextMenuItem
+                  key={`current-sort-${sort.key}-${sort.direction}`}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    if (isInvalidated) return;
+                    const newSortOrder = currentSortOrder.filter(
+                      (s) =>
+                        !(s.key === sort.key && s.direction === sort.direction),
+                    );
+                    (dimension === "Row" ? sortRows : sortColumns)(
+                      newSortOrder,
+                    );
+                    trackEvent(
+                      `Remove Sort ${label}`,
+                      `${sort.key} ${sort.direction}`,
+                    );
+                  }}
+                  style={{
+                    opacity: isInvalidated ? 0.5 : 0.8,
+                    cursor: isInvalidated ? "default" : "pointer",
+                  }}
+                >
+                  <Stack alignItems="center" direction="row" width="100%">
+                    <Box>
+                      <Typography display="inline-block">
+                        {index + 1}: {getFieldDisplayName(sort.key)}{" "}
+                      </Typography>
+                    </Box>
+
+                    {sort.direction === "asc" ? (
+                      <ArrowUpward />
+                    ) : (
+                      <ArrowDownward />
+                    )}
+
+                    <Box ml="auto">
+                      <Close />
+                    </Box>
+                  </Stack>
+                </ContextMenuItem>
+              ))}
+              <ContextMenuSeparator />
+            </>
+          )}
+          {!isInvalidated &&
+            sortOrders.map((order) => (
+              <SubMenu key={order}>
+                <ContextMenuSubTrigger>
+                  {getFieldDisplayName(order)}
+                </ContextMenuSubTrigger>
+                <Portal>
+                  <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+                    {(["asc", "desc"] as const).map((direction) => {
+                      const sortIndex = currentSortOrder.findIndex(
+                        (s) => s.key === order && s.direction === direction,
+                      );
+                      const sortOrder = sortIndex >= 0 ? sortIndex + 1 : null;
+
+                      return (
+                        <ContextMenuItem
+                          key={order + direction}
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            handleSelect(order, direction);
+                          }}
+                        >
+                          <span
+                            style={{
+                              minWidth: "20px",
+                              display: "inline-block",
+                            }}
+                          >
+                            {sortOrder ? `${sortOrder}.` : ""}
+                          </span>
+                          {direction === "asc" ? "Ascending" : "Descending"}
+                        </ContextMenuItem>
+                      );
+                    })}
+                  </ContextMenuSubContent>
+                </Portal>
+              </SubMenu>
+            ))}
         </ContextMenuSubContent>
-      </ContextMenu.Portal>
-    </ContextMenu.Sub>
+      </Portal>
+    </SubMenu>
   );
 };
 
-const FilterDimension = ({ dimension }: { dimension: "row" | "column" }) => {
-  const addFilter = useData((s) => 
-    dimension === "row" ? s.addRowFilter : s.addColumnFilter,
-  )
-  const removeFilter = useData((s) => 
-    dimension === "row" ? s.removeRowFilter : s.removeColumnFilter,
-  )
-  const editSubFilters = useData((s) => 
-    dimension === "row" ? s.editRowSubFilters : s.editColumnSubFilters,
-  )
+const useAllSubFilters = (key: string, dimension: "Row" | "Column") => {
+  const rows = useAllRowSubFilters(key);
+  const columns = useAllColumnSubFilters(key);
+  return dimension === "Row" ? rows : columns;
+};
+
+const FilterSubMenu = ({
+  filter,
+  dimension,
+  getFieldDisplayName,
+  currentFilterValues,
+  handleSelect,
+}: {
+  filter: string;
+  dimension: "Row" | "Column";
+  getFieldDisplayName: (key: string) => string;
+  currentFilterValues: (key: string) => (string | number | boolean)[];
+  handleSelect: (filter: string, subfilter: string | number | boolean) => void;
+}) => {
+  const allSubFilters = useAllSubFilters(filter, dimension);
+
+  return (
+    <SubMenu key={filter}>
+      <ContextMenuSubTrigger>
+        {getFieldDisplayName(filter)}
+      </ContextMenuSubTrigger>
+      <Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          {allSubFilters.map((subfilter) => (
+            <ContextMenuItem
+              key={filter + "-" + subfilter}
+              onSelect={(e) => {
+                e.preventDefault();
+                handleSelect(filter, subfilter);
+              }}
+            >
+              <CheckboxItem
+                checked={!currentFilterValues(filter).includes(subfilter)}
+              >
+                <ItemIndicator>✓</ItemIndicator>
+              </CheckboxItem>
+              {subfilter}
+            </ContextMenuItem>
+          ))}
+        </ContextMenuSubContent>
+      </Portal>
+    </SubMenu>
+  );
+};
+
+const FilterDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
+  const addFilter = useData((s) =>
+    dimension === "Row" ? s.addRowFilter : s.addColumnFilter,
+  );
+  const removeFilter = useData((s) =>
+    dimension === "Row" ? s.removeRowFilter : s.removeColumnFilter,
+  );
+  const editSubFilters = useData((s) =>
+    dimension === "Row" ? s.editRowSubFilters : s.editColumnSubFilters,
+  );
 
   const allFilters = useMetadataKeys(dimension);
-  const currentFilters =  useData((s) =>
-    dimension === "row" ? s.rowFilters : s.columnFilters,
+  const currentFilters = useData((s) =>
+    dimension === "Row" ? s.rowFilters : s.columnFilters,
   );
-  const currentFilterKeys = currentFilters.map(f => f.key);
+  const currentFilterKeys = currentFilters.map((f) => f.key);
 
-  const currentFilterValues = (key: string) => currentFilters.find(f => f.key === key)?.values ?? [];
+  const currentFilterValues = (key: string) =>
+    currentFilters.find((f) => f.key === key)?.values ?? [];
 
   const getFieldDisplayName = useGetFieldDisplayName();
 
-  const useAllSubFilters = (key: string) => {
-    const rows = useAllRowSubFilters(key);
-    const columns = useAllColumnSubFilters(key);
-    return dimension === "row" ? rows : columns;
-  }
-
   const { label: rowLabel } = useRowConfig();
   const columnLabel = useColumnConfig((store) => store.label);
-  const label = dimension === "row" ? rowLabel : columnLabel;
+  const label = dimension === "Row" ? rowLabel : columnLabel;
 
   const trackEvent = useTrackEvent();
 
-  const handleSelect = (filter: string, subfilter: string | number | boolean) => {
+  const handleSelect = (
+    filter: string,
+    subfilter: string | number | boolean,
+  ) => {
     if (!currentFilterKeys.includes(filter)) {
       addFilter(filter);
       editSubFilters(filter, [subfilter]);
       trackEvent(`Filter ${label}s`, `Added ${filter} - ${subfilter}`);
     } else {
-      const currValues = currentFilterValues(filter)
+      const currValues = currentFilterValues(filter);
       if (currValues.includes(subfilter)) {
-        const newValues = currValues.filter(item => item !== subfilter);
+        const newValues = currValues.filter((item) => item !== subfilter);
         trackEvent(`Filter ${label}s`, `Removed ${filter} - ${subfilter}`);
         if (newValues.length === 0) {
           removeFilter(filter);
@@ -419,43 +644,242 @@ const FilterDimension = ({ dimension }: { dimension: "row" | "column" }) => {
         trackEvent(`Filter ${label}s`, `Added ${filter} - ${subfilter}`);
       }
     }
-  }
-  
+  };
+
   return (
-    <ContextMenu.Sub>
+    <SubMenu>
       <ContextMenuSubTrigger>
         Filter {label}s <RightSlot>&rsaquo;</RightSlot>
       </ContextMenuSubTrigger>
-      <ContextMenu.Portal>
+      <Portal>
         <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
           {allFilters.map((filter) => (
-            <ContextMenu.Sub key={filter}>
-              <ContextMenuSubTrigger>
-                {getFieldDisplayName(filter)}
-              </ContextMenuSubTrigger>
-              <ContextMenu.Portal>
-                <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
-                  {useAllSubFilters(filter).map((subfilter) => (
-                    <ContextMenuItem 
-                      key={filter + "-" + subfilter}
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        handleSelect(filter, subfilter);
-                      }}
-                    >
-                      <ContextMenu.CheckboxItem checked={!currentFilterValues(filter).includes(subfilter)}>
-                        <ContextMenu.ItemIndicator>✓</ContextMenu.ItemIndicator>
-                      </ContextMenu.CheckboxItem>
-                      {subfilter}
-                    </ContextMenuItem>
-                  ))}
-                </ContextMenuSubContent>
-              </ContextMenu.Portal>
-            </ContextMenu.Sub>
+            <FilterSubMenu
+              key={filter}
+              filter={filter}
+              dimension={dimension}
+              getFieldDisplayName={getFieldDisplayName}
+              currentFilterValues={currentFilterValues}
+              handleSelect={handleSelect}
+            />
           ))}
         </ContextMenuSubContent>
-      </ContextMenu.Portal>
-    </ContextMenu.Sub>
+      </Portal>
+    </SubMenu>
+  );
+};
+
+const HeatmapThemeSelect = () => {
+  const { setHeatmapTheme, heatmapTheme, isInverted, toggleInvert } =
+    useColorScale();
+  const trackEvent = useTrackEvent();
+
+  const handleThemeChange = (theme: HeatmapTheme) => {
+    setHeatmapTheme(theme);
+    trackEvent("Change Heatmap Theme", theme);
+  };
+
+  const handleInvertToggle = () => {
+    toggleInvert();
+    trackEvent("Toggle Heatmap Theme Invert", isInverted ? "false" : "true");
+  };
+
+  return (
+    <SubMenu>
+      <ContextMenuSubTrigger>
+        Heatmap Theme <RightSlot>&rsaquo;</RightSlot>
+      </ContextMenuSubTrigger>
+      <Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          <ContextMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              handleInvertToggle();
+            }}
+          >
+            <CheckboxItem checked={isInverted}>
+              <ItemIndicator>✓</ItemIndicator>
+            </CheckboxItem>
+            Invert Theme
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          {HEATMAP_THEMES_LIST.map((theme) => (
+            <ContextMenuItem
+              key={theme}
+              onSelect={(e) => {
+                e.preventDefault();
+                handleThemeChange(theme);
+              }}
+            >
+              <CheckboxItem checked={heatmapTheme === theme}>
+                <ItemIndicator>✓</ItemIndicator>
+              </CheckboxItem>
+              <span style={{ textTransform: "capitalize" }}>{theme}</span>
+            </ContextMenuItem>
+          ))}
+        </ContextMenuSubContent>
+      </Portal>
+    </SubMenu>
+  );
+};
+
+const NormalizationSelect = () => {
+  const normalizationIsDisabled = useNormalizationControlIsDisabled();
+  const { normalization, setNormalization } = useNormalization();
+  const trackEvent = useTrackEvent();
+
+  const handleNormalizationChange = (
+    selectedNormalization: (typeof NORMALIZATIONS)[number],
+  ) => {
+    setNormalization(selectedNormalization);
+    trackEvent("Change Heatmap Normalization", selectedNormalization);
+  };
+
+  if (normalizationIsDisabled) {
+    return null;
+  }
+
+  return (
+    <SubMenu>
+      <ContextMenuSubTrigger>
+        Normalization <RightSlot>&rsaquo;</RightSlot>
+      </ContextMenuSubTrigger>
+      <Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          {NORMALIZATIONS.map((norm) => (
+            <ContextMenuItem
+              key={norm}
+              onSelect={(e) => {
+                e.preventDefault();
+                handleNormalizationChange(norm);
+              }}
+            >
+              <CheckboxItem checked={normalization === norm}>
+                <ItemIndicator>✓</ItemIndicator>
+              </CheckboxItem>
+              <span style={{ textTransform: "capitalize" }}>{norm}</span>
+            </ContextMenuItem>
+          ))}
+        </ContextMenuSubContent>
+      </Portal>
+    </SubMenu>
+  );
+};
+
+const ThemeToggle = () => {
+  const themeIsDisabled = useThemeControlIsDisabled();
+  const { currentTheme, setTheme } = useSetTheme();
+  const trackEvent = useTrackEvent();
+
+  const handleThemeToggle = () => {
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    trackEvent("Change Visualization Theme", newTheme);
+  };
+
+  if (themeIsDisabled) {
+    return null;
+  }
+
+  return (
+    <ContextMenuItem
+      onSelect={(e) => {
+        e.preventDefault();
+        handleThemeToggle();
+      }}
+    >
+      <CheckboxItem checked={currentTheme === "dark"}>
+        <ItemIndicator>✓</ItemIndicator>
+      </CheckboxItem>
+      Dark Theme
+    </ContextMenuItem>
+  );
+};
+
+const ViewTypeSelect = () => {
+  const { viewType, setTraditional, setDefault } = useViewType();
+  const setTopGraphTypeForTraditional = useSetTopGraphTypeForTraditional();
+  const restorePreviousTopGraphType = useRestorePreviousTopGraphType();
+  const trackEvent = useTrackEvent();
+
+  const handleViewTypeChange = (newViewType: "traditional" | "default") => {
+    if (newViewType === "traditional") {
+      setTraditional();
+      setTopGraphTypeForTraditional("Stacked Bars (Categorical)");
+    } else {
+      setDefault();
+      restorePreviousTopGraphType();
+    }
+    trackEvent("Change View Type", newViewType);
+  };
+
+  return (
+    <SubMenu>
+      <ContextMenuSubTrigger>
+        View Type <RightSlot>&rsaquo;</RightSlot>
+      </ContextMenuSubTrigger>
+      <Portal>
+        <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
+          <ContextMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              handleViewTypeChange("default");
+            }}
+          >
+            <CheckboxItem checked={viewType === "default"}>
+              <ItemIndicator>✓</ItemIndicator>
+            </CheckboxItem>
+            Default
+          </ContextMenuItem>
+          <ContextMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              handleViewTypeChange("traditional");
+            }}
+          >
+            <CheckboxItem checked={viewType === "traditional"}>
+              <ItemIndicator>✓</ItemIndicator>
+            </CheckboxItem>
+            Traditional
+          </ContextMenuItem>
+        </ContextMenuSubContent>
+      </Portal>
+    </SubMenu>
+  );
+};
+
+const TransposeAction = () => {
+  const transposeData = useTranspose();
+  const swapAxisConfigs = useSwapAxisConfigs();
+  const trackEvent = useTrackEvent();
+
+  const xScale = useXScale();
+  const yScale = useYScale();
+  const expandedValues = useSelectedValues();
+
+  const handleTranspose = () => {
+    // First transpose the data
+    transposeData();
+    // Then swap the axis configurations
+    swapAxisConfigs();
+    // Reset scroll positions to avoid invalid states
+    xScale.resetScroll();
+    yScale.resetScroll();
+    // Reset expanded rows since they no longer make sense after transpose
+    expandedValues.reset();
+
+    trackEvent("Transpose Data", "");
+  };
+
+  return (
+    <ContextMenuItem
+      onSelect={(e) => {
+        e.preventDefault();
+        handleTranspose();
+      }}
+    >
+      Transpose Rows and Columns
+    </ContextMenuItem>
   );
 };
 
@@ -477,24 +901,30 @@ const ContextMenuComponent = () => {
   );
 
   return (
-    <ContextMenu.Portal>
+    <Portal>
       <ContextMenuContent>
         <ContextMenuLabel>Global Actions</ContextMenuLabel>
         <RestoreHiddenRows />
         <RestoreHiddenColumns />
         <ResetSorts />
         <ResetFilters />
+        <HeatmapThemeSelect />
+        <NormalizationSelect />
+        <ViewTypeSelect />
+        <ThemeToggle />
+        <TransposeAction />
         {hasRow && (
           <>
             <ContextMenuSeparator />
             <ContextMenuLabel>Rows ({rowLabel}s)</ContextMenuLabel>
             <HideRow />
-            <MoveToStart dimension="row" />
-            <MoveToEnd dimension="row" />
+            <MoveToStart dimension="Row" />
+            <MoveToEnd dimension="Row" />
             <ExpandRow />
             <CollapseRows />
-            <SortDimension dimension="row" />
-            <FilterDimension dimension="row" />
+            <HideZeroedColumns />
+            <SortDimension dimension="Row" />
+            <FilterDimension dimension="Row" />
           </>
         )}
         {hasColumn && (
@@ -502,14 +932,15 @@ const ContextMenuComponent = () => {
             <ContextMenuSeparator />
             <ContextMenuLabel>Columns ({columnLabel}s)</ContextMenuLabel>
             <HideColumn />
-            <MoveToStart dimension="column" />
-            <MoveToEnd dimension="column" />
-            <SortDimension dimension="column" />
-            <FilterDimension dimension="column" />
+            <HideZeroedRows />
+            <MoveToStart dimension="Column" />
+            <MoveToEnd dimension="Column" />
+            <SortDimension dimension="Column" />
+            <FilterDimension dimension="Column" />
           </>
         )}
       </ContextMenuContent>
-    </ContextMenu.Portal>
+    </Portal>
   );
 };
 
