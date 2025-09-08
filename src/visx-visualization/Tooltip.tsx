@@ -72,8 +72,8 @@ export default function Tooltip() {
 
   return (
     <TooltipInPortal
-      top={tooltipTop - (visualizationBounds?.top ?? 0)}
-      left={tooltipLeft - (visualizationBounds?.left ?? 0)}
+      top={tooltipTop}
+      left={tooltipLeft}
       style={{
         ...defaultStyles,
         background: theme.palette.background.paper,
