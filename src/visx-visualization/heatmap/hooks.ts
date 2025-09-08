@@ -3,23 +3,33 @@ import { AxisConfig } from "../../contexts/AxisConfigContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 
 export function useOpenInNewTab(
-  createHref: ((tick: string) => string) | undefined,
+  createHref:
+    | ((
+        tick: string,
+        metadataValues?: Record<string, string | number>,
+      ) => string)
+    | undefined,
 ) {
   const trackEvent = useTrackEvent();
   return useCallback(
-    (tick: string) => {
-      const href = createHref?.(tick);
+    (tick: string, metadataValues?: Record<string, string | number>) => {
+      const href = createHref?.(tick, metadataValues);
       if (href) {
         trackEvent("Open in new tab", tick, { href });
         window.open(href, "_blank");
       }
     },
-    [createHref],
+    [createHref, trackEvent],
   );
 }
 
 export function useTickTitle(
-  createHref: ((tick: string) => string) | undefined,
+  createHref:
+    | ((
+        tick: string,
+        metadataValues?: Record<string, string | number>,
+      ) => string)
+    | undefined,
 ) {
   return useCallback(
     (tick: string) =>

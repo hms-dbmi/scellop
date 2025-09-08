@@ -3,9 +3,15 @@ import { Axis, Orientation, TickRendererProps } from "@visx/axis";
 import { Text } from "@visx/text";
 import React, { useCallback, useId } from "react";
 import { useRowConfig } from "../../contexts/AxisConfigContext";
-import { useRowCounts, useRows } from "../../contexts/DataContext";
+import {
+  useMetadataLookup,
+  useRowCounts,
+  useRowMetadataKeys,
+  useRows,
+} from "../../contexts/DataContext";
 import { useHeatmapDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
+import { useTooltipFields } from "../../contexts/MetadataConfigContext";
 import { useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import truncateTickLabel from "../../utils/truncate-tick-label";
@@ -31,6 +37,9 @@ export default function HeatmapYAxis() {
 
   const rows = useRows();
   const rowCounts = useRowCounts();
+  const rowMetadataKeys = useRowMetadataKeys();
+  const rowTooltipFields = useTooltipFields(rowMetadataKeys);
+  const lookupMetadata = useMetadataLookup();
 
   const filterId = useId();
   const { openInNewTab, tickTitle, tickLabelStyle } =
@@ -114,7 +123,14 @@ export default function HeatmapYAxis() {
                 );
               },
               onMouseOut: closeTooltip,
-              onClick: () => openInNewTab(t),
+              onClick: () => {
+                const metadataValues = lookupMetadata(
+                  t,
+                  "rows",
+                  rowTooltipFields,
+                );
+                openInNewTab(t, metadataValues);
+              },
             }) as const
           }
           tickValues={rows.filter((r) => !selectedValues.has(r))}

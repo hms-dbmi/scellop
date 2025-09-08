@@ -4,10 +4,13 @@ import React, { useCallback, useId } from "react";
 import { useColumnConfig } from "../../contexts/AxisConfigContext";
 import {
   useColumnCounts,
+  useColumnMetadataKeys,
   useColumns,
   useData,
+  useMetadataLookup,
 } from "../../contexts/DataContext";
 import { useHeatmapDimensions } from "../../contexts/DimensionsContext";
+import { useTooltipFields } from "../../contexts/MetadataConfigContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import truncateTickLabel from "../../utils/truncate-tick-label";
@@ -53,6 +56,9 @@ export default function HeatmapXAxis() {
   const { openTooltip, closeTooltip } = useSetTooltipData();
 
   const columns = useColumns();
+  const columnMetadataKeys = useColumnMetadataKeys();
+  const columnTooltipFields = useTooltipFields(columnMetadataKeys);
+  const lookupMetadata = useMetadataLookup();
 
   const filterId = useId();
   const { openInNewTab, tickTitle, tickLabelStyle } =
@@ -124,7 +130,14 @@ export default function HeatmapXAxis() {
                 );
               },
               onMouseOut: closeTooltip,
-              onClick: () => openInNewTab(t),
+              onClick: () => {
+                const metadataValues = lookupMetadata(
+                  t,
+                  "cols",
+                  columnTooltipFields,
+                );
+                openInNewTab(t, metadataValues);
+              },
             }) as const
           }
           tickValues={columns}

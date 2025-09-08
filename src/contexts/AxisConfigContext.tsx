@@ -4,7 +4,10 @@ import { createTemporalStoreContext } from "../utils/zustand";
 
 export interface AxisConfig {
   label: string;
-  createHref?: (tick: string) => string;
+  createHref?: (
+    tick: string,
+    metadataValues?: Record<string, string | number>,
+  ) => string;
   createSubtitle?: (
     value: string,
     metadataValues?: Record<string, string | number>,
@@ -31,7 +34,12 @@ interface InitializedAxisConfig extends AxisConfig {
 
 interface AxisConfigActions {
   setLabel: (label: string) => void;
-  setCreateHref: (createHref: (tick: string) => string) => void;
+  setCreateHref: (
+    createHref: (
+      tick: string,
+      metadataValues?: Record<string, string | number>,
+    ) => string,
+  ) => void;
   setCreateSubtitle: (
     createSubtitle: (
       value: string,
@@ -59,8 +67,12 @@ const createAxisConfigStore =
         label: initialArgs.label ?? direction,
         zoomedBandwidth: initialArgs.zoomedBandwidth ?? 32,
         setLabel: (label: string) => set({ label }),
-        setCreateHref: (createHref: (tick: string) => string) =>
-          set({ createHref }),
+        setCreateHref: (
+          createHref: (
+            tick: string,
+            metadataValues?: Record<string, string | number>,
+          ) => string,
+        ) => set({ createHref }),
         setCreateSubtitle: (
           createSubtitle: (
             value: string,
