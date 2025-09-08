@@ -78,10 +78,8 @@ const useMaxValueLabel = () => {
   if (isNormalized) {
     return "100%";
   }
-  if (isLogTransformed) {
-    return maxLogValue.toFixed(2);
-  }
-  return maxValue;
+  const value = isLogTransformed ? maxLogValue : maxValue;
+  return Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value);
 };
 
 export default function Legend() {
