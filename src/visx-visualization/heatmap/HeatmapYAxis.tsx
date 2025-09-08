@@ -110,12 +110,18 @@ export default function HeatmapYAxis() {
               style: tickLabelStyle,
               dy: "0.25em",
               onMouseOver: (e) => {
+                const metadataValues = lookupMetadata(
+                  t,
+                  "rows",
+                  rowTooltipFields,
+                );
                 openTooltip(
                   {
                     title: tickTitle(t),
                     data: {
                       "Cell Count": rowCounts[t],
                       [label]: t,
+                      ...metadataValues,
                     },
                   },
                   e.clientX,

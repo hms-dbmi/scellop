@@ -117,12 +117,18 @@ export default function HeatmapXAxis() {
               className: "x-axis-tick-label",
               fontFamily: theme.typography.fontFamily,
               onMouseOver: (e) => {
+                const metadataValues = lookupMetadata(
+                  t,
+                  "cols",
+                  columnTooltipFields,
+                );
                 openTooltip(
                   {
                     title: tickTitle(t),
                     data: {
                       "Cell Count": columnCounts[t],
                       [label]: t,
+                      ...metadataValues,
                     },
                   },
                   e.clientX,
