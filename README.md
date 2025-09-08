@@ -19,7 +19,7 @@ pip install cellpop
 ```
 
 ## Demo
-A demo is available [here] [here](https://cellpop.netlify.app). How to use the CellPopComponent is shown [here](./demo/demo.tsx).
+A demo is available [here](https://cellpop.netlify.app). How to use the CellPopComponent is shown [here](./demo/demo.tsx).
 
 The main view and interactions:
 ![Screen shot of CellPop with 64 datasets and 61 celltypes.](assets/cellpop_example.png)
