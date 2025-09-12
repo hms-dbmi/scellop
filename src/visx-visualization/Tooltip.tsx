@@ -70,16 +70,22 @@ export default function Tooltip() {
     return null;
   }
 
+  // Calculate the absolute position by adding the visualization's offset to the relative coordinates
+  const absoluteTop =
+    tooltipTop + (visualizationBounds?.top ?? 0) + (window?.scrollY ?? 0);
+  const absoluteLeft =
+    tooltipLeft + (visualizationBounds?.left ?? 0) + (window?.scrollX ?? 0);
+
   return (
     <TooltipInPortal
-      top={tooltipTop}
-      left={tooltipLeft}
+      top={absoluteTop}
+      left={absoluteLeft}
       style={{
         ...defaultStyles,
         background: theme.palette.background.paper,
         color: theme.palette.text.primary,
         pointerEvents: "none",
-        zIndex: 1000,
+        zIndex: 9999,
       }}
     >
       <Stack gap={0.25}>
