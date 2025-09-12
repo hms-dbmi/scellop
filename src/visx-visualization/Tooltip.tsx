@@ -56,25 +56,17 @@ export default function Tooltip() {
   });
 
   useEffect(() => {
-    if (!tooltipData) {
-      closeTooltip();
-    }
-  }, [tooltipData, closeTooltip]);
-
-  useEffect(() => {
     // Set the container to document.body
     containerRef(document.body);
   }, [containerRef]);
 
-  if (!tooltipOpen || contextMenuOpen) {
+  if (!tooltipOpen || contextMenuOpen || !tooltipData) {
     return null;
   }
 
   // Calculate the absolute position by adding the visualization's offset to the relative coordinates
-  const absoluteTop =
-    tooltipTop + (visualizationBounds?.top ?? 0) + (window?.scrollY ?? 0);
-  const absoluteLeft =
-    tooltipLeft + (visualizationBounds?.left ?? 0) + (window?.scrollX ?? 0);
+  const absoluteTop = tooltipTop + (window?.scrollY ?? 0);
+  const absoluteLeft = tooltipLeft + (window?.scrollX ?? 0);
 
   return (
     <TooltipInPortal
