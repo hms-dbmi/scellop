@@ -1,7 +1,9 @@
 import React from "react";
 
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
+import { useViewType } from "../../contexts/ViewTypeContext";
 import MetadataValueBar from "../heatmap/MetadataValueBar";
+import TraditionalViewRowLegend from "../TraditionalViewRowLegend";
 import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
 
 function BottomCenterPanel(
@@ -9,9 +11,15 @@ function BottomCenterPanel(
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   const { width, height } = usePanelDimensions("center_bottom");
+  const { viewType } = useViewType();
+
   return (
     <VisualizationPanel {...props} ref={ref}>
-      <MetadataValueBar axis="X" width={width} height={height} />
+      {viewType === "traditional" ? (
+        <TraditionalViewRowLegend width={width} height={height} />
+      ) : (
+        <MetadataValueBar axis="X" width={width} height={height} />
+      )}
     </VisualizationPanel>
   );
 }

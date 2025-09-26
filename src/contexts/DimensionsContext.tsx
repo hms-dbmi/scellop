@@ -35,7 +35,7 @@ export type GridSizeTuple = [number, number, number];
 
 export const INITIAL_PROPORTIONS: GridSizeTuple = [0.3, 0.4, 0.3];
 export const TRADITIONAL_COLUMN_PROPORTIONS: GridSizeTuple = [0, 0.95, 0.05];
-export const TRADITIONAL_ROW_PROPORTIONS: GridSizeTuple = [1, 0, 0];
+export const TRADITIONAL_ROW_PROPORTIONS: GridSizeTuple = [0.85, 0, 0.15];
 const MIN_PANEL_SIZE = 48;
 
 // Helper function to get the initial size of the panels

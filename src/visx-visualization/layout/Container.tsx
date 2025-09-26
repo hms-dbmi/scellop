@@ -129,6 +129,14 @@ const usePanelProps = (id: string) => {
   }, [id]);
 };
 
+const traditionalViewSections = [
+  "left_top",
+  "center_top",
+  "right_top",
+  "center_bottom",
+  "right_bottom",
+];
+
 export default function VizContainerGrid() {
   const { width, height, rowSizes, columnSizes, resizeColumn, resizeRow } =
     useDimensions();
@@ -172,8 +180,7 @@ export default function VizContainerGrid() {
   const shouldRenderPanelChildren = useCallback(
     (section: MappedPanelSection) => {
       if (viewType === "traditional") {
-        // Only top row panels should render their children
-        return section.endsWith("_top");
+        return traditionalViewSections.includes(section);
       }
       // In default view, all panels render their children
       return true;
