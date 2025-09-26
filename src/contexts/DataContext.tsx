@@ -266,8 +266,6 @@ const applySortOrders = (
         }
         default:
           return (a: string, b: string) => {
-            console.log("a", a, "b", b)
-            console.log(metadata?.[a]);
             const aValue =
               metadata?.[a][key as keyof (typeof metadata)[typeof a]];
             const bValue =
@@ -605,11 +603,6 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
             columnSortInvalidated: state.rowSortInvalidated,
           };
         });
-      },
-      toggleHasBeenTransposed: () => {
-        set((state) => ({
-          hasBeenTransposed: !state.hasBeenTransposed,
-        }));
       },
       setRowFilters: (filters: Filter<string>[]) => {
         set((state) => {
@@ -1130,8 +1123,3 @@ export const useHasBeenTransposed = () => {
   return useData((s) => s.hasBeenTransposed);
 }
 
-export const useTransposeToggle = () => {
-  return useData((s) => s.toggleHasBeenTransposed);
-};
-
-export const handleTranspose = () => {};

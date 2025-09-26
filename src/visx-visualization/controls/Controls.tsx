@@ -472,8 +472,6 @@ export function TransposeControl() {
     yScale.resetScroll();
     // Reset expanded rows since they no longer make sense after transpose
     expandedValues.reset();
-    // Toggle transpose state
-    toggleHasBeenTransposed();
     
     trackEvent("Transpose Data", "");
   });
@@ -505,15 +503,8 @@ export function ViewTypeControl() {
   const restorePreviousTopGraphType = useRestorePreviousTopGraphType();
   const trackEvent = useTrackEvent();
 
-  const transposeData = useTranspose();
-  const swapAxisConfigs = useSwapAxisConfigs();
-
-  const hasBeenTransposed = useHasBeenTransposed();
-
-  const handleTranspose = useEventCallback(() => {
-    transposeData();
-    swapAxisConfigs();
-  });
+	// TODO: import the hook at the top of the file as well
+	const handleTranspose = useHandleTranspose();
 
   const handleViewTypeChange = useEventCallback((event: SelectChangeEvent) => {
     const newViewType = event.target.value as "traditional" | "default";
