@@ -30,8 +30,6 @@ export default function TraditionalViewRowLegend({
     color: getColorForValue(row, rows, rowConfig.colors),
   }));
 
-  console.log("TraditionalViewRowLegend render", { width, height });
-
   if (visibleRows.length === 0) {
     console.log("No visible rows, skipping legend render");
     return null;
@@ -62,6 +60,10 @@ export default function TraditionalViewRowLegend({
         alignItems: "center",
         justifyContent: "start",
         zIndex: 1000,
+        position: "absolute",
+        top: 0,
+        right: 0,
+        left: 32, // Leave space for scale
       }}
     >
       {/* Legend Title */}
@@ -96,8 +98,6 @@ export default function TraditionalViewRowLegend({
               alignItems: "center",
               gap: 1,
               minWidth: 0, // Allow text to truncate
-              p: 0.25,
-              border: `1px solid ${theme.palette.divider}`,
             }}
           >
             {/* Color indicator */}
