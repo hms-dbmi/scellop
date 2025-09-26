@@ -43,7 +43,7 @@ interface DataContextState {
   filteredColumns: Set<string>;
   rowSortInvalidated: boolean;
   columnSortInvalidated: boolean;
-  hasBeenTransposed: boolean;
+  isTransposed: boolean;
 }
 
 interface DataContextActions {
@@ -157,10 +157,6 @@ interface DataContextActions {
    */
   transposeData: () => void;
    /**
-   *
-   */
-  toggleHasBeenTransposed: () => void;
-  /**
    *
    */
   setRowFilters: (filters: Filter<string>[]) => void;
@@ -338,7 +334,7 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
       columnFilters: [] as Filter<ColumnKey>[],
       filteredRows: new Set<string>(),
       filteredColumns: new Set<string>(),
-      hasBeenTransposed: false,
+      isTransposed: false,
       resetRemovedRows: () => {
         set({ removedRows: new Set<string>() });
       },
@@ -601,6 +597,7 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
             columnSortOrder: newColumnSortOrder,
             rowSortInvalidated: state.columnSortInvalidated,
             columnSortInvalidated: state.rowSortInvalidated,
+            isTransposed: !state.isTransposed,
           };
         });
       },
@@ -1119,7 +1116,6 @@ export const useTranspose = () => {
   return useData((s) => s.transposeData);
 };
 
-export const useHasBeenTransposed = () => {
-  return useData((s) => s.hasBeenTransposed);
+export const useIsTransposed = () => {
+  return useData((s) => s.isTransposed);
 }
-

@@ -24,7 +24,7 @@ import {
   useAllRowSubFilters,
   useColumnSortKeys,
   useData,
-  useHasBeenTransposed,
+  useIsTransposed,
   useMetadataKeys,
   useMoveColumnToEnd,
   useMoveColumnToStart,
@@ -32,7 +32,6 @@ import {
   useMoveRowToStart,
   useRowSortKeys,
   useTranspose,
-  useTransposeToggle,
 } from "../../contexts/DataContext";
 import {
   useNormalizationControlIsDisabled,
@@ -52,6 +51,7 @@ import {
   useTooltipData,
 } from "../../contexts/TooltipDataContext";
 import { useViewType } from "../../contexts/ViewTypeContext";
+import { useHandleTranspose } from "../../hooks/useTranspose";
 import { HEATMAP_THEMES_LIST, HeatmapTheme } from "../../utils/heatmap-themes";
 import { NORMALIZATIONS } from "../../utils/normalizations";
 import {
@@ -804,26 +804,22 @@ const ViewTypeSelect = () => {
   const restorePreviousTopGraphType = useRestorePreviousTopGraphType();
   const trackEvent = useTrackEvent();
 
-  const transposeData = useTranspose();
-  const swapAxisConfigs = useSwapAxisConfigs();
-
-  const hasBeenTransposed = useHasBeenTransposed();
-  
-  const handleTranspose = useEventCallback(() => {
-    transposeData();
-    swapAxisConfigs();
-  });
+  const isTransposed = useIsTransposed();
+  const handleTranspose = useHandleTranspose();
 
   const handleViewTypeChange = (newViewType: "traditional" | "default") => {
     if (newViewType === "traditional") {
       setTraditional();
       setTopGraphTypeForTraditional("Stacked Bars (Categorical)");
+      if (!isTransposed) {
+        handleTranspose();
+      }
     } else {
       setDefault();
       restorePreviousTopGraphType();
-    }
-    if (!hasBeenTransposed) {
-      handleTranspose();
+      if (isTransposed) {
+        handleTranspose();
+      }
     }
     trackEvent("Change View Type", newViewType);
   };
@@ -864,31 +860,7 @@ const ViewTypeSelect = () => {
 };
 
 const TransposeAction = () => {
-  const transposeData = useTranspose();
-  const swapAxisConfigs = useSwapAxisConfigs();
-  const trackEvent = useTrackEvent();
-
-  const xScale = useXScale();
-  const yScale = useYScale();
-  const expandedValues = useSelectedValues();
-
-  const toggleHasBeenTransposed = useTransposeToggle();
-
-  const handleTranspose = () => {
-    // First transpose the data
-    transposeData();
-    // Then swap the axis configurations
-    swapAxisConfigs();
-    // Reset scroll positions to avoid invalid states
-    xScale.resetScroll();
-    yScale.resetScroll();
-    // Reset expanded rows since they no longer make sense after transpose
-    expandedValues.reset();
-     // Toggle transpose state
-    toggleHasBeenTransposed();
-
-    trackEvent("Transpose Data", "");
-  };
+  const handleTranspose = useHandleTranspose();
 
   return (
     <ContextMenuItem
