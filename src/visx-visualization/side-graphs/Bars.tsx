@@ -339,14 +339,16 @@ export default function Bars({
 
     return Array.from(selectedValues)
       .map((key) => {
-        const max = maxes[key];
+        const max =
+          normalization === "Log" ? Math.log(maxes[key] + 1) : maxes[key];
         const scaledPosition = categoricalScale(key);
         const bandwidth = categoricalScale.bandwidth();
 
         if (scaledPosition == null || bandwidth == null) return null;
 
-        const normalizationIsNotNone = normalization !== "None";
-        const domain = normalizationIsNotNone ? [1, 0] : [max, 0];
+        const isPercentNormalized =
+          normalization === "Row" || normalization === "Column";
+        const domain = isPercentNormalized ? [1, 0] : [max, 0];
         const range = [0, expandedSize - EXPANDED_ROW_PADDING * 3];
 
         const axisScale = scaleLinear({
@@ -361,7 +363,7 @@ export default function Bars({
           position: scaledPosition,
           bandwidth,
           max,
-          normalizationIsNotNone,
+          normalizationIsNotNone: isPercentNormalized,
         };
       })
       .filter((axis) => axis !== null);
