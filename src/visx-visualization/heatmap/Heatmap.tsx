@@ -299,9 +299,13 @@ function Heatmap() {
       const cellHeight = Math.ceil(yScale.scale.bandwidth(row));
       if (selectedValues.has(row)) {
         // draw bar graph
-        const max = rowMaxes[row];
+        const max =
+          normalization === "Log" ? Math.log(rowMaxes[row] + 1) : rowMaxes[row];
 
-        const domain = normalization === "None" ? [0, max] : [0, 1];
+        const domain =
+          normalization === "None" || normalization === "Log"
+            ? [0, max]
+            : [0, 1];
 
         const inlineYScale = scaleLinear({
           domain,
