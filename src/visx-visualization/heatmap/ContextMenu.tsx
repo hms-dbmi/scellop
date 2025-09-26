@@ -24,6 +24,7 @@ import {
   useAllRowSubFilters,
   useColumnSortKeys,
   useData,
+  useHasBeenTransposed,
   useMetadataKeys,
   useMoveColumnToEnd,
   useMoveColumnToStart,
@@ -31,6 +32,7 @@ import {
   useMoveRowToStart,
   useRowSortKeys,
   useTranspose,
+  useTransposeToggle,
 } from "../../contexts/DataContext";
 import {
   useNormalizationControlIsDisabled,
@@ -802,6 +804,16 @@ const ViewTypeSelect = () => {
   const restorePreviousTopGraphType = useRestorePreviousTopGraphType();
   const trackEvent = useTrackEvent();
 
+  const transposeData = useTranspose();
+  const swapAxisConfigs = useSwapAxisConfigs();
+
+  const hasBeenTransposed = useHasBeenTransposed();
+  
+  const handleTranspose = useEventCallback(() => {
+    transposeData();
+    swapAxisConfigs();
+  });
+
   const handleViewTypeChange = (newViewType: "traditional" | "default") => {
     if (newViewType === "traditional") {
       setTraditional();
@@ -809,6 +821,9 @@ const ViewTypeSelect = () => {
     } else {
       setDefault();
       restorePreviousTopGraphType();
+    }
+    if (!hasBeenTransposed) {
+      handleTranspose();
     }
     trackEvent("Change View Type", newViewType);
   };
@@ -857,6 +872,8 @@ const TransposeAction = () => {
   const yScale = useYScale();
   const expandedValues = useSelectedValues();
 
+  const toggleHasBeenTransposed = useTransposeToggle();
+
   const handleTranspose = () => {
     // First transpose the data
     transposeData();
@@ -867,6 +884,8 @@ const TransposeAction = () => {
     yScale.resetScroll();
     // Reset expanded rows since they no longer make sense after transpose
     expandedValues.reset();
+     // Toggle transpose state
+    toggleHasBeenTransposed();
 
     trackEvent("Transpose Data", "");
   };

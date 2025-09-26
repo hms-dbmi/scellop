@@ -34,7 +34,7 @@ import {
   useSwapAxisConfigs,
 } from "../../contexts/AxisConfigContext";
 import { useSetTheme } from "../../contexts/CellPopThemeContext";
-import { useTranspose } from "../../contexts/DataContext";
+import { useHasBeenTransposed, useTranspose, useTransposeToggle } from "../../contexts/DataContext";
 import {
   useGraphTypeControlIsDisabled,
   useNormalizationControlIsDisabled,
@@ -459,7 +459,8 @@ export function TransposeControl() {
   const yScale = useYScale();
   const expandedValues = useSelectedValues();
 
-  const [hasBeenTransposed, , , toggleHasBeenTransposed] = useBoolean(false);
+  const hasBeenTransposed = useHasBeenTransposed();
+  const toggleHasBeenTransposed = useTransposeToggle();
 
   const handleTranspose = useEventCallback(() => {
     // First transpose the data
@@ -471,8 +472,9 @@ export function TransposeControl() {
     yScale.resetScroll();
     // Reset expanded rows since they no longer make sense after transpose
     expandedValues.reset();
-
+    // Toggle transpose state
     toggleHasBeenTransposed();
+    
     trackEvent("Transpose Data", "");
   });
 
@@ -503,6 +505,16 @@ export function ViewTypeControl() {
   const restorePreviousTopGraphType = useRestorePreviousTopGraphType();
   const trackEvent = useTrackEvent();
 
+  const transposeData = useTranspose();
+  const swapAxisConfigs = useSwapAxisConfigs();
+
+  const hasBeenTransposed = useHasBeenTransposed();
+
+  const handleTranspose = useEventCallback(() => {
+    transposeData();
+    swapAxisConfigs();
+  });
+
   const handleViewTypeChange = useEventCallback((event: SelectChangeEvent) => {
     const newViewType = event.target.value as "traditional" | "default";
     if (newViewType === "traditional") {
@@ -511,6 +523,9 @@ export function ViewTypeControl() {
     } else {
       setDefault();
       restorePreviousTopGraphType();
+    }
+    if (!hasBeenTransposed) {
+      handleTranspose();
     }
     trackEvent("Change View Type", newViewType);
   });

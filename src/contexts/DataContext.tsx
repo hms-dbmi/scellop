@@ -43,6 +43,7 @@ interface DataContextState {
   filteredColumns: Set<string>;
   rowSortInvalidated: boolean;
   columnSortInvalidated: boolean;
+  hasBeenTransposed: boolean;
 }
 
 interface DataContextActions {
@@ -155,6 +156,10 @@ interface DataContextActions {
    * Transposes the data by swapping rows and columns
    */
   transposeData: () => void;
+   /**
+   *
+   */
+  toggleHasBeenTransposed: () => void;
   /**
    *
    */
@@ -261,6 +266,8 @@ const applySortOrders = (
         }
         default:
           return (a: string, b: string) => {
+            console.log("a", a, "b", b)
+            console.log(metadata?.[a]);
             const aValue =
               metadata?.[a][key as keyof (typeof metadata)[typeof a]];
             const bValue =
@@ -333,6 +340,7 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
       columnFilters: [] as Filter<ColumnKey>[],
       filteredRows: new Set<string>(),
       filteredColumns: new Set<string>(),
+      hasBeenTransposed: false,
       resetRemovedRows: () => {
         set({ removedRows: new Set<string>() });
       },
@@ -597,6 +605,11 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
             columnSortInvalidated: state.rowSortInvalidated,
           };
         });
+      },
+      toggleHasBeenTransposed: () => {
+        set((state) => ({
+          hasBeenTransposed: !state.hasBeenTransposed,
+        }));
       },
       setRowFilters: (filters: Filter<string>[]) => {
         set((state) => {
@@ -1109,12 +1122,16 @@ export const useFractionDataMap = (normalization: Normalization) => {
   return useData(selector);
 };
 
-export const useTransposeData = () => {
+export const useTranspose = () => {
   return useData((s) => s.transposeData);
 };
 
-export const useTranspose = () => {
-  const transposeData = useTransposeData();
+export const useHasBeenTransposed = () => {
+  return useData((s) => s.hasBeenTransposed);
+}
 
-  return transposeData;
+export const useTransposeToggle = () => {
+  return useData((s) => s.toggleHasBeenTransposed);
 };
+
+export const handleTranspose = () => {};
