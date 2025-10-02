@@ -9,6 +9,7 @@ function BottomCenterPanel(
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   const { width, height } = usePanelDimensions("center_bottom");
+
   return (
     <VisualizationPanel {...props} ref={ref}>
       <MetadataValueBar axis="X" width={width} height={height} />

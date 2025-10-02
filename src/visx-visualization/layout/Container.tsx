@@ -172,7 +172,6 @@ export default function VizContainerGrid() {
   const shouldRenderPanelChildren = useCallback(
     (section: MappedPanelSection) => {
       if (viewType === "traditional") {
-        // Only top row panels should render their children
         return section.endsWith("_top");
       }
       // In default view, all panels render their children
