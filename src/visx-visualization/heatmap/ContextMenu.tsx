@@ -24,6 +24,7 @@ import {
   useAllRowSubFilters,
   useColumnSortKeys,
   useData,
+  useIsTransposed,
   useMetadataKeys,
   useMoveColumnToEnd,
   useMoveColumnToStart,
@@ -50,6 +51,7 @@ import {
   useTooltipData,
 } from "../../contexts/TooltipDataContext";
 import { useViewType } from "../../contexts/ViewTypeContext";
+import { useHandleTranspose } from "../../hooks/useTranspose";
 import { HEATMAP_THEMES_LIST, HeatmapTheme } from "../../utils/heatmap-themes";
 import { NORMALIZATIONS } from "../../utils/normalizations";
 import {
@@ -802,13 +804,22 @@ const ViewTypeSelect = () => {
   const restorePreviousTopGraphType = useRestorePreviousTopGraphType();
   const trackEvent = useTrackEvent();
 
+  const isTransposed = useIsTransposed();
+  const handleTranspose = useHandleTranspose();
+
   const handleViewTypeChange = (newViewType: "traditional" | "default") => {
     if (newViewType === "traditional") {
       setTraditional();
       setTopGraphTypeForTraditional("Stacked Bars (Categorical)");
+      if (!isTransposed) {
+        handleTranspose();
+      }
     } else {
       setDefault();
       restorePreviousTopGraphType();
+      if (isTransposed) {
+        handleTranspose();
+      }
     }
     trackEvent("Change View Type", newViewType);
   };
@@ -849,27 +860,7 @@ const ViewTypeSelect = () => {
 };
 
 const TransposeAction = () => {
-  const transposeData = useTranspose();
-  const swapAxisConfigs = useSwapAxisConfigs();
-  const trackEvent = useTrackEvent();
-
-  const xScale = useXScale();
-  const yScale = useYScale();
-  const expandedValues = useSelectedValues();
-
-  const handleTranspose = () => {
-    // First transpose the data
-    transposeData();
-    // Then swap the axis configurations
-    swapAxisConfigs();
-    // Reset scroll positions to avoid invalid states
-    xScale.resetScroll();
-    yScale.resetScroll();
-    // Reset expanded rows since they no longer make sense after transpose
-    expandedValues.reset();
-
-    trackEvent("Transpose Data", "");
-  };
+  const handleTranspose = useHandleTranspose();
 
   return (
     <ContextMenuItem

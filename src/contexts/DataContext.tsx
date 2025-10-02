@@ -43,6 +43,7 @@ interface DataContextState {
   filteredColumns: Set<string>;
   rowSortInvalidated: boolean;
   columnSortInvalidated: boolean;
+  isTransposed: boolean;
 }
 
 interface DataContextActions {
@@ -155,7 +156,7 @@ interface DataContextActions {
    * Transposes the data by swapping rows and columns
    */
   transposeData: () => void;
-  /**
+   /**
    *
    */
   setRowFilters: (filters: Filter<string>[]) => void;
@@ -333,6 +334,7 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
       columnFilters: [] as Filter<ColumnKey>[],
       filteredRows: new Set<string>(),
       filteredColumns: new Set<string>(),
+      isTransposed: false,
       resetRemovedRows: () => {
         set({ removedRows: new Set<string>() });
       },
@@ -595,6 +597,7 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
             columnSortOrder: newColumnSortOrder,
             rowSortInvalidated: state.columnSortInvalidated,
             columnSortInvalidated: state.rowSortInvalidated,
+            isTransposed: !state.isTransposed,
           };
         });
       },
@@ -1109,12 +1112,10 @@ export const useFractionDataMap = (normalization: Normalization) => {
   return useData(selector);
 };
 
-export const useTransposeData = () => {
+export const useTranspose = () => {
   return useData((s) => s.transposeData);
 };
 
-export const useTranspose = () => {
-  const transposeData = useTransposeData();
-
-  return transposeData;
-};
+export const useIsTransposed = () => {
+  return useData((s) => s.isTransposed);
+}

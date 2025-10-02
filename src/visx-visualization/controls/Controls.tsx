@@ -34,7 +34,7 @@ import {
   useSwapAxisConfigs,
 } from "../../contexts/AxisConfigContext";
 import { useSetTheme } from "../../contexts/CellPopThemeContext";
-import { useTranspose } from "../../contexts/DataContext";
+import { useIsTransposed, useTranspose } from "../../contexts/DataContext";
 import {
   useGraphTypeControlIsDisabled,
   useNormalizationControlIsDisabled,
@@ -53,6 +53,7 @@ import {
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import useBoolean from "../../hooks/useBoolean";
+import { useHandleTranspose } from "../../hooks/useTranspose";
 import {
   GRAPH_TYPES,
   GRAPH_TYPE_DESCRIPTIONS,
@@ -448,36 +449,14 @@ export function ZoomBandwidthControl() {
 }
 
 export function TransposeControl() {
-  const transposeData = useTranspose();
-  const swapAxisConfigs = useSwapAxisConfigs();
-  const trackEvent = useTrackEvent();
-
   const rowConfig = useRowConfig();
   const columnConfig = useColumnConfig();
 
-  const xScale = useXScale();
-  const yScale = useYScale();
-  const expandedValues = useSelectedValues();
+  const isTransposed = useIsTransposed();
+  const handleTranspose = useHandleTranspose();
 
-  const [hasBeenTransposed, , , toggleHasBeenTransposed] = useBoolean(false);
-
-  const handleTranspose = useEventCallback(() => {
-    // First transpose the data
-    transposeData();
-    // Then swap the axis configurations
-    swapAxisConfigs();
-    // Reset scroll positions to avoid invalid states
-    xScale.resetScroll();
-    yScale.resetScroll();
-    // Reset expanded rows since they no longer make sense after transpose
-    expandedValues.reset();
-
-    toggleHasBeenTransposed();
-    trackEvent("Transpose Data", "");
-  });
-
-  const currentRowConfig = hasBeenTransposed ? rowConfig : columnConfig;
-  const currentColumnConfig = hasBeenTransposed ? columnConfig : rowConfig;
+  const currentRowConfig = isTransposed ? rowConfig : columnConfig;
+  const currentColumnConfig = isTransposed ? columnConfig : rowConfig;
 
   return (
     <Stack direction="column" spacing={1} width="100%">
@@ -503,14 +482,23 @@ export function ViewTypeControl() {
   const restorePreviousTopGraphType = useRestorePreviousTopGraphType();
   const trackEvent = useTrackEvent();
 
+  const isTransposed = useIsTransposed();
+  const handleTranspose = useHandleTranspose();
+
   const handleViewTypeChange = useEventCallback((event: SelectChangeEvent) => {
     const newViewType = event.target.value as "traditional" | "default";
     if (newViewType === "traditional") {
       setTraditional();
       setTopGraphTypeForTraditional("Stacked Bars (Categorical)");
+      if (!isTransposed) {
+        handleTranspose();
+      }
     } else {
       setDefault();
       restorePreviousTopGraphType();
+      if (isTransposed) {
+        handleTranspose();
+      }
     }
     trackEvent("Change View Type", newViewType);
   });
