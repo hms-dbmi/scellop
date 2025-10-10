@@ -3,7 +3,7 @@ Scellop (previously CellPop) is an interactive visualization tool for cell type 
 
 
 ## Why scellop? 
-Cell type populations are commonly shown with stacked bar charts. However, scaling the number of samples and cell types in these visualizations create issues with analyzing these charts. CellPop alleviates this by presenting a flexible heatmap and side views with extending layered bar charts.
+Cell type populations are commonly shown with stacked bar charts. However, scaling the number of samples and cell types in these visualizations create issues with analyzing these charts. Scellop alleviates this by presenting a flexible heatmap and side views with extending layered bar charts.
 
 
 ## Installs
