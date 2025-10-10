@@ -22,7 +22,7 @@ pip install cellpop
 A demo is available [here](https://scellop.netlify.app). How to use the CellPopComponent is shown [here](./demo/demo.tsx).
 
 The main view and interactions:
-![Screen shot of CellPop with 64 datasets and 61 celltypes.](assets/cellpop_example.png)
+![Screen shot of scellop with 64 datasets and 61 celltypes.](assets/cellpop_example.png)
 
 
 ## Set-up
