@@ -1,13 +1,13 @@
-# CellPop: Cell Type Composition Explorer
-CellPop is an interactive visualization tool for cell type compositions. Easily compare your cell type compositions with different visual encodings, filter and sort on metadata, and export for communication.
+# scellop: Cell Type Composition Explorer
+Scellop (previously CellPop) is an interactive visualization tool for cell type compositions. Easily compare your cell type compositions with different visual encodings, filter and sort on metadata, and export for communication.
 
 
-## Why CellPop? 
+## Why scellop? 
 Cell type populations are commonly shown with stacked bar charts. However, scaling the number of samples and cell types in these visualizations create issues with analyzing these charts. CellPop alleviates this by presenting a flexible heatmap and side views with extending layered bar charts.
 
 
 ## Installs
-CellPop is available on [NPM](https://www.npmjs.com/package/cellpop) and [PyPI](https://pypi.org/project/cellpop/).
+Scellop is available on [NPM](https://www.npmjs.com/package/cellpop) and [PyPI](https://pypi.org/project/cellpop/).
 
 
 ```sh
@@ -19,7 +19,7 @@ pip install cellpop
 ```
 
 ## Demo
-A demo is available [here](https://cellpop.netlify.app). How to use the CellPopComponent is shown [here](./demo/demo.tsx).
+A demo is available [here](https://scellop.netlify.app). How to use the CellPopComponent is shown [here](./demo/demo.tsx).
 
 The main view and interactions:
 ![Screen shot of CellPop with 64 datasets and 61 celltypes.](assets/cellpop_example.png)
