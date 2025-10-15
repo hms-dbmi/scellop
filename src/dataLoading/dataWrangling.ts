@@ -13,7 +13,7 @@ import {
   DataOrdering,
   Metadata,
   ScellopData,
-} from "../cellpop-schema";
+} from "../scellop-schema";
 
 export function loadDataWithCounts(
   counts: Record<string, Record<string, number>>,

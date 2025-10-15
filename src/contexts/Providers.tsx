@@ -1,6 +1,6 @@
 import { Theme } from "@mui/material";
 import React, { PropsWithChildren } from "react";
-import { ScellopData, ScellopTheme } from "../cellpop-schema";
+import { ScellopData, ScellopTheme } from "../scellop-schema";
 import { GraphType } from "../utils/graph-types";
 import { ViewType } from "../utils/view-types";
 import { AutoColorAssignment } from "./AutoColorAssignment";

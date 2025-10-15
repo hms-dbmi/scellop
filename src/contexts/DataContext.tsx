@@ -2,7 +2,7 @@ import { memoize } from "proxy-memoize";
 import { useCallback, useMemo } from "react";
 import { temporal } from "zundo";
 import { createStore } from "zustand";
-import { ScellopData } from "../cellpop-schema";
+import { ScellopData } from "../scellop-schema";
 import { moveToEnd, moveToStart } from "../utils/array-reordering";
 import { Normalization } from "../utils/normalizations";
 import { createTemporalStoreContext } from "../utils/zustand";

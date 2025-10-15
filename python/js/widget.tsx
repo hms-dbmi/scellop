@@ -1,7 +1,7 @@
 import { createRender, useModelState } from "@anywidget/react";
 import * as cellpop from "cellpop";
 import * as React from "react";
-import { ScellopData } from "../../src/cellpop-schema";
+import { ScellopData } from "../../src/scellop-schema";
 
 const render = createRender(() => {
   const [uuids, setUuids] = useModelState<string[]>("uuids");

@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useMemo } from "react";
 import { createStore } from "zustand";
-import { ScellopTheme } from "../cellpop-schema";
+import { ScellopTheme } from "../scellop-schema";
 
 import { Theme, ThemeProvider } from "@mui/material/styles";
 import { temporal } from "zundo";

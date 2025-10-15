@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CellPop } from "../src/CellPopComponent";
-import { ScellopData } from "../src/cellpop-schema";
 import { loadHuBMAPData } from "../src/dataLoading/dataHuBMAP";
+import { ScellopData } from "../src/scellop-schema";
 import { testData } from "./testData";
 
 import ScatterPlot from "@mui/icons-material/ScatterPlot";

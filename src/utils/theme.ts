@@ -1,5 +1,5 @@
 import { createTheme } from "@mui/material/styles";
-import { ScellopTheme } from "../cellpop-schema";
+import { ScellopTheme } from "../scellop-schema";
 
 export const light = createTheme({
   palette: {

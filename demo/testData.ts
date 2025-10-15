@@ -1,4 +1,4 @@
-import { ScellopData } from "../src/cellpop-schema";
+import { ScellopData } from "../src/scellop-schema";
 
 export const testData = {
   countsMatrix: [

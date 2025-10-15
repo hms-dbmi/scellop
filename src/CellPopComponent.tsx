@@ -3,13 +3,13 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Theme } from "@mui/material";
 import Skeleton from "@mui/material/Skeleton";
 import { withParentSize, WithParentSizeProvidedProps } from "@visx/responsive";
-import { ScellopData, ScellopTheme } from "./cellpop-schema";
 import { AxisConfig } from "./contexts/AxisConfigContext";
 import { OuterContainerRefProvider } from "./contexts/ContainerRefContext";
 import { Dimensions, GridSizeTuple } from "./contexts/DimensionsContext";
 import { DisableableControls } from "./contexts/DisabledControlProvider";
 import { Providers } from "./contexts/Providers";
 import { loadHuBMAPData } from "./dataLoading";
+import { ScellopData, ScellopTheme } from "./scellop-schema";
 import { ViewType } from "./utils/view-types";
 import VizContainer from "./visx-visualization/layout";
 

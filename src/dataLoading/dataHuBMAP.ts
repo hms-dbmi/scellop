@@ -4,7 +4,7 @@ import {
   HuBMAPSearchHit,
   Metadata,
   ObsSets,
-} from "../cellpop-schema";
+} from "../scellop-schema";
 import { getCountsAndMetadataFromObsSetsList } from "./dataLoaders";
 import { loadDataWithCounts } from "./dataWrangling";
 

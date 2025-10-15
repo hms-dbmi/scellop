@@ -66,7 +66,7 @@ export default function ExportControls() {
   const trackEvent = useTrackEvent();
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
-  const [filename, setFilename] = useState("cellpop-visualization");
+  const [filename, setFilename] = useState("scellop-visualization");
   const [includeTimestamp, setIncludeTimestamp] = useState(true);
   const [resolution, setResolution] = useState<number>(2);
   const [dimensions, setDimensions] = useState<{
@@ -129,7 +129,7 @@ export default function ExportControls() {
 
       // Create download link
       const link = document.createElement("a");
-      const baseFilename = filename.trim() || "cellpop-visualization";
+      const baseFilename = filename.trim() || "scellop-visualization";
       const timestamp = includeTimestamp
         ? `-${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}`
         : "";
@@ -173,7 +173,7 @@ export default function ExportControls() {
             onChange={(e) => setFilename(e.target.value)}
             variant="outlined"
             sx={{ flex: 1, minWidth: 200 }}
-            placeholder="cellpop-visualization"
+            placeholder="scellop-visualization"
           />
           <FormControlLabel
             control={
