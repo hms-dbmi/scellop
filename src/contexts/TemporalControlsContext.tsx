@@ -9,7 +9,6 @@ import {
   useColumnConfigHistory,
   useRowConfigHistory,
 } from "./AxisConfigContext";
-import { useThemeHistory } from "./CellPopThemeContext";
 import { useDataHistory } from "./DataContext";
 import {
   useGraphTypeControlIsDisabled,
@@ -22,6 +21,7 @@ import { useExpandedValuesHistory } from "./ExpandedValuesContext";
 import { useIndividualGraphTypeHistory } from "./IndividualGraphTypeContext";
 import { useNormalizationHistory } from "./NormalizationContext";
 import { useSelectedDimensionHistory } from "./SelectedDimensionContext";
+import { useThemeHistory } from "./ThemeContext";
 
 function useTemporalActions() {
   const themeHistory = useThemeHistory();

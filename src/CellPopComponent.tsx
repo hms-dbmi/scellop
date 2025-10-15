@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Theme } from "@mui/material";
 import Skeleton from "@mui/material/Skeleton";
 import { withParentSize, WithParentSizeProvidedProps } from "@visx/responsive";
-import { CellPopData, CellPopTheme } from "./cellpop-schema";
+import { CellPopData, ScellopTheme } from "./cellpop-schema";
 import { AxisConfig } from "./contexts/AxisConfigContext";
 import { OuterContainerRefProvider } from "./contexts/ContainerRefContext";
 import { Dimensions, GridSizeTuple } from "./contexts/DimensionsContext";
@@ -18,7 +18,7 @@ interface CellPopConfig {
   xAxis: AxisConfig;
   onClick?: (e: React.MouseEvent) => void;
   dimensions?: Dimensions;
-  theme?: CellPopTheme;
+  theme?: ScellopTheme;
   customTheme?: Theme;
   disabledControls?: DisableableControls[];
   initialProportions?: [GridSizeTuple, GridSizeTuple];

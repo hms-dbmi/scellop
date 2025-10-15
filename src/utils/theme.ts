@@ -1,5 +1,5 @@
 import { createTheme } from "@mui/material/styles";
-import { CellPopTheme } from "../cellpop-schema";
+import { ScellopTheme } from "../cellpop-schema";
 
 export const light = createTheme({
   palette: {
@@ -13,7 +13,7 @@ export const dark = createTheme({
   },
 });
 
-export function getTheme(theme: CellPopTheme) {
+export function getTheme(theme: ScellopTheme) {
   switch (theme) {
     case "light":
       return light;

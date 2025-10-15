@@ -108,4 +108,4 @@ export type HuBMAPSearchHit = {
   _source: HuBMAPSearchSource;
 };
 
-export type CellPopTheme = "light" | "dark";
+export type ScellopTheme = "light" | "dark";

@@ -1,6 +1,6 @@
 import { Theme } from "@mui/material";
 import React, { PropsWithChildren } from "react";
-import { CellPopData, CellPopTheme } from "../cellpop-schema";
+import { CellPopData, ScellopTheme } from "../cellpop-schema";
 import { GraphType } from "../utils/graph-types";
 import { ViewType } from "../utils/view-types";
 import { AutoColorAssignment } from "./AutoColorAssignment";
@@ -9,7 +9,6 @@ import {
   ColumnConfigProvider,
   RowConfigProvider,
 } from "./AxisConfigContext";
-import { CellPopThemeProvider } from "./CellPopThemeContext";
 import { ColorScaleProvider } from "./ColorScaleContext";
 import ControlsVisibilityProvider from "./ControlsVisibilityContext";
 import { DataProvider } from "./DataContext";
@@ -31,13 +30,14 @@ import { NormalizationProvider } from "./NormalizationContext";
 import { ScaleProvider } from "./ScaleContext";
 import { SelectedDimensionProvider } from "./SelectedDimensionContext";
 import TemporalControlsProvider from "./TemporalControlsContext";
+import { ScellopThemeProvider } from "./ThemeContext";
 import { TooltipDataProvider } from "./TooltipDataContext";
 import { ViewTypeProvider } from "./ViewTypeContext";
 
 interface CellPopConfigProps extends PropsWithChildren {
   data: CellPopData;
   dimensions: Dimensions;
-  theme: CellPopTheme;
+  theme: ScellopTheme;
   xAxis: AxisConfig;
   yAxis: AxisConfig;
   selectedDimension?: "X" | "Y";
@@ -94,7 +94,7 @@ export function Providers({
                 <ColumnConfigProvider {...xAxisConfig}>
                   <AutoColorAssignment enabled={autoColor}>
                     <TooltipDataProvider>
-                      <CellPopThemeProvider
+                      <ScellopThemeProvider
                         theme={theme}
                         customTheme={customTheme}
                       >
@@ -132,7 +132,7 @@ export function Providers({
                             </NormalizationProvider>
                           </IndividualGraphTypeProvider>
                         </DimensionsProvider>
-                      </CellPopThemeProvider>
+                      </ScellopThemeProvider>
                     </TooltipDataProvider>
                   </AutoColorAssignment>
                 </ColumnConfigProvider>
