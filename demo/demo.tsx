@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CellPop } from "../src/CellPopComponent";
+import { Scellop } from "../src/ScellopComponent";
 import { loadHuBMAPData } from "../src/dataLoading/dataHuBMAP";
 import { ScellopData } from "../src/scellop-schema";
 import { testData } from "./testData";
@@ -74,7 +74,7 @@ function Demo() {
         marginTop: "5vh",
       }}
     >
-      <CellPop
+      <Scellop
         data={data}
         theme={"light"}
         yAxis={{

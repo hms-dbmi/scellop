@@ -34,7 +34,7 @@ import { ScellopThemeProvider } from "./ThemeContext";
 import { TooltipDataProvider } from "./TooltipDataContext";
 import { ViewTypeProvider } from "./ViewTypeContext";
 
-interface CellPopConfigProps extends PropsWithChildren {
+interface ScellopConfigProps extends PropsWithChildren {
   data: ScellopData;
   dimensions: Dimensions;
   theme: ScellopTheme;
@@ -83,7 +83,7 @@ export function Providers({
   trackEvent,
   viewType,
   autoColor = true,
-}: CellPopConfigProps) {
+}: ScellopConfigProps) {
   return (
     <EventTrackerProvider trackEvent={trackEvent}>
       <DisabledControlProvider disabledControls={disabledControls}>
