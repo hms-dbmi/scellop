@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { CellPop } from "../src/CellPopComponent";
-import { CellPopData } from "../src/cellpop-schema";
+import { ScellopData } from "../src/cellpop-schema";
 import { loadHuBMAPData } from "../src/dataLoading/dataHuBMAP";
 import { testData } from "./testData";
 
@@ -9,7 +9,7 @@ import TableChartIcon from "@mui/icons-material/TableChartRounded";
 import { GridSizeTuple } from "../src/contexts/DimensionsContext";
 
 function Demo() {
-  const [data, setData] = useState<CellPopData>(testData);
+  const [data, setData] = useState<ScellopData>(testData);
 
   // data
   const uuids = [

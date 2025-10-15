@@ -9,10 +9,10 @@
 // Furthermore, it can include specifications for the visualization, such as dimensions and theme
 
 import {
-  CellPopData,
   CountsMatrixValue,
   DataOrdering,
   Metadata,
+  ScellopData,
 } from "../cellpop-schema";
 
 export function loadDataWithCounts(
@@ -24,7 +24,7 @@ export function loadDataWithCounts(
   const data = {
     countsMatrix,
     countsMatrixOrder: ["row", "col", "value"],
-  } as CellPopData;
+  } as ScellopData;
   loadDataWrapper(data, ordering);
   if (metadata) {
     data.metadata = metadata;
@@ -37,7 +37,7 @@ export function loadDataWithCountsMatrix(
   metadata?: Metadata,
   ordering?: DataOrdering,
 ) {
-  const data = { countsMatrix: countsMatrix } as CellPopData;
+  const data = { countsMatrix: countsMatrix } as ScellopData;
   loadDataWrapper(data, ordering);
   if (metadata) {
     data.metadata = metadata;
@@ -64,7 +64,7 @@ function getCountsMatrixFromCounts(
  * and extend matrix
  * @param {*} data
  */
-function loadDataWrapper(data: CellPopData, ordering?: DataOrdering) {
+function loadDataWrapper(data: ScellopData, ordering?: DataOrdering) {
   getRowNames(data);
   getColNames(data);
   extendCountsMatrix(data);
@@ -78,15 +78,15 @@ function loadDataWrapper(data: CellPopData, ordering?: DataOrdering) {
   }
 }
 
-function getRowNames(data: CellPopData) {
+function getRowNames(data: ScellopData) {
   data.rowNames = [...new Set(data.countsMatrix.map((r) => r[0]))];
 }
 
-function getColNames(data: CellPopData) {
+function getColNames(data: ScellopData) {
   data.colNames = [...new Set(data.countsMatrix.map((r) => r[1]))];
 }
 
-function extendCountsMatrix(data: CellPopData) {
+function extendCountsMatrix(data: ScellopData) {
   const nTotal = data.rowNames.length * data.colNames.length;
   if (data.countsMatrix.length === nTotal) {
     return;
@@ -115,10 +115,10 @@ function sortNames(arr: string[], sortingArr: string[]) {
   return arr;
 }
 
-function sortRowNames(data: CellPopData, rowNamesOrder: string[]) {
+function sortRowNames(data: ScellopData, rowNamesOrder: string[]) {
   data.rowNames = sortNames(data.rowNames, rowNamesOrder);
 }
 
-function sortColNames(data: CellPopData, colNamesOrder: string[]) {
+function sortColNames(data: ScellopData, colNamesOrder: string[]) {
   data.colNames = sortNames(data.colNames, colNamesOrder);
 }

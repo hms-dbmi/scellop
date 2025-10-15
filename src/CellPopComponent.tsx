@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Theme } from "@mui/material";
 import Skeleton from "@mui/material/Skeleton";
 import { withParentSize, WithParentSizeProvidedProps } from "@visx/responsive";
-import { CellPopData, ScellopTheme } from "./cellpop-schema";
+import { ScellopData, ScellopTheme } from "./cellpop-schema";
 import { AxisConfig } from "./contexts/AxisConfigContext";
 import { OuterContainerRefProvider } from "./contexts/ContainerRefContext";
 import { Dimensions, GridSizeTuple } from "./contexts/DimensionsContext";
@@ -38,7 +38,7 @@ interface CellPopConfig {
 export interface CellPopProps
   extends WithParentSizeProvidedProps,
     CellPopConfig {
-  data?: CellPopData;
+  data?: ScellopData;
 }
 
 export const CellPop = withParentSize(
@@ -148,13 +148,13 @@ export const CellPopHuBMAPLoader = ({
   uuids,
   ...props
 }: CellPopLoaderProps) => {
-  const [data, setData] = useState<CellPopData>();
+  const [data, setData] = useState<ScellopData>();
 
   useEffect(() => {
     if (!data) {
       loadHuBMAPData(uuids)
         .then((data) => {
-          setData(data as CellPopData);
+          setData(data as ScellopData);
         })
         .catch((error) => {
           console.error(error);

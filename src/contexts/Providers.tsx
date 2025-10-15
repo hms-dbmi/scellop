@@ -1,6 +1,6 @@
 import { Theme } from "@mui/material";
 import React, { PropsWithChildren } from "react";
-import { CellPopData, ScellopTheme } from "../cellpop-schema";
+import { ScellopData, ScellopTheme } from "../cellpop-schema";
 import { GraphType } from "../utils/graph-types";
 import { ViewType } from "../utils/view-types";
 import { AutoColorAssignment } from "./AutoColorAssignment";
@@ -35,7 +35,7 @@ import { TooltipDataProvider } from "./TooltipDataContext";
 import { ViewTypeProvider } from "./ViewTypeContext";
 
 interface CellPopConfigProps extends PropsWithChildren {
-  data: CellPopData;
+  data: ScellopData;
   dimensions: Dimensions;
   theme: ScellopTheme;
   xAxis: AxisConfig;

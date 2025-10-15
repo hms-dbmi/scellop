@@ -1,4 +1,4 @@
-import { CellPopData } from "../src/cellpop-schema";
+import { ScellopData } from "../src/cellpop-schema";
 
 export const testData = {
   countsMatrix: [
@@ -5262,7 +5262,7 @@ export const testData = {
       },
     },
   },
-} as CellPopData;
+} as ScellopData;
 
 export const testData_200_300 = {
   countsMatrix: [
@@ -68077,4 +68077,4 @@ export const testData_200_300 = {
       }
     }
   }
-} as CellPopData;
+} as ScellopData;
