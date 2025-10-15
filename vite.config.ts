@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
     build: {
       lib: {
         entry: path.resolve(__dirname, "src/index.ts"),
-        name: "cellpop",
+        name: "scellop",
         fileName: (format) => `index.${format}.js`,
       },
       formats: ["es", "cjs"],
@@ -46,6 +46,6 @@ export default defineConfig(({ mode }) => {
         insertTypesEntry: true,
       }),
     ],
-    base: "/cellpop/",
+    base: "/scellop/",
   };
 }) satisfies UserConfigFnObject;
