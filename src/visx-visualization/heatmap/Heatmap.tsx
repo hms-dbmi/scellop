@@ -190,10 +190,6 @@ function Heatmap() {
           title: `${rowKey} - ${columnKey}`,
           data: {
             "Cell Count": rawCount,
-            ...(normalization !== "None" && {
-              "Normalized Value": value.toFixed(4),
-              Normalization: normalization,
-            }),
             [rowLabel]: rowKey,
             [columnLabel]: columnKey,
             ...normalizationInfo,
