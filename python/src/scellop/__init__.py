@@ -15,7 +15,7 @@ except importlib.metadata.PackageNotFoundError:
     __version__ = "unknown"
 
 
-class CpWidget(anywidget.AnyWidget):
+class ScellopWidget(anywidget.AnyWidget):
     _esm = pathlib.Path(__file__).parent / "static" / "widget.js"
     _css = pathlib.Path(__file__).parent / "static" / "widget.css"
     uuids = traitlets.List(traitlets.Unicode(), default_value=[]).tag(sync=True)
