@@ -1,7 +1,7 @@
 {
 	"scripts": {
 		"dev": "npm run build -- --sourcemap=inline --watch",
-		"build": "esbuild js/widget.tsx --minify --format=esm --bundle --outdir=src/cellpop/static --alias:react=./node_modules/react --alias:react-dom=./node_modules/react-dom",
+		"build": "esbuild js/widget.tsx --minify --format=esm --bundle --outdir=src/scellop/static --alias:react=./node_modules/react --alias:react-dom=./node_modules/react-dom",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {

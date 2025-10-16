@@ -10,7 +10,7 @@ import anndata as ad
 import warnings
 
 try:
-    __version__ = importlib.metadata.version("cellpop")
+    __version__ = importlib.metadata.version("scellop")
 except importlib.metadata.PackageNotFoundError:
     __version__ = "unknown"
 
@@ -29,7 +29,7 @@ class CpWidget(anywidget.AnyWidget):
 
 def cpProcessData(dataSource, is_h5ad, rowNames, colNameColumn, rowMetadata=None, colMetadata=None):
     """
-    Helper function for CellPop data loading.
+    Helper function for scellop data loading.
 
     Parameters
     ----------
@@ -78,7 +78,7 @@ def cpProcessData(dataSource, is_h5ad, rowNames, colNameColumn, rowMetadata=None
 
 def cpAnnDataList(adLocations, rowNames, colNameColumn, rowMetadata=None, colMetadata=None):
     """
-    Loader for CellPop data from a list of AnnData file paths.
+    Loader for scellop data from a list of AnnData file paths.
 
     Parameters
     ----------
@@ -103,7 +103,7 @@ def cpAnnDataList(adLocations, rowNames, colNameColumn, rowMetadata=None, colMet
 
 def cpObsDfList(obsList, rowNames, colNameColumn, rowMetadata=None, colMetadata=None):
     """
-    Loader for CellPop data from a list of dataframes.
+    Loader for scellop data from a list of dataframes.
 
     Parameters
     ----------
@@ -128,7 +128,7 @@ def cpObsDfList(obsList, rowNames, colNameColumn, rowMetadata=None, colMetadata=
 
 def cpDfMulti(df, rowNameColumn, colNameColumn, rowMetadata=None, colMetadata=None):
     """
-    Loader for CellPop data from a singular DataFrame with columns for row and col.
+    Loader for scellop data from a singular DataFrame with columns for row and col.
 
     Parameters
     ----------
