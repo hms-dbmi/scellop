@@ -1,13 +1,13 @@
-# Cellpop Widget
-This is a Python widget for [CellPop](https://github.com/hms-dbmi/cellpop/), a scalable interactive cell population viewer. It is implemented with [anywidget](https://github.com/manzt/anywidget/). 
+# scellop
+This is the Python package for _[scellop](https://github.com/hms-dbmi/scellop/)_, the scalable interactive cell population viewer. It contains data loading functionality and the scellop widget, which is implemented with [anywidget](https://github.com/manzt/anywidget/). 
 
-## Using the Cellpop Widget
-Install CellPop as 
+## Using the scellop widget
+Install scellop as 
 ```python
-!pip install cellpop==0.1.0
+!pip install scellop
 ```
 
-Example usage is shown in [example.ipynb](./example.ipynb).
+Example usage is shown in [example.ipynb](https://github.com/hms-dbmi/scellop/blob/main/python/example.ipynb).
 
-## Contributing to CellPop
-We encourage contributions! Please find more info in the [contributing guidelines](./CONTRIBUTING.md).
+## Contributing to scellop
+We encourage contributions! Please find more info in the [contributing guidelines](https://github.com/hms-dbmi/scellop/blob/main/python/CONTRIBUTING.md).

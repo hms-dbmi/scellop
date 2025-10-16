@@ -1,6 +1,6 @@
 import { createRender, useModelState } from "@anywidget/react";
-import * as cellpop from "cellpop";
 import * as React from "react";
+import * as scellop from "scellop";
 import { ScellopData } from "../../src/scellop-schema";
 
 const render = createRender(() => {
@@ -11,14 +11,14 @@ const render = createRender(() => {
 
   React.useEffect(() => {
     if (uuids.length > 0) {
-      cellpop.loadHuBMAPData(uuids).then((d) => setData(d!));
+      scellop.loadHuBMAPData(uuids).then((d) => setData(d!));
     }
   }, [uuids]);
 
   // if both uuids and dataDict are defined, dataDict takes precedence
   React.useEffect(() => {
     if (Object.keys(dataDict).length > 0) {
-      const loaded = cellpop.loadDataWithCounts(dataDict);
+      const loaded = scellop.loadDataWithCounts(dataDict);
       loaded.metadata = {
         rows: {},
         cols: {},
@@ -64,9 +64,9 @@ const render = createRender(() => {
   }, []);
 
   return (
-    <div className="cellpop" style={{ position: "relative" }} ref={ref}>
+    <div className="scellop" style={{ position: "relative" }} ref={ref}>
       {data ? (
-        <cellpop.CellPop
+        <scellop.Scellop
           data={data}
           theme={"light"}
           dimensions={dimensions}
