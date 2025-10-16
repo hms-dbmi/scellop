@@ -60,7 +60,7 @@ def cpProcessData(dataSource, is_h5ad, rowNames, colNameColumn, rowMetadata=None
     df = None
     for i in range(len(dataSource)):
         if is_h5ad:
-            adata_i = ad.read_h5ad(dataSource[i])
+            adata_i = ad.read_h5ad(dataSource[i], backed="r")
             obs_i = adata_i.obs
             del adata_i
         else:
