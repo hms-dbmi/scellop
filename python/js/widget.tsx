@@ -4,24 +4,23 @@ import * as scellop from "scellop";
 import { ScellopData } from "../../src/scellop-schema";
 
 const render = createRender(() => {
-  const [uuids, setUuids] = useModelState<string[]>("uuids");
-  const [dataDict, setDataDict] =
-    useModelState<Record<string, Record<string, number>>>("dataDict");
+  const [dataDict, _] =
+    useModelState<{
+      counts: Record<string, Record<string, number>>;
+      metadata: {
+        row: Record<string, Record<string, number>>;
+        col: Record<string, Record<string, number>>;
+      }
+    }>("dataDict");
+
   const [data, setData] = React.useState<ScellopData | null>(null);
 
   React.useEffect(() => {
-    if (uuids.length > 0) {
-      scellop.loadHuBMAPData(uuids).then((d) => setData(d!));
-    }
-  }, [uuids]);
-
-  // if both uuids and dataDict are defined, dataDict takes precedence
-  React.useEffect(() => {
     if (Object.keys(dataDict).length > 0) {
-      const loaded = scellop.loadDataWithCounts(dataDict);
+      const loaded = scellop.loadDataWithCounts(dataDict.counts);
       loaded.metadata = {
-        rows: {},
-        cols: {},
+        rows: dataDict.metadata.row ?? {},
+        cols: dataDict.metadata.col ?? {},
       };
       setData(loaded);
     }
@@ -72,13 +71,9 @@ const render = createRender(() => {
           dimensions={dimensions}
           yAxis={{
             label: "Sample",
-            createHref: (row) =>
-              `https://portal.hubmapconsortium.org/browse/${row}`,
           }}
           xAxis={{
             label: "Cell Type",
-            createHref: (col) =>
-              `https://www.ebi.ac.uk/ols4/search?q=${col}&ontology=cl`,
           }}
         />
       ) : (
