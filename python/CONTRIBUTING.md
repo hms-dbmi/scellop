@@ -1,4 +1,4 @@
-# Cellpop Widget
+# Contributing to scellop
 
 ## Local development
 
@@ -21,7 +21,7 @@ pnpm run dev
 
 ### Start a session
 You need the following three items running: 
-1. `pnpm run widget` in cellpop
+1. `pnpm run widget` in scellop
 2. `pnpm run dev` in python
 3. Open `example.ipynb` in JupyterLab, VS Code, or your favorite editor
 to start developing. 

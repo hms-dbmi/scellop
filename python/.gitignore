@@ -7,5 +7,5 @@ dist
 __pycache__
 .ipynb_checkpoints
 
-src/cellpop/static
+src/scellop/static
 uv.lock
