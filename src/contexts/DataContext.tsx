@@ -2,13 +2,13 @@ import { memoize } from "proxy-memoize";
 import { useCallback, useMemo } from "react";
 import { temporal } from "zundo";
 import { createStore } from "zustand";
-import { CellPopData } from "../cellpop-schema";
+import { ScellopData } from "../scellop-schema";
 import { moveToEnd, moveToStart } from "../utils/array-reordering";
 import { Normalization } from "../utils/normalizations";
 import { createTemporalStoreContext } from "../utils/zustand";
 
 interface DataContextProps {
-  initialData: CellPopData;
+  initialData: ScellopData;
 }
 
 type RowKey = string;
@@ -30,7 +30,7 @@ export interface Filter<T> {
 export const DEFAULT_SORTS = ["count", "alphabetical"] as const;
 
 interface DataContextState {
-  data: CellPopData;
+  data: ScellopData;
   removedRows: Set<string>;
   removedColumns: Set<string>;
   rowOrder: string[];
@@ -569,7 +569,7 @@ const createDataContextStore = ({ initialData }: DataContextProps) =>
           };
 
           // Create new data object
-          const newData: CellPopData = {
+          const newData: ScellopData = {
             ...state.data,
             rowNames: newRowNames,
             colNames: newColNames,

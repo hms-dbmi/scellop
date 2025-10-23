@@ -1,13 +1,13 @@
 import { createRender, useModelState } from "@anywidget/react";
 import * as cellpop from "cellpop";
 import * as React from "react";
-import { CellPopData } from "../../src/cellpop-schema";
+import { ScellopData } from "../../src/scellop-schema";
 
 const render = createRender(() => {
   const [uuids, setUuids] = useModelState<string[]>("uuids");
   const [dataDict, setDataDict] =
     useModelState<Record<string, Record<string, number>>>("dataDict");
-  const [data, setData] = React.useState<CellPopData | null>(null);
+  const [data, setData] = React.useState<ScellopData | null>(null);
 
   React.useEffect(() => {
     if (uuids.length > 0) {

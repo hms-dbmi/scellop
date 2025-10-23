@@ -1,4 +1,4 @@
-import { ObsSets } from "../cellpop-schema";
+import { ObsSets } from "../scellop-schema";
 
 export function loadData() {
   // create a wrapper for all data loaders?

@@ -7,22 +7,22 @@ Cell type populations are commonly shown with stacked bar charts. However, scali
 
 
 ## Installs
-Scellop is available on [NPM](https://www.npmjs.com/package/cellpop) and [PyPI](https://pypi.org/project/cellpop/).
+Scellop is available on [NPM](https://www.npmjs.com/package/scellop) and [PyPI](https://pypi.org/project/scellop/).
 
 
 ```sh
-npm i cellpop
+npm i scellop
 ```
 
 ```sh
-pip install cellpop
+pip install scellop
 ```
 
 ## Demo
-A demo is available [here](https://scellop.netlify.app). How to use the CellPopComponent is shown [here](./demo/demo.tsx).
+A demo is available [here](https://scellop.netlify.app). How to use the ScellopComponent is shown [here](./demo/demo.tsx).
 
 The main view and interactions:
-![Screen shot of scellop with 64 datasets and 61 celltypes.](assets/cellpop_example.png)
+![Screen shot of scellop with 64 datasets and 61 celltypes.](assets/scellop_example.png)
 
 
 ## Set-up

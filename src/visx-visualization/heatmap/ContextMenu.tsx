@@ -17,7 +17,6 @@ import {
   useRowConfig,
   useSwapAxisConfigs,
 } from "../../contexts/AxisConfigContext";
-import { useSetTheme } from "../../contexts/CellPopThemeContext";
 import { useColorScale } from "../../contexts/ColorScaleContext";
 import {
   useAllColumnSubFilters,
@@ -46,6 +45,7 @@ import {
 import { useGetFieldDisplayName } from "../../contexts/MetadataConfigContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
+import { useSetTheme } from "../../contexts/ThemeContext";
 import {
   useSetTooltipData,
   useTooltipData,

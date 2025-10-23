@@ -23,6 +23,7 @@
     "anndata",
     "anywidget",
     "cellpop",
+    "scellop",
     "CLID",
     "Disableable",
     "epanechnikov",

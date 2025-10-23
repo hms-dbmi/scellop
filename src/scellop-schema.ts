@@ -1,9 +1,9 @@
 /** DATA */
 /**
- * CellPopData represents the data structure used in the CellPop visualization.
+ * ScellopData represents the data structure used in the scellop visualization.
  * It includes row and column names, a counts matrix, and metadata.
  */
-export type CellPopData = {
+export type ScellopData = {
   /**
    * The names of the rows in the counts matrix.
    */
@@ -30,13 +30,13 @@ export type CellPopData = {
 
 /**
  * CountsMatrixValue represents a single entry in the counts matrix,
- * as used within the CellPopData structure.
+ * as used within the ScellopData structure.
  */
 export type CountsMatrixValue = [string, string, number];
 
 /**
  * MetaData represents additional information associated with the rows and columns
- * in the CellPopData structure.
+ * in the ScellopData structure.
  * It can include various attributes for each row and column.
  * The attributes are keyed by row or column names,
  * and the values can be strings or numbers.
@@ -108,4 +108,4 @@ export type HuBMAPSearchHit = {
   _source: HuBMAPSearchSource;
 };
 
-export type CellPopTheme = "light" | "dark";
+export type ScellopTheme = "light" | "dark";

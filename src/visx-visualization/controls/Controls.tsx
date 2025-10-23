@@ -33,7 +33,6 @@ import {
   useRowConfig,
   useSwapAxisConfigs,
 } from "../../contexts/AxisConfigContext";
-import { useSetTheme } from "../../contexts/CellPopThemeContext";
 import { useIsTransposed, useTranspose } from "../../contexts/DataContext";
 import {
   useGraphTypeControlIsDisabled,
@@ -52,6 +51,7 @@ import {
 } from "../../contexts/IndividualGraphTypeContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
+import { useSetTheme } from "../../contexts/ThemeContext";
 import useBoolean from "../../hooks/useBoolean";
 import { useHandleTranspose } from "../../hooks/useTranspose";
 import {

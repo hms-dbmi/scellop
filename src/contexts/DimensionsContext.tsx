@@ -28,7 +28,7 @@ interface DimensionsContextType extends Dimensions {
 }
 
 const DimensionsContext = createContext<DimensionsContextType | null>(
-  "CellPopDimensions",
+  "ScellopDimensions",
 );
 
 export type GridSizeTuple = [number, number, number];

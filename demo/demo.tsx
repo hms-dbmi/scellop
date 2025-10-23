@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { CellPop } from "../src/CellPopComponent";
-import { CellPopData } from "../src/cellpop-schema";
+import { Scellop } from "../src/ScellopComponent";
 import { loadHuBMAPData } from "../src/dataLoading/dataHuBMAP";
+import { ScellopData } from "../src/scellop-schema";
 import { testData } from "./testData";
 
 import ScatterPlot from "@mui/icons-material/ScatterPlot";
@@ -9,7 +9,7 @@ import TableChartIcon from "@mui/icons-material/TableChartRounded";
 import { GridSizeTuple } from "../src/contexts/DimensionsContext";
 
 function Demo() {
-  const [data, setData] = useState<CellPopData>(testData);
+  const [data, setData] = useState<ScellopData>(testData);
 
   // data
   const uuids = [
@@ -74,7 +74,7 @@ function Demo() {
         marginTop: "5vh",
       }}
     >
-      <CellPop
+      <Scellop
         data={data}
         theme={"light"}
         yAxis={{
