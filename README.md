@@ -47,3 +47,12 @@ Instructions for Python package are it's own [contributing guidelines](./python/
 - Nikolay Akhmetov (<nikolay_akhmetov@hms.harvard.edu>)
 - Tiffany Liaw (<tiffany_liaw@hms.harvard.edu>)
 - Nils Gehlenborg (<nils@hms.harvard.edu>)
+
+## Paper
+Our preprint is available [here](https://arxiv.org/abs/2510.09554).
+
+Please cite this work as follows:
+
+```
+Thomas C Smits, Nikolay Akhmetov, Tiffany S. Liaw, Mark S. Keller, Eric Moerth, Nils Gehlenborg (2025). scellop: A Scalable Redesign of Cell Population Plots for Single-Cell Data. arXiv preprint. https://10.48550/arXiv.2510.09554
+```
