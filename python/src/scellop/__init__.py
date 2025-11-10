@@ -1,5 +1,6 @@
 import importlib.metadata
 import pathlib
+import json
 
 import anywidget
 import traitlets
@@ -27,17 +28,97 @@ class ScellopData():
         return (
             f"<ScellopData: {len(self.rows)} rows x {len(self.cols)} columns>\n"
             f"Row metadata columns: {list(self.row_metadata[next(iter(self.row_metadata))].keys()) if self.row_metadata else []}\n"
-            f"Column metadata columns: {list(self.col_metadata[next(iter(self.col_metadata))].keys()) if self.col_metadata else []}"
+            f"Column metadata columns: {list(self.col_metadata[next(iter(self.col_metadata))].keys()) if self.col_metadata else []}\n\n"
+            f"Fields: counts, rows, cols, row_metadata, col_metadata\n"
+            f"Methods: to_dict, to_json, to_js, remove_rows, remove_columns, add_rows, add_columns\n"
         )
     
     def to_dict(self):
         return {
-            "counts": self.counts.to_dict(),
+            "counts": self.counts.T.to_dict(),
             "metadata": {
                 "row": self.row_metadata,
                 "col": self.col_metadata
             }
         }
+    
+    def to_json(self, file=None):
+        flattened_counts = self.counts.stack().reset_index()
+        counts_cols = ['row', 'col', 'value']
+        flattened_counts.columns = counts_cols
+        flattened_list = flattened_counts.values.tolist()
+
+        obj = {
+            "countsMatrix": flattened_list,
+            "countsMatrixOrder": counts_cols,
+            "rowNames": self.counts.index.tolist(),
+            "colNames": self.counts.columns.tolist(),
+            "metadata": {
+                "rows": self.row_metadata,
+                "cols": self.col_metadata
+            }
+        }
+        
+        if file:
+            with open(file, "w") as f:
+                json.dump(obj, f, indent=2)
+        else: 
+            return obj
+        
+    def to_js(self, file=None):
+        obj = self.to_json()
+
+        def format(v, indent=2, compact=False, top_level=False):
+            ind = " " * indent
+
+            if isinstance(v, dict):
+                lines = ["{"]
+                for i, (k, val) in enumerate(v.items()):
+                    comma = "," if i < len(v) - 1 else ""
+                    if top_level or k in ["rows", "cols"]:
+                        key_str = k
+                    else:
+                        key_str = f'"{k}"'
+                    val_str = format(val, indent + 2, compact=(k == "countsMatrix"), top_level=(k == "metadata"))
+                    lines.append(f"{ind}{key_str}: {val_str}{comma}")
+                lines.append(f'{" " * (indent - 2)}}}')
+                return "\n".join(lines)
+
+            elif isinstance(v, list):
+                lines = []
+                for i, x in enumerate(v):
+                    comma = "," if i < len(v) - 1 else ""
+                    if compact and isinstance(x, list):
+                        inner = ", ".join(format(y) if isinstance(y, str) else str(y) for y in x)
+                        lines.append(f"{ind}[{inner}]{comma}")
+                    else:
+                        lines.append(f"{ind}{format(x)}{comma}")
+                return "[\n" + "\n".join(lines) + f"\n{ind[:-2]}]"
+
+            elif isinstance(v, str):
+                return '"' + v.replace('"', '\\"') + '"'
+            else:
+                return str(v)
+                
+        text = format(obj, indent=2, top_level=True)
+
+        if file:
+            with open(file, "w") as f:
+                f.write(f"export const data = {text};")
+        else:
+            return text
+
+    def remove_rows(self, col, r_vals):
+        pass
+
+    def remove_columns(self, cols):
+        pass
+
+    def add_rows(self, rows):
+        pass
+
+    def add_columns(self, col, r_vals):
+        pass
 
 
 class ScellopWidget(anywidget.AnyWidget):
@@ -88,6 +169,25 @@ def _use_source(source):
 
     warnings.warn(f"source type {type(source)} is not pd.DataFrame or string.")
 
+
+def find_colnames(source):
+    """
+    Helper function to list column names in obs of a source.
+
+    Parameters
+    ----------
+    source : pd.DataFrame, ad.AnnData, or str
+        Source of data, either a DataFrame, AnnData object, or a file path (string).
+
+    Returns
+    -------
+    list
+        List of column names in obs DataFrame.
+    """
+    df = _use_source(source)
+    if df is None:
+        return
+    return df.columns.tolist()
 
 
 def load_data_multiple(sources, rows, c_col, r_cols_meta=None, c_cols_meta=None):
