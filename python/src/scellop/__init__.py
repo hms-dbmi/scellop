@@ -1,7 +1,9 @@
 import importlib.metadata
 import pathlib
 import json
+import os
 import re
+from collections import Counter
 
 import anywidget
 import traitlets
@@ -431,7 +433,14 @@ def _use_source(source):
             warnings.warn("Remote sources not yet supported.")
             return
         else:
-            adata = ad.read_h5ad(source, backed="r")
+            if not os.path.exists(source):
+                warnings.warn(f"File not found: {source}")
+                return None
+            try:
+                adata = ad.read_h5ad(source, backed="r")
+            except Exception as e:
+                warnings.warn(f"Failed to read {source}: {e}")
+                return None
         df = adata.obs
         del adata
         return df
@@ -505,15 +514,42 @@ def load_data_multiple(sources, rows, c_col, r_cols_meta=None, c_cols_meta=None)
         counts_i = counts_i.groupby(c_col, observed=True).count().T
         counts = pd.concat([counts, counts_i], join="outer").fillna(0)
 
+        # row metadata
+        if r_cols_meta:
+            r_meta_values = {}
+            for meta_col in r_cols_meta:
+                if meta_col in df.columns:
+                    unique_values = df[meta_col].unique()
+                    if len(unique_values) > 1:
+                        warnings.warn(f"Row metadata column '{meta_col}' has multiple values in dataset {rows[i]}. Using most common value.")
+                    r_meta_values[meta_col] = Counter(unique_values).most_common(1)[0][0]
+                else:
+                    warnings.warn(f"Row metadata column {meta_col} not found in dataset {rows[i]}")
+            row_metadata[rows[i]] = r_meta_values
+
+        # col metadata
+        if c_cols_meta:
+            for meta_col in c_cols_meta:
+                if meta_col in df.columns:
+                    unique_values = df[[c_col, meta_col]].drop_duplicates()
+                    
+                    col_values = {}
+                    for _, row in unique_values.iterrows():
+                        col = row[c_col]
+                        value = row[meta_col]
+                        col_values.setdefault(col, []).append(value)
+                    
+                    for col, values in col_values.items():
+                        if len(values) > 1:
+                            warnings.warn(f"Column metadata column '{meta_col}' has multiple values for column '{col}' in dataset {rows[i]}. Using most common value.")
+                        most_common_value = Counter(values).most_common(1)[0][0]
+                        if col not in col_metadata:
+                            col_metadata[col] = {}
+                        col_metadata[col][meta_col] = most_common_value
+                else:
+                    warnings.warn(f"Column metadata column {meta_col} not found in dataset {rows[i]}")
+        
     counts = counts.astype(int) if counts is not None else counts
-
-    # col metadata
-    if r_cols_meta:
-        warnings.warn("Row metadata not yet implemented for multiple sources.")
-
-    # row metadata
-    if c_cols_meta:
-        warnings.warn("Column metadata not yet implemented for multiple sources.")
 
     return ScellopData(counts, row_metadata, col_metadata)
 
