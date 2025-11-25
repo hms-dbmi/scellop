@@ -1,6 +1,7 @@
 import importlib.metadata
 import pathlib
 import json
+import re
 
 import anywidget
 import traitlets
@@ -18,6 +19,18 @@ except importlib.metadata.PackageNotFoundError:
 
 class ScellopData():
     def __init__(self, counts, row_metadata, col_metadata):
+        """
+        Initialize a ScellopData object.
+
+        Parameters
+        ----------
+        counts : pd.DataFrame
+            Count matrix with rows as observations and columns as categories.
+        row_metadata : dict
+            Dictionary mapping row names to metadata dictionaries.
+        col_metadata : dict
+            Dictionary mapping column names to metadata dictionaries.
+        """
         self.counts = counts
         self.rows = counts.index.tolist()
         self.cols = counts.columns.tolist()
@@ -25,6 +38,7 @@ class ScellopData():
         self.col_metadata = col_metadata
     
     def __repr__(self):
+        """Representation method."""
         return (
             f"<ScellopData: {len(self.rows)} rows x {len(self.cols)} columns>\n"
             f"Row metadata columns: {list(self.row_metadata[next(iter(self.row_metadata))].keys()) if self.row_metadata else []}\n"
@@ -33,7 +47,87 @@ class ScellopData():
             f"Methods: to_dict, to_json, to_js, remove_rows, remove_columns, add_rows, add_columns\n"
         )
     
+    @classmethod
+    def from_json(cls, text):
+        """
+        Loader for scellop data from a JSON file. Either supply file name or text content.
+
+        Parameters
+        ----------
+        text : str
+            File path to JSON file or JSON content.
+
+        Returns
+        -------
+        ScellopData
+            Object with processed count DataFrame, row metadata dict, column metadata dict.
+        """
+        if isinstance(text, str):
+            try:
+                with open(text) as f:
+                    obj = json.load(f)
+            except FileNotFoundError:
+                raise FileNotFoundError(f"JSON file not found: {text}.\nIf you want to pass JSON content, please pass a dictionary object instead of a string.")
+        else:
+            obj = text
+            
+        df = pd.DataFrame(obj["countsMatrix"], columns=obj["countsMatrixOrder"])
+        counts = df.pivot(index="row", columns="col", values="value")
+
+        row_metadata = obj["metadata"]["rows"]
+        col_metadata = obj["metadata"]["cols"]
+
+        return cls(counts, row_metadata, col_metadata)
+
+    @classmethod
+    def from_js(cls, text):
+        """
+        Loader for scellop data from a JavaScript file. Either supply file name or text content.
+        Assumes JavaScript file name does not contain both characters '{' and '}'.
+
+        Parameters
+        ----------
+        text : str
+            File path to JavaScript file or JavaScript text content.
+
+        Returns
+        -------
+        ScellopData
+            Object with processed count DataFrame, row metadata dict, column metadata dict.
+        """
+        if isinstance(text, str):
+            if "{" in text and "}" in text:
+                text = text
+            else:
+                try:
+                    text = open(text).read()
+                except FileNotFoundError:
+                    raise FileNotFoundError(f"JavaScript file not found: {text}.")
+        else:
+            raise ValueError("Input must be a file path or string content.")
+        
+        t = text.strip()
+
+        if t.startswith("export"):
+            t = t.split("=", 1)[1].strip()
+
+        if t.endswith(";"):
+            t = t[:-1].strip()
+
+        t = re.sub(r'(?<!")(\b\w+\b)(?=\s*:)', r'"\1"', t)
+
+        obj = json.loads(t)
+        return cls.from_json(obj)
+
     def to_dict(self):
+        """
+        Convert ScellopData to a dictionary. Used for updating widget state.
+
+        Returns
+        -------
+        dict
+            Dictionary with counts (as nested dicts) and metadata for rows and columns.
+        """
         return {
             "counts": self.counts.T.to_dict(),
             "metadata": {
@@ -43,6 +137,19 @@ class ScellopData():
         }
     
     def to_json(self, file=None):
+        """
+        Convert ScellopData to JSON-compatible object or save to file. Used in to_js method.
+
+        Parameters
+        ----------
+        file : str, optional
+            File path to write JSON. If None, returns the JSON object.
+
+        Returns
+        -------
+        dict or None
+            JSON-compatible dictionary if no file is provided.
+        """
         flattened_counts = self.counts.stack().reset_index()
         counts_cols = ['row', 'col', 'value']
         flattened_counts.columns = counts_cols
@@ -66,6 +173,20 @@ class ScellopData():
             return obj
         
     def to_js(self, file=None):
+        """
+        Convert ScellopData to JavaScript object text or save to file.
+        Can be loaded into scellop's JavaScript module.
+
+        Parameters
+        ----------
+        file : str, optional
+            File path to write JS. If None, returns JS text.
+
+        Returns
+        -------
+        str or None
+            JavaScript object text if no file is provided.
+        """
         obj = self.to_json()
 
         def format(v, indent=2, compact=False, top_level=False):
@@ -109,29 +230,71 @@ class ScellopData():
             return text
 
     def remove_rows(self, rows):
+        """
+        Remove rows from ScellopData.
+
+        Parameters
+        ----------
+        rows : list
+            List of row names to remove.
+        """
         keep_rows = [r for r in self.rows if r not in rows]
         self.counts = self.counts.loc[keep_rows, :]
         self.rows = keep_rows
         self.row_metadata = {r: meta for r, meta in self.row_metadata.items() if r in keep_rows}
 
     def remove_cols(self, cols):
+        """
+        Remove columns from ScellopData.
+
+        Parameters
+        ----------
+        cols : list
+            List of column names to remove.
+        """
         keep_cols = [c for c in self.cols if c not in cols]
         self.counts = self.counts.loc[:, keep_cols]
         self.cols = keep_cols
         self.col_metadata = {c: meta for c, meta in self.col_metadata.items() if c in keep_cols}
 
     def rename_rows(self, dict):
+        """
+        Rename rows in ScellopData.
+
+        Parameters
+        ----------
+        mapping : dict
+            Dictionary mapping old row names to new row names.
+        """
         self.counts = self.counts.rename(index=dict)
         self.rows = self.counts.index.tolist()
         self.row_metadata = {dict.get(r, r): meta for r, meta in self.row_metadata.items()}
 
     def rename_cols(self, dict):
+        """
+        Rename cols in ScellopData.
+
+        Parameters
+        ----------
+        mapping : dict
+            Dictionary mapping old col names to new col names.
+        """
         self.counts = self.counts.rename(columns=dict)
         self.cols = self.counts.columns.tolist()
         self.col_metadata = {dict.get(c, c): meta for c, meta in self.col_metadata.items()}
 
 
 class ScellopWidget(anywidget.AnyWidget):
+    """
+    AnyWidget-based widget for scellop.
+
+    Users can interact with the following attributes:
+
+    Attributes
+    ----------
+    data : ScellopData
+    df : pd.DataFrame with counts
+    """
     _esm = pathlib.Path(__file__).parent / "static" / "widget.js"
     _css = pathlib.Path(__file__).parent / "static" / "widget.css"
 
