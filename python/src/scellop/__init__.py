@@ -108,17 +108,27 @@ class ScellopData():
         else:
             return text
 
-    def remove_rows(self, col, r_vals):
-        pass
+    def remove_rows(self, rows):
+        keep_rows = [r for r in self.rows if r not in rows]
+        self.counts = self.counts.loc[keep_rows, :]
+        self.rows = keep_rows
+        self.row_metadata = {r: meta for r, meta in self.row_metadata.items() if r in keep_rows}
 
-    def remove_columns(self, cols):
-        pass
+    def remove_cols(self, cols):
+        keep_cols = [c for c in self.cols if c not in cols]
+        self.counts = self.counts.loc[:, keep_cols]
+        self.cols = keep_cols
+        self.col_metadata = {c: meta for c, meta in self.col_metadata.items() if c in keep_cols}
 
-    def add_rows(self, rows):
-        pass
+    def rename_rows(self, dict):
+        self.counts = self.counts.rename(index=dict)
+        self.rows = self.counts.index.tolist()
+        self.row_metadata = {dict.get(r, r): meta for r, meta in self.row_metadata.items()}
 
-    def add_columns(self, col, r_vals):
-        pass
+    def rename_cols(self, dict):
+        self.counts = self.counts.rename(columns=dict)
+        self.cols = self.counts.columns.tolist()
+        self.col_metadata = {dict.get(c, c): meta for c, meta in self.col_metadata.items()}
 
 
 class ScellopWidget(anywidget.AnyWidget):
@@ -223,11 +233,7 @@ def load_data_multiple(sources, rows, c_col, r_cols_meta=None, c_cols_meta=None)
     row_metadata = {}
     col_metadata = {}
 
-    if r_cols_meta:
-        warnings.warn("Row metadata not yet implemented for multiple sources.")
-    if c_cols_meta:
-        warnings.warn("Column metadata will be partially implemented for multiple sources.")
-
+    # counts matrix
     for i in range(len(sources)):
         df = _use_source(sources[i])
         if df is None:
@@ -241,6 +247,14 @@ def load_data_multiple(sources, rows, c_col, r_cols_meta=None, c_cols_meta=None)
         counts = pd.concat([counts, counts_i], join="outer").fillna(0)
 
     counts = counts.astype(int) if counts is not None else counts
+
+    # col metadata
+    if r_cols_meta:
+        warnings.warn("Row metadata not yet implemented for multiple sources.")
+
+    # row metadata
+    if c_cols_meta:
+        warnings.warn("Column metadata not yet implemented for multiple sources.")
 
     return ScellopData(counts, row_metadata, col_metadata)
 
