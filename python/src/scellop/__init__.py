@@ -257,6 +257,102 @@ class ScellopData():
         self.cols = keep_cols
         self.col_metadata = {c: meta for c, meta in self.col_metadata.items() if c in keep_cols}
 
+    def merge(self, other, merge_datasets=False, suffix="_2", inplace=False):
+        """
+        Merge another ScellopData into this one.
+
+        Parameters
+        ----------
+        other : ScellopData
+            Another ScellopData object to merge with.
+        merge_datasets : bool, optional
+            If True, overlapping rows will have their counts summed. 
+            If False, overlapping rows will be renamed with a '_2' suffix. Default is False.
+        suffix : str, optional
+            Suffix to append to overlapping row names when merge_datasets is False.
+        inplace : bool, optional
+            If True, modifies the current object. If False, returns a new ScellopData object. Default is True.
+        
+        Returns
+        -------
+        ScellopData or None
+            New ScellopData object if inplace is False, otherwise None.
+        """
+        if not isinstance(other, type(self)):
+            raise TypeError("Can only merge with another ScellopData object.")
+
+        def _next_available_name(base, existing, suffix):
+            print(base, existing, suffix)
+            new_name = f"{base}{suffix}"
+            i = 2
+            while new_name in existing:
+                new_name = f"{base}{suffix}_{i}"
+                i += 1
+            return new_name
+        
+        cols_new = list(set(self.cols).union(set(other.cols)))
+        df1 = self.counts.reindex(columns=cols_new, fill_value=0)
+        df2 = other.counts.reindex(columns=cols_new, fill_value=0)
+
+        rows_self = set(self.rows)
+        rows_other = set(other.rows)
+        overlap = rows_self & rows_other
+        renamed_index = {}
+
+        if not overlap: 
+            counts_new = pd.concat([df1, df2], axis=0)
+        else:
+            if merge_datasets:
+                counts_new = df1.add(df2, fill_value=0).astype(int)
+            else:
+                renamed_index = {
+                    r: _next_available_name(r, df1.index.to_list() + df2.index.to_list(), suffix)
+                    for r in overlap
+                }
+                df2_renamed = df2.rename(index=renamed_index)
+                counts_new = pd.concat([df1, df2_renamed], axis=0)
+        
+        col_metadata_new = self.col_metadata.copy()
+        for col, meta in other.col_metadata.items():
+            if col not in col_metadata_new:
+                col_metadata_new[col] = meta
+            else:
+                for k, v in meta.items():
+                    if k in col_metadata_new[col]:
+                        if col_metadata_new[col][k] != v:
+                            warnings.warn(
+                                f"Conflict for column '{col}' key '{k}': "
+                                f"{col_metadata_new[col][k]} (kept) vs {v} (other)."
+                            )
+                    else:
+                        col_metadata_new[col][k] = v
+
+        row_metadata_new = self.row_metadata.copy()
+        for row, meta in other.row_metadata.items():
+            
+            row_key = row if row not in overlap or merge_datasets else renamed_index.get(row, row)
+            if row_key not in row_metadata_new:
+                row_metadata_new[row_key] = meta
+            else:
+                for k, v in meta.items():
+                    if k in row_metadata_new[row_key]:
+                        if row_metadata_new[row_key][k] != v:
+                            warnings.warn(
+                                f"Conflict for row '{row_key}' key '{k}': "
+                                f"{row_metadata_new[row_key][k]} (kept) vs {v} (other)."
+                            )
+                    else:
+                        row_metadata_new[row_key][k] = v
+
+        if inplace:
+            self.counts = counts_new
+            self.rows = self.counts.index.tolist()
+            self.cols = self.counts.columns.tolist()
+            self.row_metadata = row_metadata_new
+            self.col_metadata = col_metadata_new
+        else:
+            return ScellopData(counts_new, row_metadata_new, col_metadata_new)
+
     def rename_rows(self, dict):
         """
         Rename rows in ScellopData.
