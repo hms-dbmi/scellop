@@ -19,7 +19,7 @@ except importlib.metadata.PackageNotFoundError:
     __version__ = "unknown"
 
 
-class ScellopData():
+class ScellopData:
     def __init__(self, counts, row_metadata, col_metadata):
         """
         Initialize a ScellopData object.
@@ -38,7 +38,7 @@ class ScellopData():
         self.cols = counts.columns.tolist()
         self.row_metadata = row_metadata
         self.col_metadata = col_metadata
-    
+
     def __repr__(self):
         """Representation method."""
         return (
@@ -48,7 +48,7 @@ class ScellopData():
             f"Fields: counts, rows, cols, row_metadata, col_metadata\n"
             f"Methods: to_dict, to_json, to_js, remove_rows, remove_columns, add_rows, add_columns\n"
         )
-    
+
     @classmethod
     def from_json(cls, text):
         """
@@ -69,10 +69,12 @@ class ScellopData():
                 with open(text) as f:
                     obj = json.load(f)
             except FileNotFoundError:
-                raise FileNotFoundError(f"JSON file not found: {text}.\nIf you want to pass JSON content, please pass a dictionary object instead of a string.")
+                raise FileNotFoundError(
+                    f"JSON file not found: {text}.\nIf you want to pass JSON content, please pass a dictionary object instead of a string."
+                )
         else:
             obj = text
-            
+
         df = pd.DataFrame(obj["countsMatrix"], columns=obj["countsMatrixOrder"])
         counts = df.pivot(index="row", columns="col", values="value")
 
@@ -107,7 +109,7 @@ class ScellopData():
                     raise FileNotFoundError(f"JavaScript file not found: {text}.")
         else:
             raise ValueError("Input must be a file path or string content.")
-        
+
         t = text.strip()
 
         if t.startswith("export"):
@@ -132,12 +134,9 @@ class ScellopData():
         """
         return {
             "counts": self.counts.T.to_dict(),
-            "metadata": {
-                "row": self.row_metadata,
-                "col": self.col_metadata
-            }
+            "metadata": {"row": self.row_metadata, "col": self.col_metadata},
         }
-    
+
     def to_json(self, file=None):
         """
         Convert ScellopData to JSON-compatible object or save to file. Used in to_js method.
@@ -153,7 +152,7 @@ class ScellopData():
             JSON-compatible dictionary if no file is provided.
         """
         flattened_counts = self.counts.stack().reset_index()
-        counts_cols = ['row', 'col', 'value']
+        counts_cols = ["row", "col", "value"]
         flattened_counts.columns = counts_cols
         flattened_list = flattened_counts.values.tolist()
 
@@ -162,18 +161,15 @@ class ScellopData():
             "countsMatrixOrder": counts_cols,
             "rowNames": self.counts.index.tolist(),
             "colNames": self.counts.columns.tolist(),
-            "metadata": {
-                "rows": self.row_metadata,
-                "cols": self.col_metadata
-            }
+            "metadata": {"rows": self.row_metadata, "cols": self.col_metadata},
         }
-        
+
         if file:
             with open(file, "w") as f:
                 json.dump(obj, f, indent=2)
-        else: 
+        else:
             return obj
-        
+
     def to_js(self, file=None):
         """
         Convert ScellopData to JavaScript object text or save to file.
@@ -202,7 +198,12 @@ class ScellopData():
                         key_str = k
                     else:
                         key_str = f'"{k}"'
-                    val_str = format(val, indent + 2, compact=(k == "countsMatrix"), top_level=(k == "metadata"))
+                    val_str = format(
+                        val,
+                        indent + 2,
+                        compact=(k == "countsMatrix"),
+                        top_level=(k == "metadata"),
+                    )
                     lines.append(f"{ind}{key_str}: {val_str}{comma}")
                 lines.append(f'{" " * (indent - 2)}}}')
                 return "\n".join(lines)
@@ -212,7 +213,9 @@ class ScellopData():
                 for i, x in enumerate(v):
                     comma = "," if i < len(v) - 1 else ""
                     if compact and isinstance(x, list):
-                        inner = ", ".join(format(y) if isinstance(y, str) else str(y) for y in x)
+                        inner = ", ".join(
+                            format(y) if isinstance(y, str) else str(y) for y in x
+                        )
                         lines.append(f"{ind}[{inner}]{comma}")
                     else:
                         lines.append(f"{ind}{format(x)}{comma}")
@@ -222,7 +225,7 @@ class ScellopData():
                 return '"' + v.replace('"', '\\"') + '"'
             else:
                 return str(v)
-                
+
         text = format(obj, indent=2, top_level=True)
 
         if file:
@@ -243,7 +246,9 @@ class ScellopData():
         keep_rows = [r for r in self.rows if r not in rows]
         self.counts = self.counts.loc[keep_rows, :]
         self.rows = keep_rows
-        self.row_metadata = {r: meta for r, meta in self.row_metadata.items() if r in keep_rows}
+        self.row_metadata = {
+            r: meta for r, meta in self.row_metadata.items() if r in keep_rows
+        }
 
     def remove_cols(self, cols):
         """
@@ -257,7 +262,9 @@ class ScellopData():
         keep_cols = [c for c in self.cols if c not in cols]
         self.counts = self.counts.loc[:, keep_cols]
         self.cols = keep_cols
-        self.col_metadata = {c: meta for c, meta in self.col_metadata.items() if c in keep_cols}
+        self.col_metadata = {
+            c: meta for c, meta in self.col_metadata.items() if c in keep_cols
+        }
 
     def merge(self, other, merge_datasets=False, suffix="_2", inplace=False):
         """
@@ -268,13 +275,13 @@ class ScellopData():
         other : ScellopData
             Another ScellopData object to merge with.
         merge_datasets : bool, optional
-            If True, overlapping rows will have their counts summed. 
+            If True, overlapping rows will have their counts summed.
             If False, overlapping rows will be renamed with a '_2' suffix. Default is False.
         suffix : str, optional
             Suffix to append to overlapping row names when merge_datasets is False.
         inplace : bool, optional
             If True, modifies the current object. If False, returns a new ScellopData object. Default is True.
-        
+
         Returns
         -------
         ScellopData or None
@@ -291,7 +298,7 @@ class ScellopData():
                 new_name = f"{base}{suffix}_{i}"
                 i += 1
             return new_name
-        
+
         cols_new = list(set(self.cols).union(set(other.cols)))
         df1 = self.counts.reindex(columns=cols_new, fill_value=0)
         df2 = other.counts.reindex(columns=cols_new, fill_value=0)
@@ -301,19 +308,21 @@ class ScellopData():
         overlap = rows_self & rows_other
         renamed_index = {}
 
-        if not overlap: 
+        if not overlap:
             counts_new = pd.concat([df1, df2], axis=0)
         else:
             if merge_datasets:
                 counts_new = df1.add(df2, fill_value=0).astype(int)
             else:
                 renamed_index = {
-                    r: _next_available_name(r, df1.index.to_list() + df2.index.to_list(), suffix)
+                    r: _next_available_name(
+                        r, df1.index.to_list() + df2.index.to_list(), suffix
+                    )
                     for r in overlap
                 }
                 df2_renamed = df2.rename(index=renamed_index)
                 counts_new = pd.concat([df1, df2_renamed], axis=0)
-        
+
         col_metadata_new = self.col_metadata.copy()
         for col, meta in other.col_metadata.items():
             if col not in col_metadata_new:
@@ -331,8 +340,12 @@ class ScellopData():
 
         row_metadata_new = self.row_metadata.copy()
         for row, meta in other.row_metadata.items():
-            
-            row_key = row if row not in overlap or merge_datasets else renamed_index.get(row, row)
+
+            row_key = (
+                row
+                if row not in overlap or merge_datasets
+                else renamed_index.get(row, row)
+            )
             if row_key not in row_metadata_new:
                 row_metadata_new[row_key] = meta
             else:
@@ -366,7 +379,9 @@ class ScellopData():
         """
         self.counts = self.counts.rename(index=dict)
         self.rows = self.counts.index.tolist()
-        self.row_metadata = {dict.get(r, r): meta for r, meta in self.row_metadata.items()}
+        self.row_metadata = {
+            dict.get(r, r): meta for r, meta in self.row_metadata.items()
+        }
 
     def rename_cols(self, dict):
         """
@@ -379,7 +394,9 @@ class ScellopData():
         """
         self.counts = self.counts.rename(columns=dict)
         self.cols = self.counts.columns.tolist()
-        self.col_metadata = {dict.get(c, c): meta for c, meta in self.col_metadata.items()}
+        self.col_metadata = {
+            dict.get(c, c): meta for c, meta in self.col_metadata.items()
+        }
 
 
 class ScellopWidget(anywidget.AnyWidget):
@@ -393,10 +410,13 @@ class ScellopWidget(anywidget.AnyWidget):
     data : ScellopData
     df : pd.DataFrame with counts
     """
+
     _esm = pathlib.Path(__file__).parent / "static" / "widget.js"
     _css = pathlib.Path(__file__).parent / "static" / "widget.css"
 
-    data = traitlets.Instance(ScellopData, default_value=ScellopData(pd.DataFrame(), list(), list())).tag(sync=False)
+    data = traitlets.Instance(
+        ScellopData, default_value=ScellopData(pd.DataFrame(), list(), list())
+    ).tag(sync=False)
     df = traitlets.Instance(pd.DataFrame, default_value=pd.DataFrame()).tag(sync=False)
 
     dataDict = traitlets.Dict(default_value={}).tag(sync=True)
@@ -426,7 +446,7 @@ def _use_source(source):
     """
     if type(source) is pd.DataFrame:
         return source
-    if type(source) is ad.AnnData: 
+    if type(source) is ad.AnnData:
         return source.obs
     if type(source) is str:
         if source.startswith("http://") or source.startswith("https://"):
@@ -471,7 +491,7 @@ def find_colnames(source):
 def load_data_multiple(sources, rows, c_col, r_cols_meta=None, c_cols_meta=None):
     """
     Loader for scellop data from a list of dataframes.
-    Loader for scellop data from a list of sources containing a DataFrame per dataset/sample. 
+    Loader for scellop data from a list of sources containing a DataFrame per dataset/sample.
 
     Parameters
     ----------
@@ -491,12 +511,14 @@ def load_data_multiple(sources, rows, c_col, r_cols_meta=None, c_cols_meta=None)
     ScellopData
         Object with processed count DataFrame, row metadata dict, column metadata dict.
     """
-    if len(sources) > len(rows): 
+    if len(sources) > len(rows):
         warnings.warn("Not enough row names (in rows) supplied.")
         return
-    if len(sources) < len(rows): 
-        warnings.warn("Warning: more row names (in rows) supplied than data sources. Last row will not be used.")
-    
+    if len(sources) < len(rows):
+        warnings.warn(
+            "Warning: more row names (in rows) supplied than data sources. Last row will not be used."
+        )
+
     counts = None
     row_metadata = {}
     col_metadata = {}
@@ -506,8 +528,10 @@ def load_data_multiple(sources, rows, c_col, r_cols_meta=None, c_cols_meta=None)
         df = _use_source(sources[i])
         if df is None:
             continue
-        if c_col not in df.keys(): 
-            warnings.warn(f"Dataset {rows[i]} does not have label {c_col} in obs. Dataset skipped.")
+        if c_col not in df.keys():
+            warnings.warn(
+                f"Dataset {rows[i]} does not have label {c_col} in obs. Dataset skipped."
+            )
             continue
 
         counts_i = df[[c_col]].reset_index(names=rows[i])
@@ -521,10 +545,16 @@ def load_data_multiple(sources, rows, c_col, r_cols_meta=None, c_cols_meta=None)
                 if meta_col in df.columns:
                     unique_values = df[meta_col].unique()
                     if len(unique_values) > 1:
-                        warnings.warn(f"Row metadata column '{meta_col}' has multiple values in dataset {rows[i]}. Using most common value.")
-                    r_meta_values[meta_col] = Counter(unique_values).most_common(1)[0][0]
+                        warnings.warn(
+                            f"Row metadata column '{meta_col}' has multiple values in dataset {rows[i]}. Using most common value."
+                        )
+                    r_meta_values[meta_col] = Counter(unique_values).most_common(1)[0][
+                        0
+                    ]
                 else:
-                    warnings.warn(f"Row metadata column {meta_col} not found in dataset {rows[i]}")
+                    warnings.warn(
+                        f"Row metadata column {meta_col} not found in dataset {rows[i]}"
+                    )
             row_metadata[rows[i]] = r_meta_values
 
         # col metadata
@@ -532,23 +562,27 @@ def load_data_multiple(sources, rows, c_col, r_cols_meta=None, c_cols_meta=None)
             for meta_col in c_cols_meta:
                 if meta_col in df.columns:
                     unique_values = df[[c_col, meta_col]].drop_duplicates()
-                    
+
                     col_values = {}
                     for _, row in unique_values.iterrows():
                         col = row[c_col]
                         value = row[meta_col]
                         col_values.setdefault(col, []).append(value)
-                    
+
                     for col, values in col_values.items():
                         if len(values) > 1:
-                            warnings.warn(f"Column metadata column '{meta_col}' has multiple values for column '{col}' in dataset {rows[i]}. Using most common value.")
+                            warnings.warn(
+                                f"Column metadata column '{meta_col}' has multiple values for column '{col}' in dataset {rows[i]}. Using most common value."
+                            )
                         most_common_value = Counter(values).most_common(1)[0][0]
                         if col not in col_metadata:
                             col_metadata[col] = {}
                         col_metadata[col][meta_col] = most_common_value
                 else:
-                    warnings.warn(f"Column metadata column {meta_col} not found in dataset {rows[i]}")
-        
+                    warnings.warn(
+                        f"Column metadata column {meta_col} not found in dataset {rows[i]}"
+                    )
+
     counts = counts.astype(int) if counts is not None else counts
 
     return ScellopData(counts, row_metadata, col_metadata)
@@ -580,10 +614,10 @@ def load_data_singular(source, r_col, c_col, r_cols_meta=None, c_cols_meta=None)
     if df is None:
         return
 
-    if r_col not in df.keys(): 
+    if r_col not in df.keys():
         warnings.warn(f"DataFrame does not have label {r_col}.")
         return
-    if c_col not in df.keys(): 
+    if c_col not in df.keys():
         warnings.warn(f"DataFrame does not have label {c_col}.")
         return
 
@@ -601,12 +635,20 @@ def load_data_singular(source, r_col, c_col, r_cols_meta=None, c_cols_meta=None)
             dfRowUnique = df_row.groupby(r_col, observed=True)[col].nunique()
             inconsistent = dfRowUnique[dfRowUnique > 1]
             if len(inconsistent) > 0:
-                warnings.warn(f"Row metadata column '{col}' has inconsistent values for some {r_col} entries.")
-        
-        # if there are multiple values for row, use most common
-        df_row = df_row.drop_duplicates(subset=r_col).dropna().groupby(r_col, observed=True).agg(lambda x: x.mode().iloc[0]).reset_index()
+                warnings.warn(
+                    f"Row metadata column '{col}' has inconsistent values for some {r_col} entries."
+                )
 
-        row_metadata  = {
+        # if there are multiple values for row, use most common
+        df_row = (
+            df_row.drop_duplicates(subset=r_col)
+            .dropna()
+            .groupby(r_col, observed=True)
+            .agg(lambda x: x.mode().iloc[0])
+            .reset_index()
+        )
+
+        row_metadata = {
             str(row): df_row.loc[df_row[r_col] == row, r_cols_meta].iloc[0].to_dict()
             for row in counts.index
         }
@@ -615,17 +657,25 @@ def load_data_singular(source, r_col, c_col, r_cols_meta=None, c_cols_meta=None)
     col_metadata = {}
     if c_cols_meta:
         df_col = df[[c_col] + c_cols_meta]
-        
+
         for col in c_cols_meta:
             dfColUnique = df_col.groupby(c_col, observed=True)[col].nunique()
             inconsistent = dfColUnique[dfColUnique > 1]
             if len(inconsistent) > 0:
-                warnings.warn(f"Column metadata column '{col}' has inconsistent values for some {c_col} entries.")
+                warnings.warn(
+                    f"Column metadata column '{col}' has inconsistent values for some {c_col} entries."
+                )
 
         # if there are multiple values for col, use most common
-        df_col = df_col.drop_duplicates(subset=c_col).dropna().groupby(c_col, observed=True).agg(lambda x: x.mode().iloc[0]).reset_index()
+        df_col = (
+            df_col.drop_duplicates(subset=c_col)
+            .dropna()
+            .groupby(c_col, observed=True)
+            .agg(lambda x: x.mode().iloc[0])
+            .reset_index()
+        )
 
-        col_metadata  = {
+        col_metadata = {
             str(col): df_col.loc[df_col[c_col] == col, c_cols_meta].iloc[0].to_dict()
             for col in counts.columns
         }
