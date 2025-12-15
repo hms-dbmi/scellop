@@ -248,8 +248,15 @@ export default function Bars({
               // Use heatmap color scale for continuous stacked bars
               if (normalization === "None") {
                 color = colorScale.countsScale(cellValue);
+              } else if (normalization === "Log") {
+                // For log normalization, use log scale with log-transformed value
+                const normalizedValue =
+                  normalizedDataMap[
+                    cellKey as keyof typeof normalizedDataMap
+                  ] || 0;
+                color = colorScale.logScale(normalizedValue);
               } else {
-                // For normalized data, use percentage scale with normalized value
+                // For Row/Column normalization, use percentage scale with normalized value
                 const normalizedValue =
                   normalizedDataMap[
                     cellKey as keyof typeof normalizedDataMap
