@@ -9,6 +9,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Box,
   Button,
   Divider,
   FormControl,
@@ -16,6 +17,7 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
+  Slider,
   Stack,
   Typography,
   useEventCallback,
@@ -195,12 +197,18 @@ function FilterItem({
   index: number;
 }) {
   const [open, setOpen] = useState(false);
+  const [sliderValue, setSliderValue] = useState([-Infinity,Infinity]);
 
   const { editFilter, removeFilter, editSubFilters } = useFilterItemActions();
 
   const availableFilters = useAvailableFilters();
   const allSubFilters = useAllSubFilters(filter.key);
   const currentFilterValues = useCurrentFilterValues(filter.key);
+
+  const allNumeric = allSubFilters.every((v) => typeof(v) === "number")
+  const [minValue, maxValue] = allNumeric
+  ? [Math.min(...(allSubFilters as number[])), Math.max(...(allSubFilters as number[]))]
+  : [undefined, undefined];
 
   const onSelectChange = useEventCallback((event: SelectChangeEvent) => {
     const key = event.target.value as string;
@@ -228,6 +236,14 @@ function FilterItem({
     },
   );
 
+  // slider for numeric values. Excludes numeric values that are not within the (inclusive) range.
+  const onChangeFilterSlider = useEventCallback((event: Event, values: number | number[]) => {
+    if (!Array.isArray(values)) { return; }
+    setSliderValue(values);
+    const excludedValues = allSubFilters.filter((v) => typeof(v) === "number" && (v < values[0] || v > values[1]));
+    editSubFilters(filter.key, excludedValues)
+  });
+
   const remove = useEventCallback(() => {
     removeFilter(filter.key);
   });
@@ -236,7 +252,7 @@ function FilterItem({
 
   return (
     <Stack key={filter.key} spacing={1}>
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack direction="row" alignItems="center" spacing={2}>
         <Typography variant="subtitle1" noWrap sx={{ flexShrink: 0 }}>
           Filter By
         </Typography>
@@ -263,7 +279,7 @@ function FilterItem({
       <Stack
         direction="row"
         alignItems="center"
-        spacing={1}
+        spacing={2}
         sx={{ pl: 2, pr: 6 }}
       >
         <Typography variant="body2" noWrap sx={{ flexShrink: 0 }}>
@@ -294,6 +310,27 @@ function FilterItem({
           </Select>
         </FormControl>
       </Stack>
+      {allNumeric ? 
+         <Stack
+          direction="row"
+          alignItems="center"
+          spacing={2}
+          sx={{ pl: 3, pr: 6 }}
+        > 
+          <Typography variant="body2" noWrap sx={{ flexShrink: 0 }}>
+            {"Slider"}
+          </Typography>
+          <Box sx={{ flex: 1, mt: 1 }}>
+            <Slider
+              value={sliderValue}
+              min={minValue}
+              max={maxValue}
+              onChange={onChangeFilterSlider}
+              valueLabelDisplay="auto"
+            />
+          </Box>
+        </Stack>
+      : <></>}
     </Stack>
   );
 }
