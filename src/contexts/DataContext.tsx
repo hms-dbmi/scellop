@@ -181,14 +181,14 @@ interface DataContextActions {
    */
   editColumnFilter: (index: number, newKey: string) => void;
   /**
-   *
+   * Edit sub filters. The values are filtered out.
    */
   editRowSubFilters: (
     key: string,
     values: (string | number | boolean)[],
   ) => void;
   /**
-   *
+   * Edit sub filters. The values are filtered out.
    */
   editColumnSubFilters: (
     key: string,
@@ -308,7 +308,8 @@ const applyFilters = (
   for (const item of array) {
     for (const filter of activeFilters) {
       const itemMetadata = metadata?.[item];
-      const itemValue = itemMetadata?.[filter.key] ?? "undefined";
+      let itemValue = itemMetadata?.[filter.key] ?? "undefined";
+      if (typeof(itemValue) === "boolean") { itemValue = String(itemValue) }
       if (filter.values.includes(itemValue)) {
         discarded.add(item);
         break;
@@ -827,8 +828,13 @@ const getColumnNames = memoize((state: DataContextStore) => {
   );
 });
 
+/**
+ * Get all metadata keys
+ * @param metadata 
+ * @returns list of metadata keys
+ */
 const getMetadataKeys = (
-  metadata: Record<string, Record<string, string | number>> | undefined,
+  metadata: Record<string, Record<string, string | number | boolean | undefined>> | undefined,
 ) => {
   if (!metadata) {
     return [];
@@ -846,18 +852,32 @@ const getMetadataKeys = (
   return [...set];
 };
 
+/**
+ * Get the metadata object, used for filtering.
+ * @param metadata 
+ * @returns List of lists, where each individual list is the key and the possible metadata values. 
+ * E.g., [["title", {"title1", "title2"}], ["blood_group", {"A", "B", "AB", "O"}]]
+ */
 const getMetadataObject = (
-  metadata: Record<string, Record<string, string | number>> | undefined,
+  metadata: Record<string, Record<string, string | number | boolean | undefined>> | undefined,
 ) => {
   if (!metadata) {
     return [];
   }
   const metadataValues = Object.values(metadata);
-  const set = metadataValues.reduce<Record<string, Set<string | number>>>(
+
+  // get all keys in metadata, this allows to see if a key is missing in any object, to add undefined as a value
+  const allKeys = new Set<string>();
+  metadataValues.forEach(obj =>
+    Object.keys(obj).forEach(k => allKeys.add(k))
+  );
+
+  const set = metadataValues.reduce<Record<string, Set<string | number >>>(
     (acc, curr) => {
-      Object.entries(curr).forEach(([key, value]) => {
+      allKeys.forEach((key,) => {
         if (!acc[key]) acc[key] = new Set();
-        acc[key].add(value === undefined ? "undefined" : value);
+        const value = curr[key];
+        acc[key].add(value === undefined ? "undefined" : typeof(value) === "boolean" ? String(value) : value);
       });
       return acc;
     },
@@ -995,18 +1015,14 @@ export const useAvailableColumnSorts = () => {
   );
 };
 
-export function sortFilterValues(values: (string | number | boolean)[]) {
+export function sortFilterValues(values: (string | number)[]) {
   const valuesCopy = [...values];
   valuesCopy.sort((a, b) => {
-    if (typeof a === "boolean") {
-      a = a ? 1 : 0;
-    }
-    if (typeof b === "boolean") {
-      b = b ? 1 : 0;
-    }
     if (typeof a === "number" && typeof b === "number") {
       return a - b;
     }
+    if (a === "undefined") return 1;
+    if (b === "undefined") return -1;
     return String(a).localeCompare(String(b));
   });
   return valuesCopy;

@@ -127,7 +127,10 @@ export default function MetadataValueBar({
     // Create bars for each sort order
     sortOrder.forEach((sort, sortIndex) => {
       const values = keys.map(
-        (key) => metadata[key]?.[sort.key] || "[No Value]",
+        (key) => {
+          let value = metadata[key]?.[sort.key];
+          return value === undefined ? "undefined" : typeof(value) === "boolean" ? String(value) : value;
+        }
       );
       const isNumeric = keys.every((key) => {
         const value = metadata[key]?.[sort.key];
@@ -141,7 +144,7 @@ export default function MetadataValueBar({
         | null = null;
       if (isNumeric) {
         const numericValues = values.map((v) =>
-          v === "[No Value]" ? 0 : parseInt(v as string, 10),
+          v === "undefined" ? 0 : parseInt(v as string, 10),
         );
         const min = Math.min(...numericValues);
         const max = Math.max(...numericValues);
@@ -159,9 +162,9 @@ export default function MetadataValueBar({
         // Create a consistently sorted domain for stable color assignment
         const uniqueValues = Array.from(new Set(values.map(String)));
         const sortedDomain = uniqueValues.sort((a, b) => {
-          // Sort "[No Value]" to the end, then alphabetically
-          if (a === "[No Value]") return 1;
-          if (b === "[No Value]") return -1;
+          // Sort "undefined" to the end, then alphabetically
+          if (a === "undefined") return 1;
+          if (b === "undefined") return -1;
           return a.localeCompare(b);
         });
 
@@ -195,14 +198,15 @@ export default function MetadataValueBar({
           return acc;
         }
 
-        const value = metadata[key]?.[sort.key] || "[No Value]";
+        let value = metadata[key]?.[sort.key]; 
+        value = value === undefined ? "undefined" : typeof(value) === "boolean" ? String(value) : value;
         const processedValue =
-          isNumeric && value !== "[No Value]"
+          isNumeric && value !== "undefined"
             ? parseInt(value as string, 10)
             : value;
 
         const color =
-          value === "[No Value]"
+          value === "undefined"
             ? theme.palette.grey[400]
             : isNumeric
               ? (colorScale as (value: number) => string)(

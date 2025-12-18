@@ -208,7 +208,7 @@ function FilterItem({
   });
 
   const onSelectSubFilterChange = useEventCallback(
-    (event: SelectChangeEvent<(string | number | boolean)[]>) => {
+    (event: SelectChangeEvent<(string | number)[]>) => {
       const selectedValues = Array.isArray(event.target.value)
         ? event.target.value
         : [event.target.value];
@@ -270,7 +270,7 @@ function FilterItem({
           {"Values"}
         </Typography>
         <FormControl fullWidth sx={{ mt: 1 }}>
-          <Select<(string | number | boolean)[]>
+          <Select<(string | number)[]>
             multiple
             open={open}
             onClose={() => setOpen(false)}
@@ -287,7 +287,7 @@ function FilterItem({
             </MenuItem>
             <Divider />
             {allSubFilters.map((value) => (
-              <MenuItem key={value.toString()} value={String(value)}>
+              <MenuItem key={value.toString()} value={value}>
                 {value}
               </MenuItem>
             ))}
