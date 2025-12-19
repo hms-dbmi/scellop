@@ -94,8 +94,8 @@ export default function LeftGraph() {
   const violins = useIsLeftViolins();
   return (
     <Stack direction="row" width={width} height={height} overflow="hidden">
+      <YAxisLabel />
       <HeatmapYAxis />
-      <YAxisLabel height={height} />
       {violins ? <LeftViolin /> : <LeftBar />}
     </Stack>
   );

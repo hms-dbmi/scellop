@@ -7,8 +7,8 @@ import { formatPrefix, max } from "d3";
 import { useColumnCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import {
-  useIsTopViolins,
-  useTopGraphType,
+    useIsTopViolins,
+    useTopGraphType,
 } from "../../contexts/IndividualGraphTypeContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import HeatmapXAxis from "../heatmap/HeatmapXAxis";
@@ -101,8 +101,8 @@ export default function TopGraph() {
 
   return (
     <Stack direction="column" width="100%" height={height} overflow="hidden">
-      <HeatmapXAxis />
       <XAxisLabel />
+      <HeatmapXAxis />
       {violins ? <TopViolin /> : <TopBar />}
     </Stack>
   );

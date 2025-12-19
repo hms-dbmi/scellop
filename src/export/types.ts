@@ -12,7 +12,7 @@ export type {
   BarData,
   BarSegment,
   HeatmapCellData,
-  ViolinPathData
+  ViolinPathData,
 } from "../utils/calculations/types";
 
 // Legacy type aliases for backward compatibility

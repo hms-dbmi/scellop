@@ -1,6 +1,5 @@
 import { useTheme } from "@mui/material/styles";
 import { Axis, Orientation, TickRendererProps } from "@visx/axis";
-import { Text } from "@visx/text";
 import React, { useCallback, useId } from "react";
 import { useRowConfig } from "../../contexts/AxisConfigContext";
 import {
@@ -14,10 +13,10 @@ import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import { useTooltipFields } from "../../contexts/MetadataConfigContext";
 import { useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
-import truncateTickLabel from "../../utils/truncate-tick-label";
 import SVGBackgroundColorFilter from "../SVGBackgroundColorFilter";
 import { TICK_TEXT_SIZE } from "./constants";
 import { useHeatmapAxis, useSetTickLabelSize } from "./hooks";
+import TruncatedText from "./TruncatedText";
 
 export default function HeatmapYAxis() {
   const theme = useTheme();
@@ -67,7 +66,7 @@ export default function HeatmapYAxis() {
 
   return (
     <svg
-      width={tickLabelSize}
+      width={tickLabelSize - 20}
       height={y.range()[0]}
       style={{
         zIndex: 1,
@@ -81,24 +80,25 @@ export default function HeatmapYAxis() {
       <g transform={isZoomed ? `translate(0, ${-scroll})` : undefined}>
         <Axis
           scale={y}
-          left={tickLabelSize}
+          left={tickLabelSize - 24}
           stroke={theme.palette.text.primary}
           tickStroke={theme.palette.text.primary}
-          tickFormat={(v) => truncateTickLabel(v, 20)}
           tickComponent={({
             formattedValue,
             ...tickLabelProps
           }: TickRendererProps) => (
-            <Text
+            <TruncatedText
               {...tickLabelProps}
+              text={String(formattedValue)}
+              maxWidth={tickLabelSize - 24}
+              fontSize={fontSize}
+              fontFamily={theme.typography.fontFamily ?? "inherit"}
               x={
                 // Visx types are a bit off here, so we need to cast to unknown as a workaround
                 ((tickLabelProps?.to as unknown as { x: number })?.x ?? 0) -
                 Number(tickLabelProps?.fontSize ?? 0)
               }
-            >
-              {formattedValue}
-            </Text>
+            />
           )}
           tickLabelProps={(t) =>
             ({
