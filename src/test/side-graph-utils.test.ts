@@ -101,9 +101,13 @@ describe("side-graph-utils", () => {
       });
 
       expect(bars).toHaveLength(2);
-      // Vertical bars should have different orientation
+      // Vertical bars: backgroundY should be 0 (top of chart), backgroundX varies by position
       const bar1 = bars[0];
-      expect(bar1.backgroundY).toBeGreaterThan(0);
+      const bar2 = bars[1];
+      expect(bar1.backgroundY).toBe(0);
+      expect(bar2.backgroundY).toBe(0);
+      // Second bar should be positioned to the right of the first
+      expect(bar2.backgroundX).toBeGreaterThan(bar1.backgroundX);
     });
 
     it("should create stacked bar segments", () => {
