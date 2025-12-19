@@ -5,8 +5,3 @@ import { Dispatch, SetStateAction } from "react";
  * Used to simplify definition of context types.
  */
 export type Setter<T> = Dispatch<SetStateAction<T>>;
-
-export interface SizeProps {
-  width: number;
-  height: number;
-}

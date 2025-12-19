@@ -12,22 +12,8 @@ export type {
   BarData,
   BarSegment,
   HeatmapCellData,
-  ViolinPathData,
+  ViolinPathData
 } from "../utils/calculations/types";
 
 // Legacy type aliases for backward compatibility
 export type { BarSegment as BarSegmentData } from "../utils/calculations/types";
-
-export interface RenderingScales {
-  xScale: ScaleBand<string>;
-  yScale: ScaleBand<string>;
-  xScroll?: number;
-  yScroll?: number;
-}
-
-export interface CanvasRenderingContext {
-  ctx: CanvasRenderingContext2D;
-  width: number;
-  height: number;
-  backgroundColor: string;
-}
