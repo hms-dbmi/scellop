@@ -112,20 +112,82 @@ export function renderBarsToCanvas(
  * Render violin plots to a Canvas context
  * @param ctx Canvas rendering context
  * @param violins Array of violin path data
+ * @param options Optional rendering options
  */
 export function renderViolinsToCanvas(
   ctx: CanvasRenderingContext2D,
   violins: ViolinPathData[],
+  options?: {
+    orderedValues?: string[];
+    stripeEvenColor?: string;
+    stripeOddColor?: string;
+    highlightedKey?: string;
+    highlightColor?: string;
+    opacity?: number;
+    highlightOpacity?: number;
+    drawStroke?: boolean;
+    strokeColor?: string;
+    strokeWidth?: number;
+  },
 ): void {
-  for (const violin of violins) {
-    const path = new Path2D(violin.path);
+  const {
+    orderedValues,
+    stripeEvenColor,
+    stripeOddColor,
+    highlightedKey,
+    highlightColor,
+    opacity = 0.6,
+    highlightOpacity = 0.8,
+    drawStroke = false,
+    strokeColor,
+    strokeWidth = 2,
+  } = options || {};
 
+  for (const violin of violins) {
     ctx.save();
-    ctx.translate(violin.x, violin.y);
-    ctx.fillStyle = violin.color;
-    ctx.fill(path);
-    ctx.strokeStyle = violin.color;
-    ctx.stroke(path);
+
+    // Apply transform for this violin's position
+    ctx.translate(violin.transformCoordinate, 0);
+
+    const isHighlighted = highlightedKey && violin.key === highlightedKey;
+
+    // Draw background stripe if colors provided
+    if (stripeEvenColor && stripeOddColor && orderedValues) {
+      const violinIndex = orderedValues.indexOf(violin.key);
+      const stripeColor =
+        violinIndex % 2 === 0 ? stripeEvenColor : stripeOddColor;
+
+      ctx.fillStyle = stripeColor;
+      ctx.fillRect(
+        violin.backgroundDimensions.x,
+        violin.backgroundDimensions.y,
+        violin.backgroundDimensions.width,
+        violin.backgroundDimensions.height,
+      );
+    }
+
+    // Draw violin path
+    if (violin.path) {
+      const path = new Path2D(violin.path);
+
+      // Fill
+      ctx.fillStyle =
+        isHighlighted && highlightColor ? highlightColor : violin.color;
+      ctx.globalAlpha = isHighlighted ? highlightOpacity : opacity;
+      ctx.fill(path);
+
+      // Stroke if requested
+      if (drawStroke || isHighlighted) {
+        ctx.strokeStyle =
+          isHighlighted && highlightColor
+            ? highlightColor
+            : strokeColor || violin.color;
+        ctx.lineWidth = strokeWidth;
+        ctx.globalAlpha = 1;
+        ctx.stroke(path);
+      }
+    }
+
     ctx.restore();
   }
 }

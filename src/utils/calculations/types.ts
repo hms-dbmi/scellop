@@ -59,6 +59,14 @@ export interface ViolinPathData {
   x: number;
   y: number;
   color: string;
+  entry: [string, number][]; // Fraction data for tooltip
+  transformCoordinate: number; // Position along categorical axis
+  backgroundDimensions: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 /**
@@ -138,4 +146,6 @@ export interface CalculateViolinsParams {
   fractionDataMap: Record<string, number>;
   color: string;
   selectedValues?: Set<string>;
+  width: number; // Panel width for background dimensions
+  height: number; // Panel height for background dimensions
 }

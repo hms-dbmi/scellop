@@ -410,6 +410,8 @@ export default function ExportControls() {
               fractionDataMap: rowNormalizedDataMap,
               color: theme.palette.text.primary,
               selectedValues,
+              width: heatmapWidth,
+              height: topGraphHeight,
             })
           : undefined;
 
@@ -427,6 +429,8 @@ export default function ExportControls() {
               fractionDataMap: columnNormalizedDataMap,
               color: theme.palette.text.primary,
               selectedValues,
+              width: leftGraphWidth,
+              height: heatmapHeight,
             })
           : undefined;
 
@@ -669,6 +673,8 @@ export default function ExportControls() {
               fractionDataMap: rowNormalizedDataMap,
               color: theme.palette.text.primary,
               selectedValues,
+              width: heatmapWidth,
+              height: topGraphHeight,
             })
           : undefined;
 
@@ -686,6 +692,8 @@ export default function ExportControls() {
               fractionDataMap: columnNormalizedDataMap,
               color: theme.palette.text.primary,
               selectedValues,
+              width: leftGraphWidth,
+              height: heatmapHeight,
             })
           : undefined;
 

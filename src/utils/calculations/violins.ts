@@ -27,6 +27,8 @@ export function calculateViolins(
     fractionDataMap,
     color,
     selectedValues = new Set(),
+    width,
+    height,
   } = params;
 
   const result: ViolinPathData[] = [];
@@ -36,8 +38,8 @@ export function calculateViolins(
   const positionValues = isTopViolins ? columns : rows;
   const domainCategories = isTopViolins ? rows : columns;
 
-  // Create scale for violin internal height/width - full extent from 0 to domainLimit
-  const violinRange: [number, number] = [0, domainLimit];
+  // Create scale for violin internal height/width - full extent from tickLabelSize to domainLimit
+  const violinRange: [number, number] = [tickLabelSize, domainLimit];
   const violinScale = scaleBand({
     range: violinRange,
     domain: domainCategories,
@@ -62,10 +64,27 @@ export function calculateViolins(
         .y1((d) => densityScale(d[1]) + categoricalScale.bandwidth() / 2)
         .curve(curveNatural);
 
+  // Calculate background dimensions (same for all violins of this orientation)
+  const rangeStart = isTopViolins ? height : width;
+  const rangeEnd = tickLabelSize;
+  const LEFT_MARGIN = 10;
+  const TOP_MARGIN = 10;
+
+  const backgroundDimensions = {
+    x: isTopViolins ? 0 : rangeEnd,
+    y: isTopViolins ? rangeEnd : 0,
+    width: isTopViolins
+      ? categoricalScale.bandwidth()
+      : rangeStart + LEFT_MARGIN,
+    height: isTopViolins
+      ? rangeStart + TOP_MARGIN
+      : categoricalScale.bandwidth(),
+  };
+
   // Calculate violin data for each position value
   for (const key of positionValues) {
     if (removedValues.has(key)) continue;
-    if (orientation === "rows" && selectedValues.has(key)) continue;
+    if (selectedValues.has(key)) continue;
 
     const scaledKey = categoricalScale(key);
     if (scaledKey === undefined) continue;
@@ -87,6 +106,9 @@ export function calculateViolins(
       x: isTopViolins ? scaledKey : 0,
       y: isTopViolins ? 0 : scaledKey,
       color,
+      entry: violinEntry,
+      transformCoordinate: scaledKey,
+      backgroundDimensions,
     });
   }
 

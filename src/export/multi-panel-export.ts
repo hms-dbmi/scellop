@@ -14,7 +14,7 @@ import {
   renderHeatmapToCanvas,
   renderViolinsToCanvas,
 } from "./rendering-utils";
-import { BarData } from "./types";
+import { BarData, ViolinPathData } from "./types";
 
 /**
  * Full multi-panel export parameters
@@ -55,20 +55,8 @@ export interface MultiPanelExportParams {
   // Side graph data
   topBars?: BarData[];
   leftBars?: BarData[];
-  topViolins?: Array<{
-    key: string;
-    path: string;
-    color: string;
-    x: number;
-    y: number;
-  }>;
-  leftViolins?: Array<{
-    key: string;
-    path: string;
-    color: string;
-    x: number;
-    y: number;
-  }>;
+  topViolins?: ViolinPathData[];
+  leftViolins?: ViolinPathData[];
 
   // Axes and legend data
   topGraphCounts?: Record<string, number>;

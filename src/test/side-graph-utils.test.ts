@@ -203,6 +203,8 @@ describe("side-graph-utils", () => {
         columns,
         fractionDataMap,
         color: "steelblue",
+        width: 300,
+        height: 400,
       });
 
       expect(violins).toHaveLength(2);
@@ -237,6 +239,8 @@ describe("side-graph-utils", () => {
         columns,
         fractionDataMap,
         color: "steelblue",
+        width: 300,
+        height: 400,
       });
 
       expect(violins).toHaveLength(2);
@@ -268,6 +272,8 @@ describe("side-graph-utils", () => {
         fractionDataMap,
         color: "steelblue",
         selectedValues: new Set(["row1"]), // row1 is expanded
+        width: 300,
+        height: 400,
       });
 
       expect(violins).toHaveLength(1);
@@ -298,6 +304,8 @@ describe("side-graph-utils", () => {
         columns,
         fractionDataMap,
         color: "steelblue",
+        width: 200,
+        height: 400,
       });
 
       expect(violins).toHaveLength(2);
@@ -330,6 +338,8 @@ describe("side-graph-utils", () => {
         columns,
         fractionDataMap,
         color: "red",
+        width: 300,
+        height: 400,
       });
 
       expect(violins[0].color).toBe("red");
