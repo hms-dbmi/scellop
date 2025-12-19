@@ -1,4 +1,3 @@
-import { scaleLinear } from "@visx/scale";
 import React, { useLayoutEffect, useRef } from "react";
 
 import { useTheme } from "@mui/material/styles";
@@ -24,6 +23,11 @@ import { useNormalization } from "../../contexts/NormalizationContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import { useCanvasDragHandler } from "../../hooks/useDragHandler";
+import {
+  calculateHeatmapCells,
+  calculateInlineBars,
+} from "../../utils/calculations";
+import { renderCellsToCanvas } from "../../utils/rendering";
 
 const useCurrentNormalizedScale = () => {
   const normalization = useNormalization((s) => s.normalization);
@@ -294,54 +298,47 @@ function Heatmap() {
     }
 
     ctx.clearRect(xScale.scroll, yScale.scroll, width, height);
-    const cellWidth = Math.ceil(xScale.scale.bandwidth());
-    rows.forEach((row) => {
-      const cellHeight = Math.ceil(yScale.scale.bandwidth(row));
-      if (selectedValues.has(row)) {
-        // draw bar graph
-        const max =
-          normalization === "Log" ? Math.log(rowMaxes[row] + 1) : rowMaxes[row];
 
-        const domain =
-          normalization === "None" || normalization === "Log"
-            ? [0, max]
-            : [0, 1];
+    // Calculate regular heatmap cells (non-expanded rows)
+    const regularCells = calculateHeatmapCells({
+      rows,
+      columns,
+      dataMap,
+      xScale: xScale.scale,
+      yScale: yScale.scale,
+      colorScale: colors,
+      backgroundColor: theme.palette.background.default,
+      selectedValues, // Skip expanded rows
+      xScroll: 0, // Don't apply scroll here, we do it via translate
+      yScroll: 0,
+    });
 
-        const inlineYScale = scaleLinear({
-          domain,
-          range: [0, cellHeight],
-          nice: true,
-        });
-        columns.forEach((col) => {
-          const key = `${row}-${col}`;
-          const value = dataMap[key as keyof typeof dataMap];
-          const x = xScale.scale(col)!;
-          const yBackground = yScale.scale(row)!;
-          const barHeight = inlineYScale(value);
-          const yBar = yBackground + cellHeight - barHeight;
-          ctx.fillStyle = theme.palette.background.default;
-          ctx.fillRect(x, yBackground, cellWidth, cellHeight);
+    // Calculate inline bars for expanded rows
+    const inlineCells = calculateInlineBars({
+      rows,
+      columns,
+      dataMap,
+      rowMaxes,
+      xScale: xScale.scale,
+      yScale: yScale.scale,
+      selectedValues, // Only render for expanded rows
+      normalization,
+      columnColors,
+      defaultColor: theme.palette.text.primary,
+      backgroundColor: theme.palette.background.default,
+      xScroll: 0, // Don't apply scroll here, we do it via translate
+      yScroll: 0,
+    });
 
-          // Use column color if available, otherwise fall back to theme color
-          const columnColor = columnColors?.[col];
-          ctx.fillStyle = columnColor || theme.palette.text.primary;
-          ctx.fillRect(x, yBar, cellWidth, barHeight);
-        });
-      } else {
-        // draw heatmap cells
-        columns.forEach((col) => {
-          const value = dataMap[`${row}-${col}` as keyof typeof dataMap];
-          ctx.fillStyle =
-            value !== 0 ? colors(value) : theme.palette.background.default;
-          ctx.strokeStyle = colors(colors.domain()[1] / 2);
-          const x = xScale.scale(col)!;
-          const y = yScale.scale(row)!;
-          const w = Math.ceil(cellWidth);
-          const h = Math.ceil(cellHeight);
-          ctx.strokeRect(x, y, w, h);
-          ctx.fillRect(x, y, w, h);
-        });
-      }
+    // Render regular cells with strokes
+    renderCellsToCanvas(ctx, regularCells, {
+      strokeColor: colors(colors.domain()[1] / 2),
+      drawStroke: true,
+    });
+
+    // Render inline bars (no strokes for bars)
+    renderCellsToCanvas(ctx, inlineCells, {
+      drawStroke: false,
     });
 
     // Restore the transformation matrix before drawing crosshair
@@ -366,6 +363,8 @@ function Heatmap() {
     width,
     height,
     columnColors,
+    rows,
+    columns,
   ]);
 
   // Handle wheel scrolling for zoomed axes

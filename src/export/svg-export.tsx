@@ -2,6 +2,8 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SvgExportConfig, SvgVisualization } from "./SvgVisualization";
 
+export type { SvgExportConfig };
+
 /**
  * Get SVG markup as string (useful for embedding or further processing)
  */

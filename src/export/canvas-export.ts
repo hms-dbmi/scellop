@@ -81,7 +81,10 @@ export function renderHeatmapHighRes(params: HighResHeatmapParams): void {
     selectedValues,
   });
 
-  renderHeatmapToCanvas(ctx, cells, strokeColor);
+  renderHeatmapToCanvas(ctx, cells, {
+    strokeColor,
+    drawStroke: !!strokeColor,
+  });
 
   // Render inline bars for expanded rows
   if (selectedValues.size > 0) {
@@ -99,6 +102,6 @@ export function renderHeatmapHighRes(params: HighResHeatmapParams): void {
       backgroundColor,
     });
 
-    renderHeatmapToCanvas(ctx, inlineBars);
+    renderHeatmapToCanvas(ctx, inlineBars, { drawStroke: false });
   }
 }

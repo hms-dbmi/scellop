@@ -494,6 +494,9 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
               bars={topBars}
               backgroundColor={backgroundColor}
               drawStripes={true}
+              orderedValues={columns}
+              stripeEvenColor="rgba(0, 0, 0, 0.04)"
+              stripeOddColor={backgroundColor}
             />
           </g>
         )}
@@ -536,6 +539,9 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
               bars={leftBars}
               backgroundColor={backgroundColor}
               drawStripes={true}
+              orderedValues={rows}
+              stripeEvenColor="rgba(0, 0, 0, 0.04)"
+              stripeOddColor={backgroundColor}
             />
           </g>
         )}
@@ -544,7 +550,7 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
           leftViolins &&
           leftViolins.length > 0 && (
             <g
-              transform={`translate(${tickLabelSize}, ${effectiveTopPadding + topGraphHeight}) scale(1, ${yScaleFactor})`}
+              transform={`translate(0, ${effectiveTopPadding + topGraphHeight}) scale(1, ${yScaleFactor})`}
               className="left-violins"
             >
               <SvgViolins violins={leftViolins} />

@@ -2,46 +2,21 @@ import { ScaleBand } from "d3";
 
 /**
  * Common types for export rendering
+ *
+ * Note: Core calculation types are now in src/utils/calculations/types.ts
+ * This file re-exports them for backward compatibility.
  */
 
-export interface HeatmapCellData {
-  row: string;
-  column: string;
-  value: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: string;
-}
+// Re-export calculation types
+export type {
+  BarData,
+  BarSegment,
+  HeatmapCellData,
+  ViolinPathData,
+} from "../utils/calculations/types";
 
-export interface BarSegmentData {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  value: number;
-  color: string;
-  stackValue?: string;
-}
-
-export interface BarData {
-  key: string;
-  totalValue: number;
-  segments: BarSegmentData[];
-  backgroundX: number;
-  backgroundY: number;
-  backgroundWidth: number;
-  backgroundHeight: number;
-}
-
-export interface ViolinPathData {
-  key: string;
-  path: string;
-  x: number;
-  y: number;
-  color: string;
-}
+// Legacy type aliases for backward compatibility
+export type { BarSegment as BarSegmentData } from "../utils/calculations/types";
 
 export interface RenderingScales {
   xScale: ScaleBand<string>;

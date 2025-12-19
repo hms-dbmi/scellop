@@ -38,7 +38,6 @@ function LeftBar() {
     <Bars
       orientation="rows"
       categoricalScale={yScale}
-      numericalScale={xScale}
       domainLimit={width}
       selectedValues={selectedValues}
       width={width}

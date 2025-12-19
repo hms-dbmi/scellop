@@ -169,7 +169,14 @@ export function renderMultiPanelToCanvas(params: MultiPanelExportParams): void {
   if (topBars && topBars.length > 0) {
     ctx.save();
     ctx.translate(heatmapX, topPadding);
-    renderBarsToCanvas(ctx, topBars, backgroundColor, true);
+    renderBarsToCanvas(ctx, topBars, {
+      drawBackground: true,
+      orderedValues: columns,
+      stripeEvenColor: "rgba(0, 0, 0, 0.04)",
+      stripeOddColor: backgroundColor,
+      strokeColor: backgroundColor,
+      strokeWidth: 1,
+    });
     ctx.restore();
   }
 
@@ -216,7 +223,14 @@ export function renderMultiPanelToCanvas(params: MultiPanelExportParams): void {
   if (leftBars && leftBars.length > 0) {
     ctx.save();
     ctx.translate(leftPadding, heatmapY);
-    renderBarsToCanvas(ctx, leftBars, backgroundColor, true);
+    renderBarsToCanvas(ctx, leftBars, {
+      drawBackground: true,
+      orderedValues: rows,
+      stripeEvenColor: "rgba(0, 0, 0, 0.04)",
+      stripeOddColor: backgroundColor,
+      strokeColor: backgroundColor,
+      strokeWidth: 1,
+    });
     ctx.restore();
   }
 
@@ -298,7 +312,10 @@ export function renderMultiPanelToCanvas(params: MultiPanelExportParams): void {
     selectedValues,
   });
 
-  renderHeatmapToCanvas(ctx, cells, strokeColor);
+  renderHeatmapToCanvas(ctx, cells, {
+    strokeColor,
+    drawStroke: !!strokeColor,
+  });
 
   // Render inline bars for expanded rows
   if (selectedValues.size > 0) {
@@ -316,7 +333,7 @@ export function renderMultiPanelToCanvas(params: MultiPanelExportParams): void {
       backgroundColor,
     });
 
-    renderHeatmapToCanvas(ctx, inlineBars);
+    renderHeatmapToCanvas(ctx, inlineBars, { drawStroke: false });
 
     // Render numeric Y axis for each expanded row
     selectedValues.forEach((row) => {

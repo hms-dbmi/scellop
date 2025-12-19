@@ -41,7 +41,6 @@ function TopBar() {
     <Bars
       orientation="columns"
       categoricalScale={xScale}
-      numericalScale={yScale}
       domainLimit={height}
       width={width}
       height={height}
