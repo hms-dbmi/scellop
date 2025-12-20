@@ -103,12 +103,13 @@ export default function HeatmapXAxis() {
           numTicks={x.domain().length}
           stroke={theme.palette.text.primary}
           tickStroke={theme.palette.text.primary}
-          top={tickLabelSize - 20}
+          top={tickLabelSize - 24}
+          tickLength={2}
           tickComponent={(tickLabelProps) => (
             <TruncatedText
               {...tickLabelProps}
               text={String(tickLabelProps.formattedValue)}
-              maxWidth={tickLabelSize - 24}
+              maxWidth={tickLabelSize - 32}
               fontSize={fontSize}
               fontFamily={theme.typography.fontFamily}
             />

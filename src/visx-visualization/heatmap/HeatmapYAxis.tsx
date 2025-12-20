@@ -66,7 +66,7 @@ export default function HeatmapYAxis() {
 
   return (
     <svg
-      width={tickLabelSize - 20}
+      width={tickLabelSize - 24}
       height={y.range()[0]}
       style={{
         zIndex: 1,
@@ -90,7 +90,7 @@ export default function HeatmapYAxis() {
             <TruncatedText
               {...tickLabelProps}
               text={String(formattedValue)}
-              maxWidth={tickLabelSize - 24}
+              maxWidth={tickLabelSize - 32}
               fontSize={fontSize}
               fontFamily={theme.typography.fontFamily ?? "inherit"}
               x={
