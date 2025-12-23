@@ -1,48 +1,48 @@
 import { Download } from "@mui/icons-material";
 import {
-  Alert,
-  AlertTitle,
-  Box,
-  Button,
-  Checkbox,
-  CircularProgress,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  Radio,
-  RadioGroup,
-  Slider,
-  Stack,
-  TextField,
-  Typography,
+    Alert,
+    AlertTitle,
+    Box,
+    Button,
+    Checkbox,
+    CircularProgress,
+    FormControl,
+    FormControlLabel,
+    FormHelperText,
+    Radio,
+    RadioGroup,
+    Slider,
+    Stack,
+    TextField,
+    Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  useColumnConfig,
-  useRowConfig,
+    useColumnConfig,
+    useRowConfig,
 } from "../../contexts/AxisConfigContext";
 import { useColorScale } from "../../contexts/ColorScaleContext";
 import { useParentRef } from "../../contexts/ContainerRefContext";
 import {
-  useColumnCounts,
-  useColumnMaxes,
-  useColumns,
-  useData,
-  useFractionDataMap,
-  useRowCounts,
-  useRowMaxes,
-  useRows,
+    useColumnCounts,
+    useColumnMaxes,
+    useColumns,
+    useData,
+    useFractionDataMap,
+    useRowCounts,
+    useRowMaxes,
+    useRows,
 } from "../../contexts/DataContext";
 import {
-  useHeatmapDimensions,
-  usePanelDimensions,
+    useHeatmapDimensions,
+    usePanelDimensions,
 } from "../../contexts/DimensionsContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import {
-  useLeftGraphType,
-  useTopGraphType,
+    useLeftGraphType,
+    useTopGraphType,
 } from "../../contexts/IndividualGraphTypeContext";
 import { useGetFieldDisplayName } from "../../contexts/MetadataConfigContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
@@ -51,7 +51,7 @@ import { useViewType } from "../../contexts/ViewTypeContext";
 import { calculateMetadataBarDimensions } from "../../export/metadata-utils";
 import { renderMultiPanelToCanvas } from "../../export/multi-panel-export";
 import { calculateBars, calculateViolins } from "../../export/side-graph-utils";
-import { exportAsSvg } from "../../export/svg-export";
+import { exportAsSvg, exportCategoricalLegendsAsSvg } from "../../export/svg-export";
 import { UserAgentTester } from "../../utils/user-agent";
 
 /**
@@ -147,6 +147,8 @@ export default function ExportControls() {
   const [includeTimestamp, setIncludeTimestamp] = useState(true);
   const [exportFormat, setExportFormat] = useState<"png" | "svg">("png");
   const [resolution, setResolution] = useState<number>(2);
+  const [exportLegendsAsSeparateFile, setExportLegendsAsSeparateFile] =
+    useState(false);
   const [dimensions, setDimensions] = useState<{
     width: number;
     height: number;
@@ -794,6 +796,33 @@ export default function ExportControls() {
         `${baseFilename}${timestamp}.svg`,
       );
 
+      // Export categorical legends as separate file if requested
+      if (
+        exportLegendsAsSeparateFile &&
+        (rowColors || columnColors) &&
+        (rowConfig.pluralLabel || columnConfig.pluralLabel)
+      ) {
+        exportCategoricalLegendsAsSvg(
+          {
+            rows,
+            rowColors,
+            rowAxisLabel: rowConfig.pluralLabel,
+            columns,
+            columnColors,
+            columnAxisLabel: columnConfig.pluralLabel,
+            backgroundColor: theme.palette.background.default,
+            textColor: theme.palette.text.primary,
+            defaultColor: theme.palette.text.primary,
+            orientation: "vertical",
+            maxLegendWidth: 300,
+            maxLegendHeight: 600,
+            spacing: 20,
+            padding: 16,
+          },
+          `${baseFilename}${timestamp}-legends.svg`,
+        );
+      }
+
       trackEvent?.("export_visualization_success", "svg");
     } catch (error) {
       console.error("Failed to export visualization:", error);
@@ -836,6 +865,9 @@ export default function ExportControls() {
     colorScale,
     heatmapWidth,
     heatmapHeight,
+    exportLegendsAsSeparateFile,
+    rowConfig.pluralLabel,
+    columnConfig.pluralLabel,
   ]);
 
   const handleExport = useCallback(() => {
@@ -910,6 +942,27 @@ export default function ExportControls() {
           added if enabled to prevent filename conflicts.
         </FormHelperText>
       </Stack>
+
+      {/* Categorical Legends Export Option - only for SVG */}
+      {exportFormat === "svg" &&
+        ((rowColors &&
+          Object.values(rowColors).some((c) => c && c.trim() !== "") &&
+          rowConfig.pluralLabel) ||
+          (columnColors &&
+            Object.values(columnColors).some((c) => c && c.trim() !== "") &&
+            columnConfig.pluralLabel)) && (
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={exportLegendsAsSeparateFile}
+                onChange={(e) =>
+                  setExportLegendsAsSeparateFile(e.target.checked)
+                }
+              />
+            }
+            label="Export categorical color legends as separate file"
+          />
+        )}
 
       {/* Resolution Configuration - only for PNG */}
       {exportFormat === "png" && (

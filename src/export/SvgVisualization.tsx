@@ -5,11 +5,15 @@ import { ScaleBand as CustomScaleBand } from "../contexts/types";
 import { SvgNumericAxis } from "./SvgAxis";
 import { SvgBars } from "./SvgBars";
 import { SvgCategoricalAxis } from "./SvgCategoricalAxis";
+import {
+    calculateCategoricalColorLegendDimensions,
+    SvgCategoricalColorLegend,
+} from "./SvgCategoricalColorLegend";
 import { SvgHeatmap } from "./SvgHeatmap";
 import { SvgLegend } from "./SvgLegend";
 import {
-  calculateSvgMetadataBarDimensions,
-  SvgMetadataValueBars,
+    calculateSvgMetadataBarDimensions,
+    SvgMetadataValueBars,
 } from "./SvgMetadataValueBars";
 import { SvgViolins } from "./SvgViolins";
 import { BarData } from "./types";
@@ -437,7 +441,44 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
     "X",
   );
 
-  // Recalculate total dimensions with square heatmap and metadata bars
+  // Calculate categorical color legend dimensions
+  const rowColorLegendDims =
+    config.rowColors &&
+    Object.values(config.rowColors).some((c) => c && c.trim() !== "")
+      ? calculateCategoricalColorLegendDimensions(
+          rows,
+          config.rowColors,
+          "vertical",
+          200,
+          squareHeight,
+        )
+      : { width: 0, height: 0 };
+
+  const columnColorLegendDims =
+    columnColors &&
+    Object.values(columnColors).some((c) => c && c.trim() !== "")
+      ? calculateCategoricalColorLegendDimensions(
+          columns,
+          columnColors,
+          "vertical",
+          200,
+          squareHeight,
+        )
+      : { width: 0, height: 0 };
+
+  // Add spacing between panels
+  const legendPanelSpacing = 16;
+  const totalColorLegendWidth =
+    (rowColorLegendDims.width > 0 ? rowColorLegendDims.width : 0) +
+    (columnColorLegendDims.width > 0 ? columnColorLegendDims.width : 0) +
+    (rowColorLegendDims.width > 0 && columnColorLegendDims.width > 0
+      ? legendPanelSpacing
+      : 0);
+
+  // Add spacing before color legends if they exist
+  const colorLegendLeftMargin = totalColorLegendWidth > 0 ? 20 : 0;
+
+  // Recalculate total dimensions with square heatmap, metadata bars, and color legends
   const squareTotalWidth =
     viewType === "traditional"
       ? effectiveLeftPadding + squareWidth + rightAxisWidth
@@ -445,7 +486,9 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         leftGraphWidth +
         squareWidth +
         columnMetadataBarWidth +
-        rightAxisWidth;
+        rightAxisWidth +
+        colorLegendLeftMargin +
+        totalColorLegendWidth;
   const squareTotalHeight =
     viewType === "traditional"
       ? effectiveTopPadding + topGraphHeight
@@ -701,6 +744,62 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
                 totalLength={squareHeight}
                 tickLength={6}
                 hideLabels={selectedValues}
+              />
+            )}
+          </>
+        )}
+
+        {/* Categorical color legends panel (right side) */}
+        {viewType !== "traditional" && (
+          <>
+            {/* Row color legend */}
+            {config.rowColors &&
+              rowColorLegendDims.width > 0 &&
+              rowAxisLabel && (
+                <SvgCategoricalColorLegend
+                  values={rows}
+                  colors={config.rowColors}
+                  title={rowAxisLabel}
+                  defaultColor={defaultColor}
+                  textColor={defaultColor}
+                  backgroundColor={backgroundColor}
+                  x={
+                    leftGraphWidth +
+                    squareWidth +
+                    columnMetadataBarWidth +
+                    rightAxisWidth +
+                    colorLegendLeftMargin
+                  }
+                  y={effectiveTopPadding + topGraphHeight}
+                  maxWidth={200}
+                  maxHeight={squareHeight}
+                  orientation="vertical"
+                />
+              )}
+
+            {/* Column color legend */}
+            {columnColors && columnColorLegendDims.width > 0 && columnAxisLabel && (
+              <SvgCategoricalColorLegend
+                values={columns}
+                colors={columnColors}
+                title={columnAxisLabel}
+                defaultColor={defaultColor}
+                textColor={defaultColor}
+                backgroundColor={backgroundColor}
+                x={
+                  leftGraphWidth +
+                  squareWidth +
+                  columnMetadataBarWidth +
+                  rightAxisWidth +
+                  colorLegendLeftMargin +
+                  (rowColorLegendDims.width > 0
+                    ? rowColorLegendDims.width + legendPanelSpacing
+                    : 0)
+                }
+                y={effectiveTopPadding + topGraphHeight}
+                maxWidth={200}
+                maxHeight={squareHeight}
+                orientation="vertical"
               />
             )}
           </>

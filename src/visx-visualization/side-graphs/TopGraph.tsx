@@ -7,8 +7,8 @@ import { formatPrefix, max } from "d3";
 import { useColumnCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import {
-    useIsTopViolins,
-    useTopGraphType,
+  useIsTopViolins,
+  useTopGraphType,
 } from "../../contexts/IndividualGraphTypeContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import HeatmapXAxis from "../heatmap/HeatmapXAxis";
