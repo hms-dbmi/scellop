@@ -4,14 +4,13 @@ import * as scellop from "scellop";
 import { ScellopData } from "../../src/scellop-schema";
 
 const render = createRender(() => {
-  const [dataDict, _] =
-    useModelState<{
-      counts: Record<string, Record<string, number>>;
-      metadata: {
-        row: Record<string, Record<string, number>>;
-        col: Record<string, Record<string, number>>;
-      }
-    }>("dataDict");
+  const [dataDict, _] = useModelState<{
+    counts: Record<string, Record<string, number>>;
+    metadata: {
+      row: Record<string, Record<string, number>>;
+      col: Record<string, Record<string, number>>;
+    };
+  }>("dataDict");
 
   const [data, setData] = React.useState<ScellopData | null>(null);
 

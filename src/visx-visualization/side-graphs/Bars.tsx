@@ -1,7 +1,7 @@
 import { useEventCallback } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { scaleLinear } from "@visx/scale";
-import { ScaleBand, ScaleLinear } from "d3";
+import { ScaleBand } from "d3";
 import React, { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import {
   useColumnConfig,
@@ -26,13 +26,14 @@ import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import { useBarsDragHandler } from "../../hooks/useDragHandler";
 import { EXPANDED_ROW_PADDING } from "../../hooks/useYScaleCreator";
+import { calculateBars } from "../../utils/calculations";
 import { getColorForValue } from "../../utils/categorical-colors";
+import { renderBarsToCanvas } from "../../utils/rendering";
 import ExpandedAxes from "./ExpandedAxes";
 
 interface BarsProps {
   orientation: "rows" | "columns";
   categoricalScale: ScaleBand<string>;
-  numericalScale: ScaleLinear<number, number>;
   domainLimit: number;
   selectedValues?: Set<string>;
   width: number;
@@ -78,7 +79,6 @@ function useExpandedSize(orientation: string) {
 export default function Bars({
   orientation,
   categoricalScale,
-  numericalScale,
   domainLimit,
   width,
   height,
@@ -168,174 +168,50 @@ export default function Bars({
     isZoomed: scaleContext.isZoomed,
   });
 
+  const removedRows = useData((s) => s.removedRows);
+  const removedColumns = useData((s) => s.removedColumns);
+
   const bars = useMemo(() => {
-    const entries = Object.entries(data);
-    const result = [];
-
-    for (const [key, totalValue] of entries) {
-      if (orientation === "rows" && selectedValues?.has(key)) {
-        continue;
-      }
-
-      const scaledKey = categoricalScale(key);
-      const isVertical = orientation === "columns";
-      const barSize = categoricalScale.bandwidth();
-      const scaledPosition = scaledKey ?? 0;
-      const [rangeStart, rangeEnd] = numericalScale.range();
-
-      // Background dimensions and position
-      const backgroundX = isVertical ? scaledPosition : domainLimit - rangeEnd;
-      const backgroundY = isVertical
-        ? domainLimit - rangeStart
-        : scaledPosition;
-      const backgroundWidth = isVertical ? barSize : rangeEnd;
-      const backgroundHeight = isVertical ? rangeStart : barSize;
-
-      // Create segments based on graph type
-      const segments = [];
-
-      if (
-        currentGraphType === "Stacked Bars (Categorical)" ||
-        currentGraphType === "Stacked Bars (Continuous)"
-      ) {
-        // Create stacked segments
-        let currentOffset = 0;
-
-        // Filter out removed stack values
-        const activeStackValues = stackValues.filter(
-          (stackValue) => !removedStackValues.has(stackValue),
-        );
-
-        for (const stackValue of activeStackValues) {
-          // Get the cell value for this combination - always use raw counts for stacking
-          const cellKey =
-            orientation === "columns"
-              ? `${stackValue}-${key}`
-              : `${key}-${stackValue}`;
-          const cellValue = rawDataMap[cellKey as keyof typeof rawDataMap] || 0;
-
-          if (cellValue > 0) {
-            // Scale the segment value
-            const scaledSegmentValue = numericalScale(
-              currentOffset + cellValue,
-            );
-            const scaledCurrentOffset = numericalScale(currentOffset);
-
-            // Calculate segment dimensions
-            const segmentLength = scaledSegmentValue - scaledCurrentOffset;
-
-            const segmentX = isVertical
-              ? scaledPosition
-              : domainLimit - scaledSegmentValue;
-            const segmentY = isVertical
-              ? domainLimit - scaledSegmentValue
-              : scaledPosition;
-            const segmentWidth = isVertical ? barSize : segmentLength;
-            const segmentHeight = isVertical ? segmentLength : barSize;
-
-            // Get color based on graph type and normalization
-            let color: string;
-            if (currentGraphType === "Stacked Bars (Categorical)") {
-              // Use individual colors for categorical stacked bars
-              const oppositeAxisConfig =
-                orientation === "columns" ? rowConfig : columnConfig;
-              color = getColorForValue(
-                stackValue,
-                stackValues,
-                oppositeAxisConfig.colors,
-              );
-            } else {
-              // Use heatmap color scale for continuous stacked bars
-              if (normalization === "None") {
-                color = colorScale.countsScale(cellValue);
-              } else if (normalization === "Log") {
-                // For log normalization, use log scale with log-transformed value
-                const normalizedValue =
-                  normalizedDataMap[
-                    cellKey as keyof typeof normalizedDataMap
-                  ] || 0;
-                color = colorScale.logScale(normalizedValue);
-              } else {
-                // For Row/Column normalization, use percentage scale with normalized value
-                const normalizedValue =
-                  normalizedDataMap[
-                    cellKey as keyof typeof normalizedDataMap
-                  ] || 0;
-                color = colorScale.percentageScale(normalizedValue);
-              }
-            }
-
-            segments.push({
-              x: segmentX,
-              y: segmentY,
-              width: segmentWidth,
-              height: segmentHeight,
-              value: cellValue,
-              stackValue,
-              color,
-            });
-
-            currentOffset += cellValue;
-          }
-        }
-      } else {
-        // Create a single unsegmented bar for "Bars" mode
-        const scaledValue = numericalScale(totalValue);
-        const barLength = scaledValue;
-
-        // Bar dimensions and position
-        const x = isVertical ? scaledPosition : domainLimit - scaledValue;
-        const y = isVertical ? domainLimit - scaledValue : scaledPosition;
-        const barWidth = isVertical ? barSize : barLength;
-        const barHeight = isVertical ? barLength : barSize;
-
-        // Get color for the bar - use axis colors if configured, otherwise default
-        const color = axisConfig.colors
-          ? getColorForValue(key, orderedValues, axisConfig.colors)
-          : theme.palette.text.primary;
-
-        segments.push({
-          x,
-          y,
-          width: barWidth,
-          height: barHeight,
-          value: totalValue,
-          stackValue: key, // Use the bar key as stack value for consistency
-          color,
-        });
-      }
-
-      result.push({
-        key,
-        totalValue,
-        segments,
-        backgroundX,
-        backgroundY,
-        backgroundWidth,
-        backgroundHeight,
-      });
-    }
-
-    return result;
+    return calculateBars({
+      orientation,
+      counts: data,
+      orderedValues,
+      removedValues: orientation === "columns" ? removedColumns : removedRows,
+      categoricalScale,
+      domainLimit,
+      graphType: currentGraphType,
+      normalization,
+      stackValues,
+      removedStackValues,
+      rawDataMap,
+      normalizedDataMap,
+      colorScale,
+      axisColors: axisConfig.colors,
+      oppositeAxisColors:
+        orientation === "columns" ? rowConfig.colors : columnConfig.colors,
+      defaultColor: theme.palette.text.primary,
+      selectedValues,
+    });
   }, [
     orientation,
     data,
-    rawDataMap,
-    normalizedDataMap,
+    orderedValues,
+    removedRows,
+    removedColumns,
     categoricalScale,
-    numericalScale,
     domainLimit,
-    selectedValues,
+    currentGraphType,
+    normalization,
     stackValues,
     removedStackValues,
+    rawDataMap,
+    normalizedDataMap,
     colorScale,
-    normalization,
-    currentGraphType,
-    theme.palette.text.primary,
     axisConfig.colors,
     rowConfig.colors,
     columnConfig.colors,
-    orderedValues,
+    theme.palette.text.primary,
+    selectedValues,
   ]);
 
   // Create axes for expanded values
@@ -414,37 +290,16 @@ export default function Bars({
       scaleContext.isZoomed && orientation === "rows" ? scaleContext.scroll : 0;
     ctx.clearRect(clearX, clearY, width, height);
 
-    // Draw bars
-    bars.forEach((bar) => {
-      // Get the position of this bar in the ordered data for consistent striping
-      const barIndex = orderedValues.indexOf(bar.key);
-
-      // Highlight dragged bar
-      const isDraggedBar = isDragging && draggedValue === bar.key;
-
-      // Draw background stripe pattern
-      ctx.fillStyle =
-        barIndex % 2 === 0
-          ? theme.palette.action.hover
-          : theme.palette.background.default;
-      ctx.fillRect(
-        bar.backgroundX,
-        bar.backgroundY,
-        bar.backgroundWidth,
-        bar.backgroundHeight,
-      );
-
-      // Draw stacked segments
-      bar.segments.forEach((segment) => {
-        ctx.fillStyle = isDraggedBar
-          ? theme.palette.primary.main
-          : segment.color;
-        ctx.strokeStyle = theme.palette.background.default;
-        ctx.lineWidth = isDraggedBar ? 2 : 1;
-
-        ctx.fillRect(segment.x, segment.y, segment.width, segment.height);
-        ctx.strokeRect(segment.x, segment.y, segment.width, segment.height);
-      });
+    // Draw bars using shared rendering function
+    renderBarsToCanvas(ctx, bars, {
+      drawBackground: true,
+      orderedValues,
+      stripeEvenColor: theme.palette.action.hover,
+      stripeOddColor: theme.palette.background.default,
+      highlightedKey: isDragging && draggedValue ? draggedValue : undefined,
+      highlightColor: theme.palette.primary.main,
+      strokeColor: theme.palette.background.default,
+      strokeWidth: 1,
     });
 
     // Restore the transformation matrix
@@ -526,7 +381,7 @@ export default function Bars({
             currentGraphType === "Stacked Bars (Categorical)")
         ) {
           const segmentLabel = orientation === "columns" ? "Row" : "Column";
-          tooltipData[`${segmentLabel} Value`] = hitSegment.stackValue;
+          tooltipData[`${segmentLabel} Value`] = hitSegment.key;
           tooltipData["Segment Count"] = hitSegment.value;
         }
 

@@ -13,15 +13,16 @@ export default function XAxisLabel() {
 
   return (
     <Typography
-      position="absolute"
       display="block"
-      top={0}
       textAlign={"center"}
       width="100%"
       variant="caption"
       color="textSecondary"
       noWrap
       sx={{
+        // Fixed height for axis label
+        height: 24,
+        flexShrink: 0,
         // Necessary for the axis zoom control to be positioned over the axis
         zIndex: "100 !important",
       }}

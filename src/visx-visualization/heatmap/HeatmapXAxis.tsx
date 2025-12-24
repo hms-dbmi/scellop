@@ -13,10 +13,10 @@ import { useHeatmapDimensions } from "../../contexts/DimensionsContext";
 import { useTooltipFields } from "../../contexts/MetadataConfigContext";
 import { useXScale } from "../../contexts/ScaleContext";
 import { useSetTooltipData } from "../../contexts/TooltipDataContext";
-import truncateTickLabel from "../../utils/truncate-tick-label";
 import SVGBackgroundColorFilter from "../SVGBackgroundColorFilter";
 import { TICK_TEXT_SIZE } from "./constants";
 import { useHeatmapAxis, useSetTickLabelSize } from "./hooks";
+import TruncatedText from "./TruncatedText";
 
 export function useHeatmapXAxisLabel() {
   const axisConfig = useColumnConfig();
@@ -86,7 +86,7 @@ export default function HeatmapXAxis() {
   return (
     <svg
       width={x.range()[1]}
-      height={tickLabelSize}
+      height={tickLabelSize - 24}
       style={{
         zIndex: 1,
         borderBottom: `1px solid ${theme.palette.text.primary}`,
@@ -103,8 +103,17 @@ export default function HeatmapXAxis() {
           numTicks={x.domain().length}
           stroke={theme.palette.text.primary}
           tickStroke={theme.palette.text.primary}
-          top={tickLabelSize}
-          tickFormat={(t) => truncateTickLabel(t, 20)}
+          top={tickLabelSize - 24}
+          tickLength={2}
+          tickComponent={(tickLabelProps) => (
+            <TruncatedText
+              {...tickLabelProps}
+              text={String(tickLabelProps.formattedValue)}
+              maxWidth={tickLabelSize - 32}
+              fontSize={fontSize}
+              fontFamily={theme.typography.fontFamily}
+            />
+          )}
           tickLabelProps={(t) =>
             ({
               angle: -90,

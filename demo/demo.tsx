@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Scellop } from "../src/ScellopComponent";
 import { loadHuBMAPData } from "../src/dataLoading/dataHuBMAP";
 import { ScellopData } from "../src/scellop-schema";
-import { testData } from "./testData";
+import { testData, testData_200_300 } from "./testData";
 
 import ScatterPlot from "@mui/icons-material/ScatterPlot";
 import TableChartIcon from "@mui/icons-material/TableChartRounded";

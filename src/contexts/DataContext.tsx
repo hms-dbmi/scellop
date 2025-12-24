@@ -156,7 +156,7 @@ interface DataContextActions {
    * Transposes the data by swapping rows and columns
    */
   transposeData: () => void;
-   /**
+  /**
    *
    */
   setRowFilters: (filters: Filter<string>[]) => void;
@@ -1118,4 +1118,4 @@ export const useTranspose = () => {
 
 export const useIsTransposed = () => {
   return useData((s) => s.isTransposed);
-}
+};

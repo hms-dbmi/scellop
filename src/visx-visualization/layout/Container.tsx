@@ -27,6 +27,7 @@ import ContextMenuComponent from "../heatmap/ContextMenu";
 import BottomCenterPanel from "./BottomCenter";
 import BottomLeftPanel from "./BottomLeft";
 import BottomRightPanel from "./BottomRight";
+import CornerResizer from "./CornerResizer";
 import MiddleCenterPanel from "./MiddleCenter";
 import MiddleLeftPanel from "./MiddleLeft";
 import MiddleRightPanel from "./MiddleRight";
@@ -249,6 +250,39 @@ export default function VizContainerGrid() {
                 index={1}
                 resize={resizeRow}
                 orientation="Y"
+                visible={viewType === "default"}
+                isTransitioning={isTransitioning}
+              />
+              {/* Corner resizers for dual-axis control */}
+              <CornerResizer
+                xIndex={0}
+                yIndex={0}
+                resizeColumn={resizeColumn}
+                resizeRow={resizeRow}
+                visible={viewType === "default"}
+                isTransitioning={isTransitioning}
+              />
+              <CornerResizer
+                xIndex={1}
+                yIndex={0}
+                resizeColumn={resizeColumn}
+                resizeRow={resizeRow}
+                visible={viewType === "default"}
+                isTransitioning={isTransitioning}
+              />
+              <CornerResizer
+                xIndex={0}
+                yIndex={1}
+                resizeColumn={resizeColumn}
+                resizeRow={resizeRow}
+                visible={viewType === "default"}
+                isTransitioning={isTransitioning}
+              />
+              <CornerResizer
+                xIndex={1}
+                yIndex={1}
+                resizeColumn={resizeColumn}
+                resizeRow={resizeRow}
                 visible={viewType === "default"}
                 isTransitioning={isTransitioning}
               />

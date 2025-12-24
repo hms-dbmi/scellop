@@ -7,27 +7,28 @@ import { useAxisLabel } from "./useAxisLabel";
 
 export function useHeatmapYAxisLabel() {}
 
-interface YAxisLabelProps {
-  height: number;
-}
-
-export default function YAxisLabel({ height }: YAxisLabelProps) {
+export default function YAxisLabel() {
   const yAxisLabel = useAxisLabel("y");
   const { resetScroll } = useYScale();
 
   return (
     <Typography
-      position="absolute"
-      display="block"
+      display="flex"
       variant="caption"
       color="textSecondary"
       textAlign="center"
       noWrap
-      top={height / 2}
       sx={{
-        // Workaround for html2canvas not working with writingMode
-        transform: "rotate(-90deg) translateY(-100%) translateX(50%)",
+        // Fixed width for axis label
+        width: 24,
+        flexShrink: 0,
+        // Rotate the label to align with Y axis
+        writingMode: "vertical-rl",
+        transform: "rotate(180deg)",
         zIndex: "100 !important",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
       }}
     >
       {yAxisLabel}

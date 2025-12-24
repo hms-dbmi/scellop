@@ -19,14 +19,12 @@ interface MetadataConfigContext
   extends MetadataConfigContextProps,
     MetadataConfigContextActions {}
 
-const capitalizeAndReplaceUnderscores = (str: string) =>
-  {
-    return str
-      .split("_")
-      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-      .join(" ");
-  }
-  
+const capitalizeAndReplaceUnderscores = (str: string) => {
+  return str
+    .split("_")
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(" ");
+};
 
 const createMetadataConfigStore = ({
   fieldDisplayNames,
