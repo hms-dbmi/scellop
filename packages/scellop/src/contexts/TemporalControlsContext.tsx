@@ -70,7 +70,7 @@ function useTemporalActions() {
   const redoQueue = useRef<TemporalState<StoreApi<unknown>>[]>([]);
 
   // Use a counter to force re-renders when queues change, avoiding direct state checks
-  const [queueVersion, setQueueVersion] = useState(0);
+  const [_queueVersion, setQueueVersion] = useState(0);
   const forceUpdate = useEventCallback(() => setQueueVersion((v) => v + 1));
 
   const trackEvent = useTrackEvent();
@@ -117,10 +117,10 @@ function useTemporalActions() {
     graphTypeIsDisabled,
     selectionTypeisDisabled,
     normalizationIsDisabled,
+    forceUpdate,
   ]);
 
   const undo = useEventCallback(() => {
-    const history = historyRef.current;
     const last = undoQueue.current.pop();
     if (last) {
       last.undo();
@@ -131,7 +131,6 @@ function useTemporalActions() {
   });
 
   const redo = useEventCallback(() => {
-    const history = historyRef.current;
     const last = redoQueue.current.pop();
     if (last) {
       last.redo();

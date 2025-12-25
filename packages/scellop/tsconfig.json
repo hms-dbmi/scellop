@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist-tsc",
-    "rootDir": "./src"
+    "paths": {
+      "@scellop/data-loading": ["../data-loading/src"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "dist-tsc"]

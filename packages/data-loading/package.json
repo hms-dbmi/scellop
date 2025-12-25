@@ -36,16 +36,16 @@
     "url": "https://github.com/hms-dbmi/scellop/issues"
   },
   "scripts": {
+    "dev": "vite build --watch",
     "build": "vite build",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@types/node": "^25.0.3",
