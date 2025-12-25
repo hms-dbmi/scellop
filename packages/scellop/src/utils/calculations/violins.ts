@@ -6,7 +6,7 @@
 import { scaleBand, scaleLinear } from "@visx/scale";
 import { area } from "@visx/shape";
 import { curveNatural } from "d3";
-import { CalculateViolinsParams, ViolinPathData } from "./types";
+import type { CalculateViolinsParams, ViolinPathData } from "./types";
 
 /**
  * Calculate violin plot data for top or left side graphs

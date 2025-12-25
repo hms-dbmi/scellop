@@ -1,6 +1,5 @@
 import { Sort, Visibility } from "@mui/icons-material";
 import Button from "@mui/material/Button";
-import React from "react";
 
 function scrollToSection(section: string) {
   document.getElementById(section)?.scrollIntoView({

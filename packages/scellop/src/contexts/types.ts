@@ -1,4 +1,4 @@
-import { scaleBand, scaleLinear, StringLike } from "@visx/scale";
+import type { StringLike, scaleBand, scaleLinear } from "@visx/scale";
 
 export type VerticalPanelSection = "top" | "middle" | "bottom";
 export type HorizontalPanelSection = "left" | "center" | "right";

@@ -1,6 +1,6 @@
-import Box, { BoxProps } from "@mui/material/Box";
+import Box, { type BoxProps } from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
-import React, { ForwardedRef, PropsWithChildren } from "react";
+import React, { type ForwardedRef, type PropsWithChildren } from "react";
 
 export interface VisualizationPanelProps extends PropsWithChildren, BoxProps {
   shouldRenderChildren?: boolean;

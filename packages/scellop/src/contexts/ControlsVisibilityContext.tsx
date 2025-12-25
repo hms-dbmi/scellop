@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import useBoolean from "../hooks/useBoolean";
 import { createContext, useContext } from "../utils/context";
 

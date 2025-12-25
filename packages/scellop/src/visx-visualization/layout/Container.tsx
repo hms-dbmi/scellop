@@ -1,5 +1,8 @@
-import React, {
-  RefObject,
+import { useTheme } from "@mui/material/styles";
+import { Root as ContextMenuRoot, Trigger } from "@radix-ui/react-context-menu";
+import type React from "react";
+import {
+  type RefObject,
   useCallback,
   useEffect,
   useId,
@@ -7,23 +10,18 @@ import React, {
   useRef,
   useState,
 } from "react";
-
-import { useDimensions } from "../../contexts/DimensionsContext";
-import { useViewType } from "../../contexts/ViewTypeContext";
-import Tooltip from "../Tooltip";
-
 import { ParentRefProvider } from "../../contexts/ContainerRefContext";
-
-import { useTheme } from "@mui/material/styles";
-import { Root as ContextMenuRoot, Trigger } from "@radix-ui/react-context-menu";
+import { useDimensions } from "../../contexts/DimensionsContext";
 import { PanelRefProvider } from "../../contexts/PanelRefContext";
 import {
   useSetTooltipData,
   useTooltipData,
 } from "../../contexts/TooltipDataContext";
-import { MappedPanelSection } from "../../contexts/types";
+import type { MappedPanelSection } from "../../contexts/types";
+import { useViewType } from "../../contexts/ViewTypeContext";
 import { ControlsModal } from "../controls/ControlsModal";
 import ContextMenuComponent from "../heatmap/ContextMenu";
+import Tooltip from "../Tooltip";
 import BottomCenterPanel from "./BottomCenter";
 import BottomLeftPanel from "./BottomLeft";
 import BottomRightPanel from "./BottomRight";
@@ -31,7 +29,7 @@ import CornerResizer from "./CornerResizer";
 import MiddleCenterPanel from "./MiddleCenter";
 import MiddleLeftPanel from "./MiddleLeft";
 import MiddleRightPanel from "./MiddleRight";
-import { VisualizationPanelProps } from "./Panel";
+import type { VisualizationPanelProps } from "./Panel";
 import VisualizationPanelResizer from "./PanelResizer";
 import TopCenterPanel from "./TopCenter";
 import TopLeftPanel from "./TopLeft";

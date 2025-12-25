@@ -1,6 +1,6 @@
 import { temporal } from "zundo";
 import { createStore } from "zustand";
-import { Normalization } from "../utils/normalizations";
+import type { Normalization } from "../utils/normalizations";
 import { createTemporalStoreContext } from "../utils/zustand";
 
 interface NormalizationProps {

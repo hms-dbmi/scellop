@@ -1,7 +1,7 @@
 import React, {
+  type Context,
   createContext as createContextNative,
   useContext as useContextNative,
-  type Context,
 } from "react";
 
 /**

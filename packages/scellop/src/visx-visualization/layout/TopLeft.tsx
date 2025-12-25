@@ -1,7 +1,7 @@
 import React from "react";
 
 import Legend from "../Legend";
-import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
+import VisualizationPanel, { type VisualizationPanelProps } from "./Panel";
 
 function TopLeftPanel(
   props: VisualizationPanelProps,

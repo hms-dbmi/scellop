@@ -11,11 +11,9 @@ import {
   Portal,
   Sub as SubMenu,
 } from "@radix-ui/react-context-menu";
-import React from "react";
 import {
   useColumnConfig,
   useRowConfig,
-  useSwapAxisConfigs,
 } from "../../contexts/AxisConfigContext";
 import { useColorScale } from "../../contexts/ColorScaleContext";
 import {
@@ -30,7 +28,6 @@ import {
   useMoveRowToEnd,
   useMoveRowToStart,
   useRowSortKeys,
-  useTranspose,
 } from "../../contexts/DataContext";
 import {
   useNormalizationControlIsDisabled,
@@ -44,7 +41,6 @@ import {
 } from "../../contexts/IndividualGraphTypeContext";
 import { useGetFieldDisplayName } from "../../contexts/MetadataConfigContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
-import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTheme } from "../../contexts/ThemeContext";
 import {
   useSetTooltipData,
@@ -52,7 +48,10 @@ import {
 } from "../../contexts/TooltipDataContext";
 import { useViewType } from "../../contexts/ViewTypeContext";
 import { useHandleTranspose } from "../../hooks/useTranspose";
-import { HEATMAP_THEMES_LIST, HeatmapTheme } from "../../utils/heatmap-themes";
+import {
+  HEATMAP_THEMES_LIST,
+  type HeatmapTheme,
+} from "../../utils/heatmap-themes";
 import { NORMALIZATIONS } from "../../utils/normalizations";
 import {
   ContextMenuContent,
@@ -575,7 +574,7 @@ const FilterSubMenu = ({
         <ContextMenuSubContent sideOffset={2} alignOffset={-5}>
           {allSubFilters.map((subfilter) => (
             <ContextMenuItem
-              key={filter + "-" + subfilter}
+              key={`${filter}-${subfilter}`}
               onSelect={(e) => {
                 e.preventDefault();
                 handleSelect(filter, subfilter);

@@ -1,21 +1,3 @@
-import React, { ChangeEvent, useId } from "react";
-import MenuItemWithDescription from "../../components/MenuItemWithDescription";
-import { useColorScale } from "../../contexts/ColorScaleContext";
-import { useViewType } from "../../contexts/ViewTypeContext";
-import {
-  HEATMAP_THEMES_LIST,
-  HeatmapTheme,
-  heatmapThemes,
-  heatmapThemesInverted,
-} from "../../utils/heatmap-themes";
-
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { styled, useTheme } from "@mui/material/styles";
-import { useEventCallback } from "@mui/material/utils";
-
 import {
   Box,
   Button,
@@ -27,20 +9,27 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import { styled, useTheme } from "@mui/material/styles";
+import { useEventCallback } from "@mui/material/utils";
+import { type ChangeEvent, useId } from "react";
+import MenuItemWithDescription from "../../components/MenuItemWithDescription";
 import {
-  AxisConfigStore,
+  type AxisConfigStore,
   useColumnConfig,
   useRowConfig,
-  useSwapAxisConfigs,
 } from "../../contexts/AxisConfigContext";
-import { useIsTransposed, useTranspose } from "../../contexts/DataContext";
+import { useColorScale } from "../../contexts/ColorScaleContext";
+import { useIsTransposed } from "../../contexts/DataContext";
 import {
   useGraphTypeControlIsDisabled,
   useNormalizationControlIsDisabled,
   useThemeControlIsDisabled,
 } from "../../contexts/DisabledControlProvider";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
-import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import {
   useLeftGraphType,
   useRestorePreviousTopGraphType,
@@ -50,18 +39,23 @@ import {
   useTopGraphType,
 } from "../../contexts/IndividualGraphTypeContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
-import { useXScale, useYScale } from "../../contexts/ScaleContext";
 import { useSetTheme } from "../../contexts/ThemeContext";
-import useBoolean from "../../hooks/useBoolean";
+import { useViewType } from "../../contexts/ViewTypeContext";
 import { useHandleTranspose } from "../../hooks/useTranspose";
 import {
-  GRAPH_TYPES,
   GRAPH_TYPE_DESCRIPTIONS,
-  GraphType,
+  GRAPH_TYPES,
+  type GraphType,
 } from "../../utils/graph-types";
 import {
-  NORMALIZATIONS,
+  HEATMAP_THEMES_LIST,
+  type HeatmapTheme,
+  heatmapThemes,
+  heatmapThemesInverted,
+} from "../../utils/heatmap-themes";
+import {
   NORMALIZATION_DESCRIPTIONS,
+  NORMALIZATIONS,
 } from "../../utils/normalizations";
 import LabelledSwitch from "../LabelledSwitch";
 
@@ -107,8 +101,8 @@ function ThemePreview({
         {/* Zero value indicator */}
         <ColorBox color={zeroColor} />
         {/* Color gradient samples */}
-        {colorSamples.map((color, index) => (
-          <ColorBox key={index} color={color} />
+        {colorSamples.map((color) => (
+          <ColorBox key={color} color={color} />
         ))}
       </Stack>
     </Stack>

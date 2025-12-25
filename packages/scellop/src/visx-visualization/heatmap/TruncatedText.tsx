@@ -1,5 +1,5 @@
 import { Text } from "@visx/text";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 interface TruncatedTextProps {
   text: string;
@@ -70,11 +70,18 @@ export default function TruncatedText({
   maxWidth,
   fontSize,
   fontFamily = "Roboto, Arial, sans-serif",
+  formattedValue,
   ...props
 }: TruncatedTextProps) {
   const truncated = useMemo(
-    () => truncateText(text, maxWidth, fontSize, fontFamily),
-    [text, maxWidth, fontSize, fontFamily],
+    () =>
+      truncateText(
+        typeof formattedValue === "string" ? formattedValue : text,
+        maxWidth,
+        fontSize,
+        fontFamily,
+      ),
+    [formattedValue, text, maxWidth, fontSize, fontFamily],
   );
 
   return (

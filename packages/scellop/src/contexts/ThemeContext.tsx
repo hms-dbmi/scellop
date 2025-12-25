@@ -1,9 +1,8 @@
-import { ScellopTheme } from "@scellop/data-loading";
-import React, { PropsWithChildren, useMemo } from "react";
-import { createStore } from "zustand";
-
-import { Theme, ThemeProvider } from "@mui/material/styles";
+import { type Theme, ThemeProvider } from "@mui/material/styles";
+import type { ScellopTheme } from "@scellop/data-loading";
+import { type PropsWithChildren, useMemo } from "react";
 import { temporal } from "zundo";
+import { createStore } from "zustand";
 import { getTheme } from "../utils/theme";
 import { createTemporalStoreContext } from "../utils/zustand";
 import { useThemeControlIsDisabled } from "./DisabledControlProvider";

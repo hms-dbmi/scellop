@@ -3,7 +3,7 @@ import React from "react";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import MetadataValueBar from "../heatmap/MetadataValueBar";
 import RowSelectionControls from "../heatmap/RowSelectionControls";
-import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
+import VisualizationPanel, { type VisualizationPanelProps } from "./Panel";
 
 function MiddleRightPanel(
   props: VisualizationPanelProps,

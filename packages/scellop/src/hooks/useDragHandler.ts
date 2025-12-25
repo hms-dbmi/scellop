@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ScaleBand } from "../contexts/types";
+import type { ScaleBand } from "../contexts/types";
 
 // Common drag state interface
 export interface DragState<T = unknown> {
@@ -377,7 +377,13 @@ export function useUnifiedDragHandler<T>({
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp, disabled]);
+  }, [
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    disabled,
+    canvasRef.current,
+  ]);
 
   return {
     isClicking: dragState.isClicking,

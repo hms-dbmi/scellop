@@ -9,7 +9,7 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable", "ES2021"],
-    "jsx": "react",
+    "jsx": "react-jsx",
     "esModuleInterop": true,
     "declaration": true,
     "declarationMap": true,

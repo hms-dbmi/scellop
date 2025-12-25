@@ -1,9 +1,8 @@
-import { useTheme } from "@mui/material/styles";
-import React, { useId } from "react";
-import { useColorScale } from "../contexts/ColorScaleContext";
-
-import { Box, Tooltip, Typography, TypographyProps } from "@mui/material";
+import { Box, Tooltip, Typography, type TypographyProps } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
+import { useTheme } from "@mui/material/styles";
+import { useId } from "react";
+import { useColorScale } from "../contexts/ColorScaleContext";
 
 import { usePanelDimensions } from "../contexts/DimensionsContext";
 import {
@@ -84,7 +83,7 @@ const useMaxValueLabel = () => {
 
 export default function Legend() {
   const { countsScale: colors, maxValue } = useColorScale();
-  const id = useId() + "-legend";
+  const id = `${useId()}-legend`;
   const { width: panelWidth } = usePanelDimensions("left_top");
 
   // Determine if we should use vertical layout based on panel width

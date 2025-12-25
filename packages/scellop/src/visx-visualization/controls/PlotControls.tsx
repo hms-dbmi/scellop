@@ -1,10 +1,9 @@
-import React, { PropsWithChildren } from "react";
-
 import Divider from "@mui/material/Divider";
+import type { PropsWithChildren } from "react";
 import { DisplayControls } from "./DisplayControls";
 import { FilterControls } from "./FilterControls";
 import {
-  PlotControlsSection,
+  type PlotControlsSection,
   PlotControlsSectionProvider,
 } from "./PlotControlsContext";
 import { SortControls } from "./SortControls";

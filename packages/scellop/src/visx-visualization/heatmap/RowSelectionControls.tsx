@@ -1,6 +1,7 @@
 import { BarChart, GridOn } from "@mui/icons-material";
 import { Checkbox, Tooltip } from "@mui/material";
-import React, { useCallback } from "react";
+import type React from "react";
+import { useCallback } from "react";
 import { useRowConfig } from "../../contexts/AxisConfigContext";
 import { useRows } from "../../contexts/DataContext";
 import { useHeatmapDimensions } from "../../contexts/DimensionsContext";

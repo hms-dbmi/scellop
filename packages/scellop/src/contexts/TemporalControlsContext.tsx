@@ -1,10 +1,14 @@
-import React, { PropsWithChildren, useEffect, useMemo, useRef } from "react";
-import { createContext, useContext } from "../utils/context";
-
 import { useEventCallback } from "@mui/material/utils";
-
-import { TemporalState } from "zundo";
-import { StoreApi } from "zustand";
+import {
+  type PropsWithChildren,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import type { TemporalState } from "zundo";
+import type { StoreApi } from "zustand";
+import { createContext, useContext } from "../utils/context";
 import {
   useColumnConfigHistory,
   useRowConfigHistory,
@@ -33,6 +37,30 @@ function useTemporalActions() {
   const rowHistory = useRowConfigHistory();
   const columnHistory = useColumnConfigHistory();
 
+  // Store history objects in refs to avoid triggering effects
+  const historyRef = useRef({
+    themeHistory,
+    selectedDimensionHistory,
+    graphTypeHistory,
+    dataHistory,
+    expandedHistory,
+    normalizationHistory,
+    rowHistory,
+    columnHistory,
+  });
+
+  // Update refs on each render
+  historyRef.current = {
+    themeHistory,
+    selectedDimensionHistory,
+    graphTypeHistory,
+    dataHistory,
+    expandedHistory,
+    normalizationHistory,
+    rowHistory,
+    columnHistory,
+  };
+
   const themeIsDisabled = useThemeControlIsDisabled();
   const graphTypeIsDisabled = useGraphTypeControlIsDisabled();
   const selectionTypeisDisabled = useSelectionControlIsDisabled();
@@ -41,78 +69,99 @@ function useTemporalActions() {
   const undoQueue = useRef<TemporalState<StoreApi<unknown>>[]>([]);
   const redoQueue = useRef<TemporalState<StoreApi<unknown>>[]>([]);
 
+  // Use a counter to force re-renders when queues change, avoiding direct state checks
+  const [queueVersion, setQueueVersion] = useState(0);
+  const forceUpdate = useEventCallback(() => setQueueVersion((v) => v + 1));
+
   const trackEvent = useTrackEvent();
 
   useEffect(() => {
+    const history = historyRef.current;
     const onSave = (state: TemporalState<StoreApi<unknown>>) => () => {
       undoQueue.current.push(state);
       redoQueue.current = [];
+      forceUpdate();
     };
     if (!themeIsDisabled) {
-      themeHistory.setOnSave(onSave(themeHistory));
+      history.themeHistory.setOnSave(onSave(history.themeHistory));
     }
     if (!selectionTypeisDisabled) {
-      selectedDimensionHistory.setOnSave(onSave(selectedDimensionHistory));
+      history.selectedDimensionHistory.setOnSave(
+        onSave(history.selectedDimensionHistory),
+      );
     }
     if (!graphTypeIsDisabled) {
-      graphTypeHistory.setOnSave(onSave(graphTypeHistory));
+      history.graphTypeHistory.setOnSave(onSave(history.graphTypeHistory));
     }
     if (!normalizationIsDisabled) {
-      normalizationHistory.setOnSave(onSave(normalizationHistory));
+      history.normalizationHistory.setOnSave(
+        onSave(history.normalizationHistory),
+      );
     }
-    dataHistory.setOnSave(onSave(dataHistory));
-    expandedHistory.setOnSave(onSave(expandedHistory));
-    rowHistory.setOnSave(onSave(rowHistory));
-    columnHistory.setOnSave(onSave(columnHistory));
+    history.dataHistory.setOnSave(onSave(history.dataHistory));
+    history.expandedHistory.setOnSave(onSave(history.expandedHistory));
+    history.rowHistory.setOnSave(onSave(history.rowHistory));
+    history.columnHistory.setOnSave(onSave(history.columnHistory));
     return () => {
-      themeHistory.setOnSave(undefined);
-      selectedDimensionHistory.setOnSave(undefined);
-      graphTypeHistory.setOnSave(undefined);
-      dataHistory.setOnSave(undefined);
-      expandedHistory.setOnSave(undefined);
-      normalizationHistory.setOnSave(undefined);
-      rowHistory.setOnSave(undefined);
-      columnHistory.setOnSave(undefined);
+      history.themeHistory.setOnSave(undefined);
+      history.selectedDimensionHistory.setOnSave(undefined);
+      history.graphTypeHistory.setOnSave(undefined);
+      history.dataHistory.setOnSave(undefined);
+      history.expandedHistory.setOnSave(undefined);
+      history.normalizationHistory.setOnSave(undefined);
+      history.rowHistory.setOnSave(undefined);
+      history.columnHistory.setOnSave(undefined);
     };
   }, [
     themeIsDisabled,
     graphTypeIsDisabled,
-    graphTypeIsDisabled,
     selectionTypeisDisabled,
+    normalizationIsDisabled,
   ]);
 
   const undo = useEventCallback(() => {
+    const history = historyRef.current;
     const last = undoQueue.current.pop();
     if (last) {
       last.undo();
       redoQueue.current.push(last);
+      forceUpdate();
       trackEvent("Undo Last Action", "");
     }
   });
 
   const redo = useEventCallback(() => {
+    const history = historyRef.current;
     const last = redoQueue.current.pop();
     if (last) {
       last.redo();
       undoQueue.current.push(last);
+      forceUpdate();
       trackEvent("Redo Last Action", "");
     }
   });
 
   const restoreToDefault = useEventCallback(() => {
-    themeHistory.undo(themeHistory.pastStates.length);
-    selectedDimensionHistory.undo(selectedDimensionHistory.pastStates.length);
-    graphTypeHistory.undo(graphTypeHistory.pastStates.length);
-    dataHistory.undo(dataHistory.pastStates.length);
-    expandedHistory.undo(expandedHistory.pastStates.length);
-    normalizationHistory.undo(normalizationHistory.pastStates.length);
+    const history = historyRef.current;
+    history.themeHistory.undo(history.themeHistory.pastStates.length);
+    history.selectedDimensionHistory.undo(
+      history.selectedDimensionHistory.pastStates.length,
+    );
+    history.graphTypeHistory.undo(history.graphTypeHistory.pastStates.length);
+    history.dataHistory.undo(history.dataHistory.pastStates.length);
+    history.expandedHistory.undo(history.expandedHistory.pastStates.length);
+    history.normalizationHistory.undo(
+      history.normalizationHistory.pastStates.length,
+    );
     undoQueue.current = [];
     redoQueue.current = [];
-    rowHistory.undo(rowHistory.pastStates.length);
-    columnHistory.undo(columnHistory.pastStates.length);
+    history.rowHistory.undo(history.rowHistory.pastStates.length);
+    history.columnHistory.undo(history.columnHistory.pastStates.length);
+    forceUpdate();
     trackEvent("Restore to Default", "");
   });
 
+  // Compute these based on current queue state (will update when queueVersion changes)
   const canUndo = undoQueue.current.length > 0;
   const canRedo = redoQueue.current.length > 0;
 

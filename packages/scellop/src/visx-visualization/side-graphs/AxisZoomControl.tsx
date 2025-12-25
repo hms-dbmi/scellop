@@ -1,13 +1,3 @@
-import React, {
-  MouseEvent as ReactMouseEvent,
-  ReactNode,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-
-import { AxisConfigStore } from "../../contexts/AxisConfigContext";
-
 import UnfoldMoreDouble from "@mui/icons-material/ZoomIn";
 import UnfoldLessDouble from "@mui/icons-material/ZoomOut";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
@@ -18,6 +8,14 @@ import MenuList from "@mui/material/MenuList";
 import Paper from "@mui/material/Paper";
 import Popper from "@mui/material/Popper";
 import Tooltip from "@mui/material/Tooltip";
+import React, {
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import type { AxisConfigStore } from "../../contexts/AxisConfigContext";
 
 interface AxisZoomControlProps {
   axisConfig: AxisConfigStore;
@@ -126,7 +124,6 @@ function DropdownButton({
         sx={{ zIndex: 10001 }}
         open={open}
         anchorEl={anchorRef.current}
-        role={undefined}
         transition
         placement={dropdownPlacement}
       >

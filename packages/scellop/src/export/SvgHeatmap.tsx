@@ -1,6 +1,6 @@
-import { ScaleBand, scaleLinear } from "d3";
-import React from "react";
-import { ScaleBand as CustomScaleBand } from "../contexts/types";
+import { type ScaleBand, scaleLinear } from "d3";
+import type React from "react";
+import type { ScaleBand as CustomScaleBand } from "../contexts/types";
 import { SvgNumericAxis } from "./SvgAxis";
 
 interface SvgHeatmapProps {

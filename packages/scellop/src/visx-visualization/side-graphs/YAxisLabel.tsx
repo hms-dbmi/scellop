@@ -1,5 +1,4 @@
 import Typography from "@mui/material/Typography";
-import React from "react";
 import { useColumnConfig } from "../../contexts/AxisConfigContext";
 import { useYScale } from "../../contexts/ScaleContext";
 import AxisZoomControl from "./AxisZoomControl";

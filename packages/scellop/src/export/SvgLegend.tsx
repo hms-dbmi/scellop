@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 
 interface SvgLegendProps {
   colorScale: (value: number) => string;
@@ -74,8 +74,12 @@ export const SvgLegend: React.FC<SvgLegendProps> = ({
           x2={isVertical ? "0%" : "100%"}
           y2={isVertical ? "0%" : "0%"}
         >
-          {colorStops.map((stop, i) => (
-            <stop key={i} offset={stop.offset} stopColor={stop.color} />
+          {colorStops.map((stop) => (
+            <stop
+              key={stop.color}
+              offset={stop.offset}
+              stopColor={stop.color}
+            />
           ))}
         </linearGradient>
       </defs>

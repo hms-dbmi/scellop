@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from "react";
-import { AxisConfig } from "../../contexts/AxisConfigContext";
+import type { AxisConfig } from "../../contexts/AxisConfigContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 
 export function useOpenInNewTab(
@@ -78,7 +78,7 @@ function estimateTextDimensions(
  */
 export function useSetTickLabelSize(
   setTickLabelSize: (size: number) => void,
-  orientation: "rows" | "columns" = "rows",
+  _orientation: "rows" | "columns" = "rows",
   fontSize: number,
   items: string[] = [],
   fontFamily: string = "Roboto, Arial, sans-serif",
@@ -92,7 +92,7 @@ export function useSetTickLabelSize(
     const dimensions = items.map((item) => {
       // Apply same truncation as the actual component
       const truncatedText =
-        item.length > 20 ? item.substring(0, 17) + "..." : item;
+        item.length > 20 ? `${item.substring(0, 17)}...` : item;
       return estimateTextDimensions(truncatedText, fontSize, fontFamily);
     });
 
@@ -100,7 +100,7 @@ export function useSetTickLabelSize(
 
     // Add padding for axis label and margins (same as original)
     return maxSize + 48;
-  }, [orientation, fontSize, items, fontFamily]);
+  }, [fontSize, items, fontFamily]);
 
   useEffect(() => {
     setTickLabelSize(estimatedSize);

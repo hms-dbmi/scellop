@@ -5,7 +5,7 @@ import { useViewType } from "../../contexts/ViewTypeContext";
 import ControlsModalTrigger from "../controls/ControlsModalTrigger";
 import { TopGraphScale } from "../side-graphs/TopGraph";
 import TraditionalViewRowLegend from "../TraditionalViewRowLegend";
-import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
+import VisualizationPanel, { type VisualizationPanelProps } from "./Panel";
 
 function TopRightPanel(
   props: VisualizationPanelProps,

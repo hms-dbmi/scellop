@@ -1,5 +1,11 @@
-import { MenuItem, MenuItemOwnProps, Stack, Typography } from "@mui/material";
-import React, { forwardRef } from "react";
+import {
+  MenuItem,
+  type MenuItemOwnProps,
+  Stack,
+  Typography,
+} from "@mui/material";
+import type React from "react";
+import { forwardRef } from "react";
 
 interface MenuItemWithDescriptionProps extends MenuItemOwnProps {
   value: string | number;

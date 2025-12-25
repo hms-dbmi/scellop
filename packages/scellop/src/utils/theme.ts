@@ -1,5 +1,5 @@
 import { createTheme } from "@mui/material/styles";
-import { ScellopTheme } from "@scellop/data-loading";
+import type { ScellopTheme } from "@scellop/data-loading";
 
 export const light = createTheme({
   palette: {

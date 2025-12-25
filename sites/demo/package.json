@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@scellop/data-loading": "workspace:*",
     "@scellop/hubmap-data-loading": "workspace:*",
     "@scellop/scellop": "workspace:*",
     "@mui/icons-material": "^6.3.0",

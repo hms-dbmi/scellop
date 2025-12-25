@@ -1,15 +1,17 @@
-import React, { useCallback, useMemo } from "react";
-
-import { Theme } from "@mui/material";
+import type { Theme } from "@mui/material";
 import Skeleton from "@mui/material/Skeleton";
-import { ScellopData, ScellopTheme } from "@scellop/data-loading";
-import { withParentSize, WithParentSizeProvidedProps } from "@visx/responsive";
-import { AxisConfig } from "./contexts/AxisConfigContext";
+import type { ScellopData, ScellopTheme } from "@scellop/data-loading";
+import {
+  type WithParentSizeProvidedProps,
+  withParentSize,
+} from "@visx/responsive";
+import React, { useCallback, useMemo } from "react";
+import type { AxisConfig } from "./contexts/AxisConfigContext";
 import { OuterContainerRefProvider } from "./contexts/ContainerRefContext";
-import { Dimensions, GridSizeTuple } from "./contexts/DimensionsContext";
-import { DisableableControls } from "./contexts/DisabledControlProvider";
+import type { Dimensions, GridSizeTuple } from "./contexts/DimensionsContext";
+import type { DisableableControls } from "./contexts/DisabledControlProvider";
 import { Providers } from "./contexts/Providers";
-import { ViewType } from "./utils/view-types";
+import type { ViewType } from "./utils/view-types";
 import VizContainer from "./visx-visualization/layout";
 
 interface ScellopConfig {
@@ -73,7 +75,7 @@ export const Scellop = withParentSize(
       };
     }, [definedDimensions, parentHeight, parentWidth]);
 
-    const handleClick = useCallback(
+    const handleContextMenu = useCallback(
       (e: React.MouseEvent) => {
         onClick?.(e);
       },
@@ -101,6 +103,7 @@ export const Scellop = withParentSize(
           }}
         >
           {Array.from({ length: 9 }).map((_, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton grid with fixed count
             <Skeleton key={index} height="100%" width="100%" />
           ))}
         </div>
@@ -109,8 +112,9 @@ export const Scellop = withParentSize(
 
     return (
       <OuterContainerRefProvider value={outerContainerRef}>
+        {/** biome-ignore lint/a11y/noStaticElementInteractions: Static div used for context menu handling */}
         <div
-          onClick={handleClick}
+          onContextMenu={handleContextMenu}
           ref={outerContainerRef}
           style={{ position: "relative", overflow: "hidden" }}
         >

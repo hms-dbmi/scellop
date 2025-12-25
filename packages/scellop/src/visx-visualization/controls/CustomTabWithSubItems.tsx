@@ -10,7 +10,7 @@ import {
   styled,
   Tab,
 } from "@mui/material";
-import React, { MouseEvent, useCallback, useState } from "react";
+import React, { type MouseEvent, useCallback, useState } from "react";
 
 export interface SubItem {
   id: string;

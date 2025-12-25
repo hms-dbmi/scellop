@@ -3,7 +3,7 @@
  * Shared functions for rendering visualizations to Canvas contexts
  */
 
-import {
+import type {
   BarData,
   HeatmapCellData,
   ViolinPathData,

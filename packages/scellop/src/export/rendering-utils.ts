@@ -1,7 +1,3 @@
-import { ScaleBand } from "d3";
-import { ScaleBand as CustomScaleBand } from "../contexts/types";
-import { BarData, HeatmapCellData } from "./types";
-
 // Re-export calculation functions from shared utilities
 export {
   calculateHeatmapCells,

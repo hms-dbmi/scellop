@@ -10,7 +10,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import React, { useRef, useState } from "react";
+import type React from "react";
+import { useRef, useState } from "react";
 import { generateCategoricalColors } from "../../utils/categorical-colors";
 
 interface ColorPickerProps {

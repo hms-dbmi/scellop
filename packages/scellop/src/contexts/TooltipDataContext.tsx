@@ -1,5 +1,5 @@
 import { useTooltip } from "@visx/tooltip";
-import React, { PropsWithChildren, useMemo, useState } from "react";
+import { type PropsWithChildren, useMemo, useState } from "react";
 import { createContext, useContext } from "../utils/context";
 
 export interface TooltipData {
@@ -37,7 +37,6 @@ export function TooltipDataProvider({ children }: PropsWithChildren) {
   const {
     showTooltip,
     hideTooltip,
-    updateTooltip,
     tooltipOpen,
     tooltipData,
     tooltipLeft = 0,
@@ -81,7 +80,7 @@ export function TooltipDataProvider({ children }: PropsWithChildren) {
       hideTooltip();
     };
     return { openTooltip, closeTooltip, openContextMenu, closeContextMenu };
-  }, [updateTooltip, contextMenuOpen]);
+  }, [contextMenuOpen, hideTooltip, showTooltip]);
 
   return (
     <TooltipDataContext.Provider value={tooltipDataContext}>

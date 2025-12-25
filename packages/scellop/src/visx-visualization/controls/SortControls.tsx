@@ -1,7 +1,7 @@
 import {
   closestCenter,
   DndContext,
-  DragEndEvent,
+  type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -39,14 +39,14 @@ import {
   Radio,
   RadioGroup,
   Select,
-  SelectChangeEvent,
+  type SelectChangeEvent,
   Stack,
   Typography,
   useEventCallback,
 } from "@mui/material";
-import React from "react";
+import type React from "react";
 import {
-  SortOrder,
+  type SortOrder,
   useAvailableColumnSorts,
   useAvailableRowSorts,
   useData,

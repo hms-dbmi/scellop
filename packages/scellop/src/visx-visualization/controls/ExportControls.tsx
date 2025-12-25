@@ -17,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   useColumnConfig,
   useRowConfig,
@@ -589,6 +589,17 @@ export default function ExportControls() {
     resolution,
     filename,
     includeTimestamp,
+    columnConfig.pluralLabel,
+    columnMetadata,
+    columnNormalizedDataMap,
+    columnSortOrders,
+    getFieldDisplayName,
+    rowConfig.pluralLabel,
+    rowMetadata,
+    rowNormalizedDataMap,
+    rowSortOrders,
+    xScale.tickLabelSize,
+    yScale.tickLabelSize,
   ]);
 
   const exportAsSVG = useCallback(async () => {
@@ -871,6 +882,16 @@ export default function ExportControls() {
     exportLegendsAsSeparateFile,
     rowConfig.pluralLabel,
     columnConfig.pluralLabel,
+    columnMetadata,
+    columnNormalizedDataMap,
+    columnSortOrders,
+    getFieldDisplayName,
+    rowMetadata,
+    rowNormalizedDataMap,
+    rowSortOrders,
+    viewType,
+    xScale.tickLabelSize,
+    yScale.tickLabelSize,
   ]);
 
   const handleExport = useCallback(() => {

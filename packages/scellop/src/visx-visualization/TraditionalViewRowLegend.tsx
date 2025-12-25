@@ -1,5 +1,4 @@
 import { Box, Typography, useTheme } from "@mui/material";
-import React from "react";
 import { useRowConfig } from "../contexts/AxisConfigContext";
 import { useData } from "../contexts/DataContext";
 import { getColorForValue } from "../utils/categorical-colors";

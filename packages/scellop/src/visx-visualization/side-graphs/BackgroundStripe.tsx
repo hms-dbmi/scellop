@@ -1,5 +1,6 @@
 import { useTheme } from "@mui/material";
-import React, { useMemo } from "react";
+import type React from "react";
+import { useMemo } from "react";
 import { useColumns, useRows } from "../../contexts/DataContext";
 
 interface BackgroundStripeProps {

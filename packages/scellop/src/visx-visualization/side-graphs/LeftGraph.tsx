@@ -2,7 +2,6 @@ import Stack from "@mui/material/Stack";
 import { useTheme } from "@mui/material/styles";
 import { AxisBottom } from "@visx/axis";
 import { formatPrefix, max } from "d3";
-import React from "react";
 import { useRowCounts } from "../../contexts/DataContext";
 import { usePanelDimensions } from "../../contexts/DimensionsContext";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
@@ -10,9 +9,9 @@ import { useIsLeftViolins } from "../../contexts/IndividualGraphTypeContext";
 import { useYScale } from "../../contexts/ScaleContext";
 import HeatmapYAxis from "../heatmap/HeatmapYAxis";
 import Bars from "./Bars";
+import { useCountsScale } from "./hooks";
 import Violins from "./Violin";
 import YAxisLabel from "./YAxisLabel";
-import { useCountsScale } from "./hooks";
 
 const useXAxisCountsScale = () => {
   const { width, height } = usePanelDimensions("left_middle");
@@ -29,7 +28,7 @@ const useXAxisCountsScale = () => {
 };
 
 function LeftBar() {
-  const [xScale, width, height] = useXAxisCountsScale();
+  const [, width, height] = useXAxisCountsScale();
   // Use same y scale as the heatmap
   const { scale: yScale } = useYScale();
   const selectedValues = useSelectedValues((s) => s.selectedValues);
@@ -65,6 +64,7 @@ export function LeftGraphScale() {
       height={height}
       style={{ borderTop: `1px solid ${theme.palette.text.primary}` }}
     >
+      <title>Left Graph Scale</title>
       <AxisBottom
         scale={axisScale}
         hideZero

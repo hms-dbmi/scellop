@@ -1,5 +1,5 @@
-import React, {
-  PropsWithChildren,
+import {
+  type PropsWithChildren,
   useCallback,
   useEffect,
   useMemo,
@@ -7,13 +7,13 @@ import React, {
   useState,
 } from "react";
 import { createContext, useContext } from "../utils/context";
-import { Setter } from "../utils/types";
-import { useViewType } from "./ViewTypeContext";
-import {
+import type { Setter } from "../utils/types";
+import type {
   HorizontalPanelSection,
   MappedPanelSection,
   VerticalPanelSection,
 } from "./types";
+import { useViewType } from "./ViewTypeContext";
 
 export interface Dimensions {
   width: number;
@@ -144,7 +144,6 @@ export function DimensionsProvider({
 
     dimensionsRef.current = { width, height };
   }, [
-    viewType,
     targetProportions,
     width,
     height,
@@ -219,8 +218,8 @@ export function DimensionsProvider({
     [],
   );
 
-  const resizeColumn = useCallback(resize(setColumnSizes), [resize]);
-  const resizeRow = useCallback(resize(setRowSizes), [resize]);
+  const resizeColumn = useCallback(resize(setColumnSizes), []);
+  const resizeRow = useCallback(resize(setRowSizes), []);
 
   return (
     <DimensionsContext.Provider

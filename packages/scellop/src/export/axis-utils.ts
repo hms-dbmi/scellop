@@ -1,4 +1,4 @@
-import { ScaleLinear, formatPrefix } from "d3";
+import { formatPrefix, type ScaleLinear } from "d3";
 
 /**
  * Parameters for rendering a numeric axis
@@ -23,7 +23,7 @@ export function calculateNumericAxisTicks(params: NumericAxisParams): Array<{
   position: number;
   label: string;
 }> {
-  const { scale, orientation, width, height, hideZero, minTicks = 0 } = params;
+  const { scale, orientation, width, height, hideZero } = params;
 
   const isVertical = orientation === "left" || orientation === "right";
   const availableSpace = isVertical ? height : width;
@@ -83,8 +83,7 @@ export function renderNumericAxisToCanvas(
   ctx: CanvasRenderingContext2D,
   params: NumericAxisParams,
 ): void {
-  const { orientation, width, height, color, tickLabelSize, axisLabel } =
-    params;
+  const { orientation, width, height, color, axisLabel } = params;
 
   const ticks = calculateNumericAxisTicks(params);
 
@@ -95,8 +94,6 @@ export function renderNumericAxisToCanvas(
   ctx.font = "11px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-
-  const isVertical = orientation === "left" || orientation === "right";
 
   // Draw axis line (border)
   ctx.beginPath();

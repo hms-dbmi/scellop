@@ -1,6 +1,6 @@
 import { temporal } from "zundo";
 import { createStore } from "zustand";
-import { GraphType } from "../utils/graph-types";
+import type { GraphType } from "../utils/graph-types";
 import { createTemporalStoreContext } from "../utils/zustand";
 
 interface IndividualGraphTypeProps {

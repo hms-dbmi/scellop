@@ -247,7 +247,7 @@ describe("rendering-utils", () => {
       expect(barCell).toBeDefined();
       // With log scale, value 99 should scale based on log(100)
       // Bar height should be close to full height since log(100)/log(100) ≈ 1
-      expect(barCell!.height).toBeGreaterThan(90);
+      expect(barCell?.height).toBeGreaterThan(90);
     });
 
     it("should only render bars for selected rows", () => {

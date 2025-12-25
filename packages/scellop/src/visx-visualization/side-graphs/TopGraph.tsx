@@ -1,5 +1,3 @@
-import React from "react";
-
 import Stack from "@mui/material/Stack";
 import { useTheme } from "@mui/material/styles";
 import { AxisRight } from "@visx/axis";
@@ -35,7 +33,7 @@ const useColumnCountsScale = () => {
 function TopBar() {
   // Use same x scale as the heatmap
   const { scale: xScale } = useXScale();
-  const [yScale, height, width] = useColumnCountsScale();
+  const [, height, width] = useColumnCountsScale();
 
   return (
     <Bars
@@ -71,6 +69,7 @@ export function TopGraphScale() {
       height={height}
       style={{ borderLeft: `1px solid ${theme.palette.text.primary}` }}
     >
+      <title>Top Graph Scale</title>
       <AxisRight
         scale={axisScale}
         top={0}

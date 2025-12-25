@@ -15,14 +15,14 @@ import {
   IconButton,
   MenuItem,
   Select,
-  SelectChangeEvent,
+  type SelectChangeEvent,
   Stack,
   Typography,
   useEventCallback,
 } from "@mui/material";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  Filter,
+  type Filter,
   useAllColumnSubFilters,
   useAllRowSubFilters,
   useAvailableColumnFilters,

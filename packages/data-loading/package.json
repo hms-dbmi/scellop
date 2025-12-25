@@ -45,7 +45,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@vitessce/zarr": "^3.6.7"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

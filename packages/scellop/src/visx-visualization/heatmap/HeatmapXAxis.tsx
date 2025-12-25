@@ -1,6 +1,7 @@
 import { useTheme } from "@mui/material/styles";
 import { Axis, Orientation } from "@visx/axis";
-import React, { useCallback, useId } from "react";
+import type React from "react";
+import { useCallback, useId } from "react";
 import { useColumnConfig } from "../../contexts/AxisConfigContext";
 import {
   useColumnCounts,
@@ -93,6 +94,7 @@ export default function HeatmapXAxis() {
       }}
       onWheel={handleWheel}
     >
+      <title>{label}</title>
       <SVGBackgroundColorFilter
         color={theme.palette.background.default}
         id={filterId}

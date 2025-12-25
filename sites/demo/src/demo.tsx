@@ -1,11 +1,11 @@
-import { ScellopData } from "@scellop/data-loading";
-import { loadHuBMAPData } from "@scellop/hubmap-data-loading";
-import { Scellop } from "@scellop/scellop";
-import React, { useEffect, useState } from "react";
-import { testData, testData_200_300 } from "./testData";
-
 import ScatterPlot from "@mui/icons-material/ScatterPlot";
 import TableChartIcon from "@mui/icons-material/TableChartRounded";
+import type { ScellopData } from "@scellop/data-loading";
+import { loadHuBMAPData } from "@scellop/hubmap-data-loading";
+import { Scellop } from "@scellop/scellop";
+import { useEffect, useState } from "react";
+import type { GridSizeTuple } from "../../../packages/scellop/dist/contexts/DimensionsContext";
+import { testData } from "./testData";
 
 function Demo() {
   const [data, setData] = useState<ScellopData>(testData);
@@ -52,13 +52,17 @@ function Demo() {
     if (!data) {
       loadHuBMAPData(uuids)
         .then((data) => {
-          setData(data!);
+          if (data) {
+            setData(data);
+          } else {
+            console.error("Failed to load HuBMAP data");
+          }
         })
         .catch((error) => {
           console.error(error);
         });
     }
-  }, []);
+  }, [data]);
 
   if (!data) {
     return <div>Loading...</div>;
@@ -81,8 +85,8 @@ function Demo() {
           createHref: (row) =>
             `https://portal.hubmapconsortium.org/browse/${row}`,
           createSubtitle: (_, metadataValues) => {
-            const anatomy = metadataValues?.["anatomy"];
-            const assay = metadataValues?.["assay"];
+            const anatomy = metadataValues?.anatomy;
+            const assay = metadataValues?.assay;
             return `${anatomy} | ${assay}`;
           },
           icon: <TableChartIcon />,

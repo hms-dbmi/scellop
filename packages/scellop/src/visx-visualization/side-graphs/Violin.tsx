@@ -1,8 +1,7 @@
-import React, { useCallback, useLayoutEffect, useMemo, useRef } from "react";
-
 import { useEventCallback } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { scaleBand } from "@visx/scale";
+import type React from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import {
   useColumns,
   useData,
@@ -260,12 +259,16 @@ export default function RevisedViolins({ side = "top" }: ViolinsProps) {
           title: hitViolin.key,
           data: [...hitViolin.entry]
             .sort((a, b) => b[1] - a[1])
-            .reduce((acc, [key, value]) => {
-              if (value === 0) {
+            .reduce(
+              (acc, [key, value]) => {
+                if (value === 0) {
+                  return acc;
+                }
+                acc[key] = `${(value * 100).toFixed(2)}%`;
                 return acc;
-              }
-              return { ...acc, [key]: (value * 100).toFixed(2) + "%" };
-            }, {}),
+              },
+              {} as Record<string, string>,
+            ),
         };
         openTooltip(tooltip, e.clientX, e.clientY);
       } else {

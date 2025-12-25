@@ -8,7 +8,8 @@ import {
   schemeSet3,
   schemeTableau10,
 } from "d3";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useColumns, useData, useRows } from "../../contexts/DataContext";
 import {
   EXPANDED_ROW_PADDING,
@@ -131,7 +132,7 @@ export default function MetadataValueBar({
       );
       const isNumeric = keys.every((key) => {
         const value = metadata[key]?.[sort.key];
-        return value && !isNaN(parseInt(value as string, 10));
+        return value && !Number.isNaN(parseInt(value as string, 10));
       });
 
       // Create color scale for this sort with separate color ranges
@@ -262,7 +263,11 @@ export default function MetadataValueBar({
             axisLabelPaddingY +
             labelSpacing +
             sortIndex * (barThickness + barSpacing + labelSpacing);
-          const xVal = x(key)!;
+          const xVal = x(key);
+
+          if (xVal === undefined) {
+            return acc;
+          }
 
           const newBar: BarHelper = {
             value: processedValue,
@@ -450,7 +455,7 @@ export default function MetadataValueBar({
       if (sortOrder.length === 1) {
         const shortenedValue =
           value.toString().length > 20
-            ? value.toString().slice(0, 10) + "..."
+            ? `${value.toString().slice(0, 10)}...`
             : value;
 
         ctx.fillStyle = theme.palette.text.primary;
@@ -540,7 +545,7 @@ export default function MetadataValueBar({
       if (sortOrder.length === 1) {
         const shortenedValue =
           value.toString().length > 20
-            ? value.toString().slice(0, 10) + "..."
+            ? `${value.toString().slice(0, 10)}...`
             : value;
 
         // Use contrast text color for better readability on the highlighted background
@@ -753,6 +758,8 @@ export default function MetadataValueBar({
     isDragging,
     draggedSegment,
     targetSegment,
+    axisLabelPaddingX,
+    axisLabelPaddingY,
   ]);
 
   // Draw canvas when dependencies change
@@ -860,8 +867,8 @@ export default function MetadataValueBar({
         {
           title,
           data: {
-            ["field"]: bar.sortKey.split("_").join(" "),
-            ["value"]: bar.value,
+            field: bar.sortKey.split("_").join(" "),
+            value: bar.value,
           },
         },
         e.clientX,

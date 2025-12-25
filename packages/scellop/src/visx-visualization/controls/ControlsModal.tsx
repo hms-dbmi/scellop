@@ -1,26 +1,25 @@
-import ControlsModalTabs from "./ControlsModalTabs";
-
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import Paper, { PaperProps } from "@mui/material/Paper";
-import Stack from "@mui/material/Stack";
-import { useTheme } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
-
 import {
   DndContext,
-  DragEndEvent,
+  type DragEndEvent,
   PointerSensor,
   useDraggable,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import Paper, { type PaperProps } from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import React, { useEffect } from "react";
 import {
   useControlsVisibility,
   useControlsVisibilityActions,
 } from "../../contexts/ControlsVisibilityContext";
 import { TemporalControls } from "../TemporalControls";
+import ControlsModalTabs from "./ControlsModalTabs";
 
 // Resize handle component
 function ResizeHandle({
@@ -164,7 +163,14 @@ function ResizeHandle({
     };
   }, [isDragging, startPos, onResize, position]);
 
-  return <div style={getPositionStyles()} onMouseDown={handleMouseDown} />;
+  return (
+    <hr
+      style={getPositionStyles()}
+      onMouseDown={handleMouseDown}
+      tabIndex={0}
+      aria-label={`Resize handle ${position}`}
+    />
+  );
 }
 
 // Draggable Dialog Content Component

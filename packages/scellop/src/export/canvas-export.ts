@@ -1,5 +1,5 @@
-import { ScaleBand } from "d3";
-import { ScaleBand as CustomScaleBand } from "../contexts/types";
+import type { ScaleBand } from "d3";
+import type { ScaleBand as CustomScaleBand } from "../contexts/types";
 import {
   calculateHeatmapCells,
   calculateInlineBars,

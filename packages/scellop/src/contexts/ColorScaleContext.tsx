@@ -1,15 +1,15 @@
 import { scaleLinear } from "@visx/scale";
-import React, { PropsWithChildren, useMemo, useState } from "react";
+import { type PropsWithChildren, useMemo, useState } from "react";
 import useBoolean from "../hooks/useBoolean";
 import { createContext, useContext } from "../utils/context";
 import {
   HEATMAP_THEMES_LIST,
-  HeatmapTheme,
+  type HeatmapTheme,
   heatmapThemes,
   heatmapThemesInverted,
 } from "../utils/heatmap-themes";
 import { useMaxCount } from "./DataContext";
-import { ScaleLinear } from "./types";
+import type { ScaleLinear } from "./types";
 
 // Color context does not have selection
 interface ColorScaleContext {

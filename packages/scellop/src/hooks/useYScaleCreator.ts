@@ -1,6 +1,6 @@
 import { scaleBand } from "@visx/scale";
 import { useMemo } from "react";
-import { ScaleBand } from "../contexts/types";
+import type { ScaleBand } from "../contexts/types";
 
 // Add 8px between the expanded row and the next row
 export const EXPANDED_ROW_PADDING = 8;
@@ -66,7 +66,7 @@ export function useYScaleCreator(
     const numberOfUnselectedRows = rows.length - expandedRows.size;
     const collapsedRowHeight = colsZoomed
       ? Math.max(
-          colZoomBandwidth! * 0.5,
+          (colZoomBandwidth ?? 0) * 0.5,
           totalCollapsedHeight / numberOfUnselectedRows,
         )
       : totalCollapsedHeight / numberOfUnselectedRows;
@@ -217,5 +217,12 @@ export function useYScaleCreator(
       expandedRowHeight,
       collapsedRowHeight,
     ];
-  }, [height, rows, expandedRows.size, colsZoomed, colZoomBandwidth]);
+  }, [
+    height,
+    rows,
+    expandedRows.size,
+    colsZoomed,
+    colZoomBandwidth,
+    expandedRows.has,
+  ]);
 }

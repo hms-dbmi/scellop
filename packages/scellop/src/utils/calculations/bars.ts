@@ -5,7 +5,7 @@
 
 import { scaleLinear } from "@visx/scale";
 import { getColorForValue } from "../categorical-colors";
-import { BarData, CalculateBarsParams } from "./types";
+import type { BarData, CalculateBarsParams } from "./types";
 
 /**
  * Calculate bar chart data for top or left side graphs
@@ -57,7 +57,6 @@ export function calculateBars(params: CalculateBarsParams): BarData[] {
         : categoricalScale.bandwidth
       : 20;
     const scaledPosition = scaledKey;
-    const [rangeStart, rangeEnd] = numericalScale.range();
 
     // Background dimensions and position - full stripe across domain
     const backgroundX = isVertical ? scaledPosition : 0;

@@ -1,5 +1,3 @@
-import { ScaleBand } from "d3";
-
 /**
  * Common types for export rendering
  *
@@ -8,12 +6,11 @@ import { ScaleBand } from "d3";
  */
 
 // Re-export calculation types
+// Legacy type aliases for backward compatibility
 export type {
   BarData,
   BarSegment,
+  BarSegment as BarSegmentData,
   HeatmapCellData,
   ViolinPathData,
 } from "../utils/calculations/types";
-
-// Legacy type aliases for backward compatibility
-export type { BarSegment as BarSegmentData } from "../utils/calculations/types";

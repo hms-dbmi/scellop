@@ -1,11 +1,11 @@
-import { Theme } from "@mui/material";
-import { ScellopData, ScellopTheme } from "@scellop/data-loading";
-import React, { PropsWithChildren } from "react";
-import { GraphType } from "../utils/graph-types";
-import { ViewType } from "../utils/view-types";
+import type { Theme } from "@mui/material";
+import type { ScellopData, ScellopTheme } from "@scellop/data-loading";
+import type { PropsWithChildren } from "react";
+import type { GraphType } from "../utils/graph-types";
+import type { ViewType } from "../utils/view-types";
 import { AutoColorAssignment } from "./AutoColorAssignment";
 import {
-  AxisConfig,
+  type AxisConfig,
   ColumnConfigProvider,
   RowConfigProvider,
 } from "./AxisConfigContext";
@@ -13,13 +13,13 @@ import { ColorScaleProvider } from "./ColorScaleContext";
 import ControlsVisibilityProvider from "./ControlsVisibilityContext";
 import { DataProvider } from "./DataContext";
 import {
-  Dimensions,
+  type Dimensions,
   DimensionsProvider,
-  GridSizeTuple,
+  type GridSizeTuple,
   INITIAL_PROPORTIONS,
 } from "./DimensionsContext";
 import {
-  DisableableControls,
+  type DisableableControls,
   DisabledControlProvider,
 } from "./DisabledControlProvider";
 import { EventTrackerProvider } from "./EventTrackerProvider";

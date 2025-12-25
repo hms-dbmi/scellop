@@ -1,7 +1,6 @@
 import { useTheme } from "@mui/material/styles";
 import { AxisBottom, AxisLeft } from "@visx/axis";
-import { ScaleLinear } from "d3";
-import React from "react";
+import type { ScaleLinear } from "d3";
 
 interface ExpandedAxis {
   key: string;
@@ -51,6 +50,7 @@ export default function ExpandedAxes({
         transform: isZoomed ? `translateY(${-scrollOffset}px)` : undefined,
       }}
     >
+      <title>Expanded Axes</title>
       {expandedAxes.map((axis) => {
         const AxisComponent = orientation === "rows" ? AxisLeft : AxisBottom;
         const isDraggedAxis = isDragging && draggedValue === axis.key;

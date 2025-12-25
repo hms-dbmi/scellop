@@ -1,4 +1,4 @@
-import { ObsSets } from "./types";
+import type { ObsSets } from "./types";
 
 /**
  * Extract counts and metadata from ObsSets data structure.

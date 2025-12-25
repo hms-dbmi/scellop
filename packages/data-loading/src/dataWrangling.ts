@@ -8,7 +8,7 @@
 //      metadata            [rows: [{row: x, metadata: {title: x, age: x}}, {{row: x, metadata: {title: x, age: x}}}, cols: []]
 // Furthermore, it can include specifications for the visualization, such as dimensions and theme
 
-import {
+import type {
   CountsMatrixValue,
   DataOrdering,
   Metadata,
@@ -103,7 +103,7 @@ function extendCountsMatrix(data: ScellopData) {
 }
 
 function sortNames(arr: string[], sortingArr: string[]) {
-  arr.sort(function (a, b) {
+  arr.sort((a, b) => {
     if (sortingArr.indexOf(a) === -1) {
       return 1;
     }

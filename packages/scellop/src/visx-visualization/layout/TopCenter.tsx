@@ -3,7 +3,7 @@ import React from "react";
 import { useXScale } from "../../contexts/ScaleContext";
 import TopGraph from "../side-graphs/TopGraph";
 import AxisResizer from "./AxisResizer";
-import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
+import VisualizationPanel, { type VisualizationPanelProps } from "./Panel";
 
 function TopCenterPanel(
   props: VisualizationPanelProps,

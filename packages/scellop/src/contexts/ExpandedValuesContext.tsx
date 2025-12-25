@@ -50,14 +50,18 @@ const createSelectedValuesContext = ({
       deselectValues: (values: string[]) => {
         set((state) => {
           const selectedValues = new Set(state.selectedValues);
-          values.forEach((value) => selectedValues.delete(value));
+          values.forEach((value) => {
+            selectedValues.delete(value);
+          });
           return { selectedValues };
         });
       },
       selectValues: (values: string[]) => {
         set((state) => {
           const selectedValues = new Set(state.selectedValues);
-          values.forEach((value) => selectedValues.add(value));
+          values.forEach((value) => {
+            selectedValues.add(value);
+          });
           return { selectedValues };
         });
       },

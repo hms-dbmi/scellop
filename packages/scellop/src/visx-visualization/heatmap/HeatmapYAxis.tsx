@@ -1,6 +1,7 @@
 import { useTheme } from "@mui/material/styles";
-import { Axis, Orientation, TickRendererProps } from "@visx/axis";
-import React, { useCallback, useId } from "react";
+import { Axis, Orientation, type TickRendererProps } from "@visx/axis";
+import type React from "react";
+import { useCallback, useId } from "react";
 import { useRowConfig } from "../../contexts/AxisConfigContext";
 import {
   useMetadataLookup,
@@ -73,6 +74,7 @@ export default function HeatmapYAxis() {
       }}
       onWheel={handleWheel}
     >
+      <title>{label}</title>
       <SVGBackgroundColorFilter
         color={theme.palette.background.default}
         id={filterId}

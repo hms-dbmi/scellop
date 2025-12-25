@@ -1,17 +1,18 @@
-import Box, { BoxProps } from "@mui/material/Box";
+import Box, { type BoxProps } from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import DialogActions from "@mui/material/DialogActions";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-import React, { useCallback, useState } from "react";
-import { ExportControls, PlotControlSection } from ".";
+import type React from "react";
+import { useCallback, useState } from "react";
 import {
   useColumnConfig,
   useRowConfig,
 } from "../../contexts/AxisConfigContext";
 import { useIsMobile } from "../../hooks/useMediaQueries";
+import { ExportControls, PlotControlSection } from ".";
 import {
   HeatmapThemeControl,
   LeftGraphTypeControl,
@@ -25,7 +26,7 @@ import {
 import {
   CustomTabWithSubItems,
   HorizontalSubItems,
-  SubItem,
+  type SubItem,
 } from "./CustomTabWithSubItems";
 
 interface TabPanelProps extends BoxProps {
@@ -175,7 +176,7 @@ export default function ControlsModalTabs({
         subItem.onClick(event);
       }
     },
-    [orientation, value, rowSubItems, columnSubItems],
+    [orientation, value],
   );
 
   // Get sub-items for the currently selected tab in horizontal mode

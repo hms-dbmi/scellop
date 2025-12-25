@@ -1,6 +1,6 @@
 import { scaleLinear } from "@visx/scale";
-import { ScaleBand } from "d3";
-import { ScaleBand as CustomScaleBand } from "../contexts/types";
+import type { ScaleBand } from "d3";
+import type { ScaleBand as CustomScaleBand } from "../contexts/types";
 import {
   renderCategoricalAxisToCanvas,
   renderNumericAxisToCanvas,
@@ -14,7 +14,7 @@ import {
   renderHeatmapToCanvas,
   renderViolinsToCanvas,
 } from "./rendering-utils";
-import { BarData, ViolinPathData } from "./types";
+import type { BarData, ViolinPathData } from "./types";
 
 /**
  * Full multi-panel export parameters

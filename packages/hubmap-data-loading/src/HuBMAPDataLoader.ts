@@ -1,13 +1,13 @@
 import {
   BaseDataLoader,
-  DataLoaderParams,
-  DataOrdering,
+  type DataLoaderParams,
+  type DataOrdering,
   loadDataWithCounts,
-  Metadata,
-  ScellopData,
+  type Metadata,
+  type ScellopData,
 } from "@scellop/data-loading";
 import { AnnDataSource, ObsSetsAnndataLoader } from "@vitessce/zarr";
-import { HuBMAPSearchHit } from "./types";
+import type { HuBMAPSearchHit } from "./types";
 import { getCountsAndMetadataFromObsSetsList } from "./utils";
 
 /**
@@ -139,7 +139,7 @@ function getPromiseData(urls: string[]) {
 function getPromiseMetadata(
   uuids: string[],
 ): Promise<
-  | void
+  | undefined
   | [Record<string, string>, Record<string, Record<string, string | number>>]
 > {
   const searchApi = "https://search.api.hubmapconsortium.org/v3/portal/search";
@@ -196,6 +196,7 @@ function getPromiseMetadata(
     })
     .catch((error) => {
       console.error("Error:", error);
+      return undefined;
     });
   return promiseMetadata;
 }

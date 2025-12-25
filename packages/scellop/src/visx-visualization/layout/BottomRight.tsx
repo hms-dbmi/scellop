@@ -1,7 +1,7 @@
 import React from "react";
 
 import ControlsModalTrigger from "../controls/ControlsModalTrigger";
-import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
+import VisualizationPanel, { type VisualizationPanelProps } from "./Panel";
 
 function BottomRightPanel(
   props: VisualizationPanelProps,

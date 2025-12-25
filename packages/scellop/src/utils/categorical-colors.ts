@@ -70,7 +70,7 @@ export function getColorForValue(
   colors?: Record<string, string>,
 ): string {
   // First check if there's a specific color assigned to this value
-  if (colors && colors[value]) {
+  if (colors?.[value]) {
     return colors[value];
   }
 

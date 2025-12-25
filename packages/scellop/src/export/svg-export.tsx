@@ -1,10 +1,9 @@
-import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   SvgCategoricalLegendsPanel,
-  SvgCategoricalLegendsPanelConfig,
+  type SvgCategoricalLegendsPanelConfig,
 } from "./SvgCategoricalLegendsPanel";
-import { SvgExportConfig, SvgVisualization } from "./SvgVisualization";
+import { type SvgExportConfig, SvgVisualization } from "./SvgVisualization";
 
 export type { SvgCategoricalLegendsPanelConfig, SvgExportConfig };
 

@@ -1,8 +1,5 @@
-import React from "react";
-
 import { RedoRounded, RestoreOutlined, UndoRounded } from "@mui/icons-material";
 import { Box, IconButton, Tooltip } from "@mui/material";
-
 import Button from "@mui/material/Button";
 import { useTemporalControls } from "../contexts/TemporalControlsContext";
 

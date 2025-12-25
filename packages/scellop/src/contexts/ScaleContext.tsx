@@ -1,13 +1,12 @@
 import { scaleBand } from "@visx/scale";
-import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
-import { useSet } from "../hooks/useSet";
+import { type PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { useYScaleCreator } from "../hooks/useYScaleCreator";
 import { createContext, useContext } from "../utils/context";
 import { useColumnZoomed, useRowZoomed } from "./AxisConfigContext";
 import { useColumns, useRows } from "./DataContext";
 import { useHeatmapDimensions } from "./DimensionsContext";
 import { useSelectedValues } from "./ExpandedValuesContext";
-import { ScaleBand } from "./types";
+import type { ScaleBand } from "./types";
 
 const SCALES = ["X", "Y"] as const;
 
@@ -36,7 +35,6 @@ export const EXPANDED_ROW_PADDING = 8;
  */
 export function ScaleProvider({ children }: PropsWithChildren) {
   const { width, height } = useHeatmapDimensions();
-  const { set: selectedX, toggle: toggleX, reset: resetX } = useSet<string>();
 
   const expandedRows = useSelectedValues((s) => s.selectedValues);
   const rows = useRows();
@@ -105,17 +103,7 @@ export function ScaleProvider({ children }: PropsWithChildren) {
       resetScroll: () => setXScroll(0),
       isZoomed: !!rowsZoomed,
     }),
-    [
-      x,
-      selectedX,
-      toggleX,
-      xTickLabelSize,
-      resetX,
-      xExpanded,
-      xCollapsed,
-      xScroll,
-      rowsZoomed,
-    ],
+    [x, xTickLabelSize, xExpanded, xCollapsed, xScroll, rowsZoomed],
   );
   const yScaleContext = useMemo(
     () => ({

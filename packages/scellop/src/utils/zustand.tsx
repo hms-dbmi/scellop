@@ -1,17 +1,15 @@
-import { shallow } from "zustand/shallow";
-import { useStoreWithEqualityFn } from "zustand/traditional";
-
-import React, {
-  PropsWithChildren,
-  RefObject,
+import {
+  type Context,
+  type PropsWithChildren,
+  type ReactNode,
+  type RefObject,
   useEffect,
   useRef,
-  type Context,
-  type ReactNode,
 } from "react";
-import { type StoreApi } from "zustand";
-
-import { TemporalState } from "zundo";
+import type { TemporalState } from "zundo";
+import type { StoreApi } from "zustand";
+import { shallow } from "zustand/shallow";
+import { useStoreWithEqualityFn } from "zustand/traditional";
 import { createContext, useContext } from "./context";
 
 export type ExtractState<S> = S extends { getState: () => infer X } ? X : never;
@@ -36,7 +34,9 @@ export interface CurriedUseStore<T extends StoreApi<unknown>> {
  * @returns A `useStore` hook for the passed context which can be called with a selector and equality function
  */
 export function createTemporalStoreContextHook<MyState>(
-  storeContext: Context<MyState | undefined>,
+  storeContext: Context<
+    (MyState & { temporal: StoreApi<TemporalState<MyState>> }) | undefined
+  >,
 ) {
   function useTemporalStore(): TemporalState<MyState>;
   function useTemporalStore<T>(
@@ -51,8 +51,16 @@ export function createTemporalStoreContextHook<MyState>(
     equality?: (a: TemporalState<T>, b: TemporalState<T>) => boolean,
   ) {
     const store = useContext(storeContext);
-    // @ts-expect-error - Zustand types are annoying
-    return useStoreWithEqualityFn(store.temporal, selector!, equality);
+    if (!store?.temporal) {
+      throw new Error(
+        "Temporal store is not available in this context. This should never happen.",
+      );
+    }
+    return useStoreWithEqualityFn(
+      store.temporal,
+      selector ?? ((state) => state as unknown as TemporalState<T>),
+      equality,
+    );
   }
   return useTemporalStore;
 }
@@ -82,24 +90,22 @@ type CreateStoreContext<
   StoreType extends StoreApi<unknown>,
   CreateStoreArgs,
   Temporal extends boolean = false,
-> =
-  // If Temporal is true, return an array with the temporal hook and store
-  Temporal extends true
-    ? [
-        (
-          props: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>,
-        ) => ReactNode,
-        CurriedUseStore<StoreType>,
-        Context<StoreType | undefined>,
-        TemporalStore<StoreType>,
-      ]
-    : [
-        (
-          props: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>,
-        ) => ReactNode,
-        CurriedUseStore<StoreType>,
-        Context<StoreType | undefined>,
-      ];
+> = Temporal extends true // If Temporal is true, return an array with the temporal hook and store
+  ? [
+      (
+        props: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>,
+      ) => ReactNode,
+      CurriedUseStore<StoreType>,
+      Context<StoreType | undefined>,
+      TemporalStore<StoreType>,
+    ]
+  : [
+      (
+        props: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>,
+      ) => ReactNode,
+      CurriedUseStore<StoreType>,
+      Context<StoreType | undefined>,
+    ];
 export interface ProviderEnhancements {
   // Reactive providers reset the store when the props change
   reactive?: boolean;
@@ -130,18 +136,22 @@ export function createStoreContext<T, CreateStoreArgs>(
   }: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>) {
     // Keep the store in a ref so it is only created once per instance of the provider
     const store = useRef<StoreType>();
+    // Store props in a ref to track changes without triggering re-renders
+    const propsRef = useRef(props);
+    propsRef.current = props;
+
     if (!store.current) {
       store.current = createStore(props as CreateStoreArgs);
     }
 
     useEffect(() => {
       if (reactive) {
-        const newStore = createStore(props as CreateStoreArgs);
+        const newStore = createStore(propsRef.current as CreateStoreArgs);
         if (store.current) {
           store.current.setState(newStore.getState());
         }
       }
-    }, [props]);
+    }, [createStore, reactive]);
 
     return (
       <StoreContext.Provider value={store.current}>
@@ -159,18 +169,54 @@ export function createTemporalStoreContext<T, CreateStoreArgs>(
   createStore: (initialArgs: CreateStoreArgs) => StoreApi<T>,
   displayName: string,
 ) {
-  type StoreType = StoreApi<T>;
-  const [Provider, hook, StoreContext] = createStoreContext<T, CreateStoreArgs>(
-    createStore,
-    displayName,
+  type StoreType = StoreApi<T> & {
+    temporal: StoreApi<TemporalState<StoreApi<T>>>;
+  };
+  // Create a context with the temporal store type
+  const StoreContext = createContext<StoreType>(displayName);
+  // Create a hook for the context
+  const hook = createStoreContextHook(
+    StoreContext as Context<StoreApi<T> | undefined>,
   );
+  // Create a provider component which creates the store and passes it to the context
+  function Provider({
+    children,
+    reactive = false,
+    ...props
+  }: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>) {
+    // Keep the store in a ref so it is only created once per instance of the provider
+    const store = useRef<StoreType>();
+    // Store props in a ref to track changes without triggering re-renders
+    const propsRef = useRef(props);
+    propsRef.current = props;
+
+    if (!store.current) {
+      store.current = createStore(props as CreateStoreArgs) as StoreType;
+    }
+
+    useEffect(() => {
+      if (reactive) {
+        const newStore = createStore(propsRef.current as CreateStoreArgs);
+        if (store.current) {
+          store.current.setState(newStore.getState());
+        }
+      }
+    }, [createStore, reactive]);
+
+    return (
+      <StoreContext.Provider value={store.current}>
+        {children}
+      </StoreContext.Provider>
+    );
+  }
 
   const temporalHook = createTemporalStoreContextHook(StoreContext);
-  return [Provider, hook, StoreContext, temporalHook] as CreateStoreContext<
-    StoreType,
-    CreateStoreArgs,
-    true
-  >;
+  return [
+    Provider,
+    hook,
+    StoreContext as Context<StoreApi<T> | undefined>,
+    temporalHook,
+  ] as CreateStoreContext<StoreType, CreateStoreArgs, true>;
 }
 
 /**

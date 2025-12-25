@@ -1,5 +1,3 @@
-import React from "react";
-
 interface SVGBackgroundColorFilterProps {
   color: string;
   id: string;

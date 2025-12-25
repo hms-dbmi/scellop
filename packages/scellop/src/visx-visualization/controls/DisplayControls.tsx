@@ -1,7 +1,7 @@
 import {
   closestCenter,
   DndContext,
-  DragEndEvent,
+  type DragEndEvent,
   KeyboardSensor,
   MeasuringStrategy,
   PointerSensor,
@@ -41,14 +41,16 @@ import {
   Typography,
   useEventCallback,
 } from "@mui/material";
-import React, {
-  ChangeEvent,
+import type React from "react";
+import {
+  type ChangeEvent,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
 import {
+  type AxisConfigStore,
   useColumnConfig,
   useRowConfig,
 } from "../../contexts/AxisConfigContext";
@@ -62,7 +64,9 @@ import { usePlotControlsContext } from "./PlotControlsContext";
 
 function useColorConfig() {
   const section = usePlotControlsContext();
-  return section === "Column" ? useColumnConfig() : useRowConfig();
+  const columnConfig = useColumnConfig();
+  const rowConfig = useRowConfig();
+  return section === "Column" ? columnConfig : rowConfig;
 }
 
 function GlobalColorControls() {
@@ -136,11 +140,13 @@ function useItems() {
   return section === "Column" ? columns : rows;
 }
 
+const pluralLabelSelector = (s: AxisConfigStore) => s.pluralLabel;
+
 function usePluralItemLabel() {
   const section = usePlotControlsContext();
-  return section === "Column"
-    ? useColumnConfig((s) => s.pluralLabel)
-    : useRowConfig((s) => s.pluralLabel);
+  const columnLabel = useColumnConfig(pluralLabelSelector);
+  const rowLabel = useRowConfig(pluralLabelSelector);
+  return section === "Column" ? columnLabel : rowLabel;
 }
 
 function useItemMetadata() {

@@ -1,5 +1,5 @@
-import { ScaleLinear, formatPrefix } from "d3";
-import React from "react";
+import { formatPrefix, type ScaleLinear } from "d3";
+import type React from "react";
 
 interface SvgNumericAxisProps {
   scale: ScaleLinear<number, number>;
@@ -22,10 +22,8 @@ export const SvgNumericAxis: React.FC<SvgNumericAxisProps> = ({
   orientation,
   width,
   height,
-  tickLabelSize,
   color,
   hideZero = false,
-  minTicks = 0,
   x = 0,
   y = 0,
 }) => {

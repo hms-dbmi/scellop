@@ -12,7 +12,10 @@ export function useAxisLabel(axis: AxisType) {
   const axisConfig = axis === "x" ? columnConfig : rowConfig;
   const { label } = axisConfig;
 
-  const items = axis === "x" ? useColumns() : useRows();
+  const columns = useColumns();
+  const rows = useRows();
+
+  const items = axis === "x" ? columns : rows;
   const filteredCount = items.length;
   const allCount = useData((s) =>
     axis === "x" ? s.columnOrder.length : s.rowOrder.length,

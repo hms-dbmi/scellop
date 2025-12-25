@@ -1,7 +1,7 @@
 import React from "react";
 
 import { LeftGraphScale } from "../side-graphs/LeftGraph";
-import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
+import VisualizationPanel, { type VisualizationPanelProps } from "./Panel";
 
 function BottomLeftPanel(
   props: VisualizationPanelProps,

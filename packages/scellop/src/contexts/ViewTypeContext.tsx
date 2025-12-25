@@ -1,6 +1,6 @@
 import { temporal } from "zundo";
 import { createStore } from "zustand";
-import { ViewType } from "../utils/view-types";
+import type { ViewType } from "../utils/view-types";
 import { createTemporalStoreContext } from "../utils/zustand";
 
 interface ViewTypeContextDataInput {

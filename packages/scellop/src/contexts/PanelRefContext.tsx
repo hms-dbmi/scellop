@@ -1,5 +1,5 @@
 import { createContext, useContext } from "../utils/context";
-import { MappedPanelSection } from "./types";
+import type { MappedPanelSection } from "./types";
 
 const PanelRefContext =
   createContext<

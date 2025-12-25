@@ -7,7 +7,7 @@ import {
   schemeSet3,
   schemeTableau10,
 } from "d3";
-import React from "react";
+import type React from "react";
 
 interface MetadataBar {
   value: string | number;
@@ -173,7 +173,7 @@ export const SvgMetadataValueBars: React.FC<SvgMetadataValueBarsProps> = ({
     const values = keys.map((key) => metadata[key]?.[sort.key] || "[No Value]");
     const isNumeric = keys.every((key) => {
       const value = metadata[key]?.[sort.key];
-      return value && !isNaN(parseInt(value as string, 10));
+      return value && !Number.isNaN(parseInt(value as string, 10));
     });
 
     // Create color scale for this sort

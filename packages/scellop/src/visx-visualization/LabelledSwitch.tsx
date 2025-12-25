@@ -3,11 +3,11 @@ import {
   InputLabel,
   Stack,
   Switch,
-  SwitchProps,
+  type SwitchProps,
   Typography,
 } from "@mui/material";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import React, { useId } from "react";
+import { useId } from "react";
 import InfoTooltip from "./InfoTooltip";
 
 interface LabelledSwitchProps extends SwitchProps {

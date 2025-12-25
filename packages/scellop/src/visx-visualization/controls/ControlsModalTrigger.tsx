@@ -1,7 +1,6 @@
 import { Settings } from "@mui/icons-material";
 import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
-import React from "react";
 import { useControlsVisibilityActions } from "../../contexts/ControlsVisibilityContext";
 import useBoolean from "../../hooks/useBoolean";
 

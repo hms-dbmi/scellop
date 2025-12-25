@@ -1,4 +1,4 @@
-import { mean, ScaleLinear } from "d3";
+import { mean, type ScaleLinear } from "d3";
 import { useMemo } from "react";
 
 // Kernel Density Estimation
@@ -12,8 +12,12 @@ export function kde<T extends number>(
 
 // Epanechnikov kernel
 export function epanechnikov(bandwidth: number) {
-  return (x: number) =>
-    Math.abs((x /= bandwidth)) <= 1 ? (0.75 * (1 - x * x)) / bandwidth : 0;
+  return (x: number) => {
+    const normalized = x / bandwidth;
+    return Math.abs(normalized) <= 1
+      ? (0.75 * (1 - normalized * normalized)) / bandwidth
+      : 0;
+  };
 }
 
 export function useDensityFunction(

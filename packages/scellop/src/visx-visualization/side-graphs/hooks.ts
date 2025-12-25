@@ -1,6 +1,6 @@
 import { scaleLinear } from "@visx/scale";
 import { useMemo } from "react";
-import { ScaleLinear } from "../../contexts/types";
+import type { ScaleLinear } from "../../contexts/types";
 
 /**
  * Generates a linear scale for the counts bars with the provided domain and range.

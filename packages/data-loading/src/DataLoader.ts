@@ -1,4 +1,4 @@
-import { ScellopData } from "./scellop-schema";
+import type { ScellopData } from "./scellop-schema";
 
 /**
  * Generic parameters for data loaders.

@@ -9,12 +9,9 @@ import {
 } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { defaultStyles, useTooltipInPortal } from "@visx/tooltip";
-import React, { useEffect } from "react";
-import { useParentRef } from "../contexts/ContainerRefContext";
-import {
-  useSetTooltipData,
-  useTooltipData,
-} from "../contexts/TooltipDataContext";
+import type React from "react";
+import { useEffect } from "react";
+import { useTooltipData } from "../contexts/TooltipDataContext";
 
 function formatTooltipKey(key: string): string {
   return key.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
@@ -43,10 +40,7 @@ function formatTooltipValue(value: unknown): React.ReactNode {
 export default function Tooltip() {
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, contextMenuOpen } =
     useTooltipData();
-  const { closeTooltip } = useSetTooltipData();
 
-  const parentRef = useParentRef();
-  const visualizationBounds = parentRef.current?.getBoundingClientRect();
   const theme = useTheme();
 
   const { containerRef, TooltipInPortal } = useTooltipInPortal({

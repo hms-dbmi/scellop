@@ -1,10 +1,10 @@
-import { ScellopData } from "@scellop/data-loading";
+import type { ScellopData } from "@scellop/data-loading";
 import { memoize } from "proxy-memoize";
 import { useCallback, useMemo } from "react";
 import { temporal } from "zundo";
 import { createStore } from "zustand";
 import { moveToEnd, moveToStart } from "../utils/array-reordering";
-import { Normalization } from "../utils/normalizations";
+import type { Normalization } from "../utils/normalizations";
 import { createTemporalStoreContext } from "../utils/zustand";
 
 interface DataContextProps {
@@ -1055,13 +1055,15 @@ export const useAllColumnSubFilters = (key: string) => {
 export const useHighestColumnCount = () => {
   const columnCounts = useColumnCounts();
   return Math.max(
-    ...Object.values(columnCounts).filter((count) => !isNaN(count)),
+    ...Object.values(columnCounts).filter((count) => !Number.isNaN(count)),
   );
 };
 
 export const useHighestRowCount = () => {
   const rowCounts = useRowCounts();
-  return Math.max(...Object.values(rowCounts).filter((count) => !isNaN(count)));
+  return Math.max(
+    ...Object.values(rowCounts).filter((count) => !Number.isNaN(count)),
+  );
 };
 
 export const useMoveRowToEnd = () => {

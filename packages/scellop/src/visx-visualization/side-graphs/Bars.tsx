@@ -1,8 +1,9 @@
 import { useEventCallback } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { scaleLinear } from "@visx/scale";
-import { ScaleBand } from "d3";
-import React, { useCallback, useLayoutEffect, useMemo, useRef } from "react";
+import type { ScaleBand } from "d3";
+import type React from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import {
   useColumnConfig,
   useRowConfig,
@@ -27,7 +28,6 @@ import { useSetTooltipData } from "../../contexts/TooltipDataContext";
 import { useBarsDragHandler } from "../../hooks/useDragHandler";
 import { EXPANDED_ROW_PADDING } from "../../hooks/useYScaleCreator";
 import { calculateBars } from "../../utils/calculations";
-import { getColorForValue } from "../../utils/categorical-colors";
 import { renderBarsToCanvas } from "../../utils/rendering";
 import ExpandedAxes from "./ExpandedAxes";
 

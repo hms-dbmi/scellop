@@ -1,13 +1,12 @@
-import React, {
-  KeyboardEventHandler,
-  MouseEventHandler,
+import type { Theme } from "@mui/material";
+import Box from "@mui/material/Box";
+import {
+  type KeyboardEventHandler,
+  type MouseEventHandler,
   useCallback,
   useRef,
   useState,
 } from "react";
-
-import { Theme } from "@mui/material";
-import Box from "@mui/material/Box";
 import { useParentRef } from "../../contexts/ContainerRefContext";
 import { useDimensions } from "../../contexts/DimensionsContext";
 

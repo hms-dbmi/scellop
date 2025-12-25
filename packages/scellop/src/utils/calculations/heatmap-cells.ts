@@ -3,8 +3,8 @@
  * Used by both live visualization and export
  */
 
-import { ScaleBand as CustomScaleBand } from "../../contexts/types";
-import {
+import type { ScaleBand as CustomScaleBand } from "../../contexts/types";
+import type {
   CalculateHeatmapCellsParams,
   CalculateInlineBarsParams,
   HeatmapCellData,

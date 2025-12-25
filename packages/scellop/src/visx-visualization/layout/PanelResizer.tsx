@@ -1,7 +1,7 @@
-import React, { MouseEventHandler, useCallback, useRef } from "react";
-
-import { Theme } from "@mui/material";
+import type { Theme } from "@mui/material";
 import Box from "@mui/material/Box";
+import type React from "react";
+import { type MouseEventHandler, useCallback, useRef } from "react";
 import { useParentRef } from "../../contexts/ContainerRefContext";
 import { useDimensions } from "../../contexts/DimensionsContext";
 import { useXScale, useYScale } from "../../contexts/ScaleContext";

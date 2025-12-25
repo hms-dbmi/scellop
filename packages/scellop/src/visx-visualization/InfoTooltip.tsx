@@ -1,7 +1,6 @@
 import InfoRounded from "@mui/icons-material/InfoRounded";
 import Icon from "@mui/material/Icon";
 import Tooltip from "@mui/material/Tooltip";
-import React from "react";
 
 interface MuiTooltipProps {
   title?: string;

@@ -3,7 +3,7 @@ import React from "react";
 import { useYScale } from "../../contexts/ScaleContext";
 import LeftGraph from "../side-graphs/LeftGraph";
 import AxisResizer from "./AxisResizer";
-import VisualizationPanel, { VisualizationPanelProps } from "./Panel";
+import VisualizationPanel, { type VisualizationPanelProps } from "./Panel";
 
 function MiddleLeftPanel(
   props: VisualizationPanelProps,

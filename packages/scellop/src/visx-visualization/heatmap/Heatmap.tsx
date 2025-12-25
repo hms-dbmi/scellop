@@ -1,6 +1,5 @@
-import React, { useLayoutEffect, useRef } from "react";
-
 import { useTheme } from "@mui/material/styles";
+import React, { useLayoutEffect, useRef } from "react";
 import {
   useColumnConfig,
   useRowConfig,
@@ -171,8 +170,7 @@ function Heatmap() {
         case "Row":
         case "Column":
           normalizationInfo = {
-            [`Percentage of total cells in ${normalization}`]:
-              (dataMap[key] * 100).toFixed(2) + "%",
+            [`Percentage of total cells in ${normalization}`]: `${(dataMap[key] * 100).toFixed(2)}%`,
           };
           break;
         default:
@@ -276,6 +274,7 @@ function Heatmap() {
       theme,
       xScale.scroll,
       yScale.scroll,
+      isClicking,
     ],
   );
 
@@ -395,6 +394,7 @@ function Heatmap() {
     <canvas
       onMouseMove={handleMouseMove}
       onMouseOut={closeTooltip}
+      onBlur={closeTooltip}
       onWheel={handleWheel}
       ref={canvasRef}
       width={width}

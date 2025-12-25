@@ -1,7 +1,7 @@
 import { scaleBand, scaleLinear } from "@visx/scale";
-import { ScaleBand } from "d3";
-import React from "react";
-import { ScaleBand as CustomScaleBand } from "../contexts/types";
+import type { ScaleBand } from "d3";
+import type React from "react";
+import type { ScaleBand as CustomScaleBand } from "../contexts/types";
 import { SvgNumericAxis } from "./SvgAxis";
 import { SvgBars } from "./SvgBars";
 import { SvgCategoricalAxis } from "./SvgCategoricalAxis";
@@ -16,7 +16,7 @@ import {
   SvgMetadataValueBars,
 } from "./SvgMetadataValueBars";
 import { SvgViolins } from "./SvgViolins";
-import { BarData } from "./types";
+import type { BarData } from "./types";
 
 /**
  * Configuration for SVG export
@@ -505,6 +505,7 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
       xmlns="http://www.w3.org/2000/svg"
       style={{ backgroundColor }}
     >
+      <title>Scellop Visualization</title>
       <g
         className="visualization"
         transform={`translate(${effectiveLeftPadding}, 0)`}

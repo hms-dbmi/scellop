@@ -1,5 +1,5 @@
-import React from "react";
-import { BarData } from "./types";
+import type React from "react";
+import type { BarData } from "./types";
 
 interface SvgBarsProps {
   bars: BarData[];
