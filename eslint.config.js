@@ -13,6 +13,11 @@ export default tseslint.config(
   {
     files: ["**/*.{jsx,tsx}"],
     ...reactPlugin.configs.flat.recommended,
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
   },
   {
     files: ["**/*.{jsx,tsx}"],
@@ -34,11 +39,15 @@ export default tseslint.config(
   },
   {
     ignores: [
-      "node_modules",
-      "dist",
-      ".venv",
-      // to prevent eslint from crashing every time this file is changed
-      "./demo/testData.ts",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/dist-tsc/**",
+      "**/dist-demo/**",
+      "**/.venv/**",
+      "**/coverage/**",
+      "**/.turbo/**",
+      // Ignore test data to prevent eslint crashes
+      "**/testData.ts",
     ],
   },
 );

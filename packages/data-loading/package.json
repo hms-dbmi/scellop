@@ -1,0 +1,61 @@
+{
+  "name": "@scellop/data-loading",
+  "version": "0.2.0",
+  "license": "MIT",
+  "author": "Thomas Smits",
+  "description": "Data loading utilities for Scellop - supports HuBMAP and generic data formats",
+  "homepage": "https://github.com/hms-dbmi/scellop#readme",
+  "type": "module",
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hms-dbmi/scellop.git",
+    "directory": "packages/data-loading"
+  },
+  "keywords": [
+    "data loading",
+    "single-cell",
+    "hubmap",
+    "zarr",
+    "anndata"
+  ],
+  "bugs": {
+    "url": "https://github.com/hms-dbmi/scellop/issues"
+  },
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@vitessce/zarr": "^3.6.7"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@types/node": "^25.0.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "@vitest/ui": "^4.0.16",
+    "jsdom": "^27.3.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.5",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.16"
+  }
+}
