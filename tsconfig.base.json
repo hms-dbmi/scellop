@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "moduleResolution": "bundler",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable", "ES2021"],
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "declaration": true,
+    "declarationMap": true,
+    "skipLibCheck": true
+  },
+  "exclude": ["node_modules", "dist", "dist-tsc"]
+}
