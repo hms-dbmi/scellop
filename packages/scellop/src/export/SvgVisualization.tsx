@@ -451,6 +451,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
           "vertical",
           200,
           squareHeight,
+          true, // showAllItems for export
+          false, // don't truncate labels for export
         )
       : { width: 0, height: 0 };
 
@@ -463,6 +465,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
           "vertical",
           200,
           squareHeight,
+          true, // showAllItems for export
+          false, // don't truncate labels for export
         )
       : { width: 0, height: 0 };
 
@@ -775,6 +779,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
                   maxWidth={200}
                   maxHeight={squareHeight}
                   orientation="vertical"
+                  showAllItems={true}
+                  truncateLabels={false}
                 />
               )}
 
@@ -803,6 +809,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
                   maxWidth={200}
                   maxHeight={squareHeight}
                   orientation="vertical"
+                  showAllItems={true}
+                  truncateLabels={false}
                 />
               )}
           </>
