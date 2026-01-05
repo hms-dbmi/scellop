@@ -6,14 +6,14 @@ import { SvgNumericAxis } from "./SvgAxis";
 import { SvgBars } from "./SvgBars";
 import { SvgCategoricalAxis } from "./SvgCategoricalAxis";
 import {
-    calculateCategoricalColorLegendDimensions,
-    SvgCategoricalColorLegend,
+  calculateCategoricalColorLegendDimensions,
+  SvgCategoricalColorLegend,
 } from "./SvgCategoricalColorLegend";
 import { SvgHeatmap } from "./SvgHeatmap";
 import { SvgLegend } from "./SvgLegend";
 import {
-    calculateSvgMetadataBarDimensions,
-    SvgMetadataValueBars,
+  calculateSvgMetadataBarDimensions,
+  SvgMetadataValueBars,
 } from "./SvgMetadataValueBars";
 import { SvgViolins } from "./SvgViolins";
 import { BarData } from "./types";
@@ -451,6 +451,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
           "vertical",
           200,
           squareHeight,
+          true, // showAllItems for export
+          false, // don't truncate labels for export
         )
       : { width: 0, height: 0 };
 
@@ -463,6 +465,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
           "vertical",
           200,
           squareHeight,
+          true, // showAllItems for export
+          false, // don't truncate labels for export
         )
       : { width: 0, height: 0 };
 
@@ -774,34 +778,40 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
                   maxWidth={200}
                   maxHeight={squareHeight}
                   orientation="vertical"
+                  showAllItems={true}
+                  truncateLabels={false}
                 />
               )}
 
             {/* Column color legend */}
-            {columnColors && columnColorLegendDims.width > 0 && columnAxisLabel && (
-              <SvgCategoricalColorLegend
-                values={columns}
-                colors={columnColors}
-                title={columnAxisLabel}
-                defaultColor={defaultColor}
-                textColor={defaultColor}
-                backgroundColor={backgroundColor}
-                x={
-                  leftGraphWidth +
-                  squareWidth +
-                  columnMetadataBarWidth +
-                  rightAxisWidth +
-                  colorLegendLeftMargin +
-                  (rowColorLegendDims.width > 0
-                    ? rowColorLegendDims.width + legendPanelSpacing
-                    : 0)
-                }
-                y={effectiveTopPadding + topGraphHeight}
-                maxWidth={200}
-                maxHeight={squareHeight}
-                orientation="vertical"
-              />
-            )}
+            {columnColors &&
+              columnColorLegendDims.width > 0 &&
+              columnAxisLabel && (
+                <SvgCategoricalColorLegend
+                  values={columns}
+                  colors={columnColors}
+                  title={columnAxisLabel}
+                  defaultColor={defaultColor}
+                  textColor={defaultColor}
+                  backgroundColor={backgroundColor}
+                  x={
+                    leftGraphWidth +
+                    squareWidth +
+                    columnMetadataBarWidth +
+                    rightAxisWidth +
+                    colorLegendLeftMargin +
+                    (rowColorLegendDims.width > 0
+                      ? rowColorLegendDims.width + legendPanelSpacing
+                      : 0)
+                  }
+                  y={effectiveTopPadding + topGraphHeight}
+                  maxWidth={200}
+                  maxHeight={squareHeight}
+                  orientation="vertical"
+                  showAllItems={true}
+                  truncateLabels={false}
+                />
+              )}
           </>
         )}
       </g>
