@@ -8,7 +8,7 @@ export type ObsSets = {
     name: string;
     children: {
       name: string;
-      set: [unknown, unknown][];
+      set: unknown[][];
     }[];
   }[];
 };
