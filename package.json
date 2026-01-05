@@ -1,106 +1,40 @@
 {
-  "name": "scellop",
-  "private": false,
-  "version": "0.1.0",
+  "name": "scellop-monorepo",
+  "private": true,
+  "type": "module",
+  "version": "0.2.0",
   "license": "MIT",
   "author": "Thomas Smits",
-  "description": "A Scalable Redesign of Cell Population Plots for Single-Cell Data.",
-  "homepage": "https://github.com/hms-dbmi/scellop#readme",
-  "type": "module",
-  "main": "./dist/index.umd.js",
-  "module": "./dist/index.es.js",
-  "exports": {
-    ".": {
-      "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js"
-    }
-  },
-  "files": [
-    "src",
-    "dist"
-  ],
+  "description": "Monorepo for Scellop packages - Scalable visualization for single-cell data",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hms-dbmi/scellop.git"
   },
-  "keywords": [
-    "data visualization",
-    "react",
-    "cell populations",
-    "heatmap"
-  ],
   "bugs": {
     "url": "https://github.com/hms-dbmi/scellop/issues"
   },
   "scripts": {
-    "dev": "vite",
-    "widget": "vite build --watch",
-    "build": "vite build",
-    "build-demo": "vite build --mode demo",
-    "preview": "vite preview",
-    "preview-demo": "vite preview --mode demo",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "prepare": "vite build",
-    "knip": "knip"
+    "build": "pnpm -r --filter \"./packages/**\" build",
+    "dev": "pnpm -r --parallel --filter \"./packages/**\" --filter @scellop/demo dev",
+    "test": "pnpm -r --filter \"./packages/**\" test",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "clean": "pnpm -r --filter \"./packages/**\" clean"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
+    "@biomejs/biome": "^2.3.11",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
+    "@testing-library/react": "^16.3.1",
     "@types/d3": "^7.4.3",
     "@types/node": "^25.0.3",
-    "@types/react": "^18.3.23",
+    "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.7.0",
     "@vitest/coverage-v8": "^4.0.16",
     "@vitest/ui": "^4.0.16",
-    "eslint": "^9.31.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.3",
-    "eslint-plugin-react": "^7.37.5",
-    "globals": "^16.3.0",
-    "jsdom": "^27.3.0",
-    "knip": "^5.75.2",
-    "prettier": "^3.6.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0",
-    "vite": "^7.0.5",
-    "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.0.16",
-    "zustand": "^4.5.7"
-  },
-  "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^6.5.0",
-    "@mui/material": "^6.5.0",
-    "@radix-ui/react-context-menu": "^2.2.15",
-    "@visx/axis": "^3.12.0",
-    "@visx/responsive": "^3.12.0",
-    "@visx/scale": "^3.12.0",
-    "@visx/shape": "^3.12.0",
-    "@visx/text": "^3.12.0",
-    "@visx/tooltip": "^3.12.0",
-    "@vitessce/zarr": "^3.6.7",
-    "d3": "^7.9.0",
-    "proxy-memoize": "^3.0.1",
-    "zundo": "^2.3.0"
-  },
-  "peerDependencies": {
-    "react": "^18.3.1 || ^19.0.0",
-    "react-dom": "^18.3.1 || ^19.0.0",
-    "zustand": "^4 || ^5"
+    "jsdom": "^27.4.0",
+    "knip": "^5.80.0",
+    "typescript": "^5.9.3"
   }
 }
