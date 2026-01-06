@@ -1,7 +1,7 @@
 import { scaleBand, scaleLinear } from "@visx/scale";
-import { ScaleBand } from "d3";
+import type { ScaleBand } from "d3";
 import React from "react";
-import { ScaleBand as CustomScaleBand } from "../contexts/types";
+import type { ScaleBand as CustomScaleBand } from "../contexts/types";
 import { SvgNumericAxis } from "./SvgAxis";
 import { SvgBars } from "./SvgBars";
 import { SvgCategoricalAxis } from "./SvgCategoricalAxis";
@@ -16,7 +16,7 @@ import {
   SvgMetadataValueBars,
 } from "./SvgMetadataValueBars";
 import { SvgViolins } from "./SvgViolins";
-import { BarData } from "./types";
+import type { BarData } from "./types";
 
 /**
  * Configuration for SVG export
@@ -542,8 +542,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
               backgroundColor={backgroundColor}
               drawStripes={true}
               orderedValues={columns}
-              stripeEvenColor="rgba(0, 0, 0, 0.04)"
-              stripeOddColor={backgroundColor}
+              stripeEvenColor="#eeeeee"
+              stripeOddColor="#ffffff"
             />
           </g>
         )}
@@ -587,8 +587,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
               backgroundColor={backgroundColor}
               drawStripes={true}
               orderedValues={rows}
-              stripeEvenColor="rgba(0, 0, 0, 0.04)"
-              stripeOddColor={backgroundColor}
+              stripeEvenColor="#eeeeee"
+              stripeOddColor="#ffffff"
             />
           </g>
         )}
