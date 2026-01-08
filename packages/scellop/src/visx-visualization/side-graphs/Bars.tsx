@@ -369,7 +369,7 @@ export default function Bars({
           }
         }
 
-        const tooltipData: Record<string, string | number> = {
+        const tooltipData: Record<string, string | number | undefined> = {
           "Total Count": data[hitBar.key],
           [label]: hitBar.key,
           ...metadataValues,

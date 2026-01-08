@@ -59,6 +59,7 @@ function ResizeHandle({
       position: "absolute" as const,
       cursor: getCursor(),
       backgroundColor: "transparent",
+      color: "transparent",
       zIndex: 1000,
       overflow: "none",
     };

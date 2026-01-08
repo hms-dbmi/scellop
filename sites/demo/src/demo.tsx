@@ -4,8 +4,8 @@ import type { ScellopData } from "@scellop/data-loading";
 import { loadHuBMAPData } from "@scellop/hubmap-data-loading";
 import { Scellop } from "@scellop/scellop";
 import { useEffect, useState } from "react";
-import type { GridSizeTuple } from "../../../packages/scellop/dist/contexts/DimensionsContext";
-import { testData } from "./testData";
+import type { GridSizeTuple } from "../../../packages/scellop/dist/scellop/src/contexts/DimensionsContext";
+import testData from "./hubmapKidney";
 
 function Demo() {
   const [data, setData] = useState<ScellopData>(testData);

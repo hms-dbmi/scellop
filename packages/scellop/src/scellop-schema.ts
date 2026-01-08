@@ -51,8 +51,8 @@ export type CountsMatrixValue = [string, string, number];
  * }
  */
 export type Metadata = {
-  rows?: Record<string, Record<string, string | number>>;
-  cols?: Record<string, Record<string, string | number>>;
+  rows?: Record<string, Record<string, string | number | undefined>>;
+  cols?: Record<string, Record<string, string | number | undefined>>;
 };
 
 export type DataOrdering = {

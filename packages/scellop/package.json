@@ -42,6 +42,11 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "bench": "vitest bench --config vitest.bench.config.ts",
+    "bench:data": "vitest bench --config vitest.bench.config.ts data-processing",
+    "bench:render": "vitest bench --config vitest.bench.config.ts heatmap-rendering",
+    "bench:graphs": "vitest bench --config vitest.bench.config.ts side-graphs",
+    "bench:export": "vitest bench --config vitest.bench.config.ts export",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "clean": "rm -rf dist"
@@ -64,8 +69,8 @@
     "@visx/tooltip": "^3.12.0",
     "d3": "^7.9.0",
     "proxy-memoize": "^3.0.1",
-    "zustand": "^5.0.3",
-    "zundo": "^2.2.0"
+    "zundo": "^2.2.0",
+    "zustand": "^5.0.3"
   },
   "peerDependencies": {
     "react": "^18.0.0",
