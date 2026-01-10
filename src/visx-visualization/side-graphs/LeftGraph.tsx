@@ -38,7 +38,6 @@ function LeftBar() {
     <Bars
       orientation="rows"
       categoricalScale={yScale}
-      numericalScale={xScale}
       domainLimit={width}
       selectedValues={selectedValues}
       width={width}
@@ -95,8 +94,8 @@ export default function LeftGraph() {
   const violins = useIsLeftViolins();
   return (
     <Stack direction="row" width={width} height={height} overflow="hidden">
+      <YAxisLabel />
       <HeatmapYAxis />
-      <YAxisLabel height={height} />
       {violins ? <LeftViolin /> : <LeftBar />}
     </Stack>
   );
