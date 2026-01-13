@@ -155,7 +155,8 @@ export default function ExportControls() {
     useState(false);
 
   // Advanced SVG export settings
-  const [cellSize, setCellSize] = useState(20);
+  const [cellWidth, setCellWidth] = useState(20);
+  const [cellHeight, setCellHeight] = useState(20);
   const [fontSize, setFontSize] = useState(11);
   const [tickLength, setTickLength] = useState(6);
   const [labelMargin, setLabelMargin] = useState(8);
@@ -864,7 +865,8 @@ export default function ExportControls() {
           includeAxes: true,
           includeLegend: true,
           advancedSettings: {
-            cellSize,
+            cellWidth,
+            cellHeight,
             fontSize,
             tickLength,
             labelMargin,
@@ -949,7 +951,8 @@ export default function ExportControls() {
     exportLegendsAsSeparateFile,
     rowConfig.pluralLabel,
     columnConfig.pluralLabel,
-    cellSize,
+    cellWidth,
+    cellHeight,
     fontSize,
     tickLength,
     labelMargin,
@@ -1065,24 +1068,43 @@ export default function ExportControls() {
                 Fine-tune the SVG export layout and sizing parameters.
               </Typography>
 
-              {/* Cell Size */}
+              {/* Cell Width */}
               <Stack direction="column" spacing={1}>
                 <Typography variant="body2" gutterBottom>
-                  Cell Size: {cellSize}px
+                  Cell Width: {cellWidth}px
                 </Typography>
                 <Slider
-                  value={cellSize}
-                  onChange={(_, value) => setCellSize(value as number)}
+                  value={cellWidth}
+                  onChange={(_, value) => setCellWidth(value as number)}
                   min={5}
                   max={50}
                   step={1}
                   marks={[{ value: 5 }, { value: 20 }, { value: 50 }]}
                   valueLabelDisplay="auto"
-                  aria-label="Heatmap cell size"
+                  aria-label="Heatmap cell width"
                 />
                 <FormHelperText>
-                  Size of each heatmap cell in pixels. Larger values create more
-                  spacious layouts.
+                  Width of each heatmap cell in pixels.
+                </FormHelperText>
+              </Stack>
+
+              {/* Cell Height */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Cell Height: {cellHeight}px
+                </Typography>
+                <Slider
+                  value={cellHeight}
+                  onChange={(_, value) => setCellHeight(value as number)}
+                  min={5}
+                  max={50}
+                  step={1}
+                  marks={[{ value: 5 }, { value: 20 }, { value: 50 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Heatmap cell height"
+                />
+                <FormHelperText>
+                  Height of each heatmap cell in pixels.
                 </FormHelperText>
               </Stack>
 
@@ -1235,7 +1257,8 @@ export default function ExportControls() {
                 variant="outlined"
                 size="small"
                 onClick={() => {
-                  setCellSize(20);
+                  setCellWidth(20);
+                  setCellHeight(20);
                   setFontSize(11);
                   setTickLength(6);
                   setLabelMargin(8);

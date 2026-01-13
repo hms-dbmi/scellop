@@ -98,7 +98,8 @@ export interface SvgExportConfig {
 
   // Advanced SVG export settings
   advancedSettings?: {
-    cellSize?: number; // Size of each heatmap cell (default: 20)
+    cellWidth?: number; // Width of each heatmap cell (default: 20)
+    cellHeight?: number; // Height of each heatmap cell (default: 20)
     fontSize?: number; // Font size for labels (default: 11)
     tickLength?: number; // Length of axis ticks (default: 6)
     labelMargin?: number; // Gap between labels and graphs (default: 8)
@@ -157,7 +158,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
 
   // Extract advanced settings with defaults
   const {
-    cellSize = 20,
+    cellWidth = 20,
+    cellHeight = 20,
     fontSize = 11,
     tickLength = 6,
     labelMargin = 8,
@@ -252,9 +254,9 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
   const axisSpacing = 30; // Space for top axis only
   const effectiveTopPadding = calculatedTopPadding + axisSpacing;
 
-  // Calculate heatmap dimensions with square cells
-  const squareWidth = cellSize * columns.length;
-  const squareHeight = cellSize * rows.length;
+  // Calculate heatmap dimensions with cells
+  const squareWidth = cellWidth * columns.length;
+  const squareHeight = cellHeight * rows.length;
 
   // Recreate scales with square dimensions
   const squareXScale = xScale.copy().range([0, squareWidth]);
