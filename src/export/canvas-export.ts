@@ -58,10 +58,18 @@ export function renderHeatmapHighRes(params: HighResHeatmapParams): void {
   canvas.width = width * resolution;
   canvas.height = height * resolution;
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", {
+    // Enable better rendering quality
+    alpha: false,
+    willReadFrequently: false,
+  });
   if (!ctx) {
     throw new Error("Failed to get 2D context from canvas");
   }
+
+  // Disable image smoothing for crisp rendering of dense visualizations
+  // This prevents blurriness in heatmaps with many small cells
+  ctx.imageSmoothingEnabled = false;
 
   // Scale the context to match resolution
   ctx.scale(resolution, resolution);
