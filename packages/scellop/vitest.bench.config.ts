@@ -10,11 +10,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: "./src/test/setup.ts",
+    setupFiles: ["./src/test/setup.ts", "./src/benchmarks/setup-benchmarks.ts"],
     benchmark: {
       include: ["src/benchmarks/**/*.bench.ts"],
-      reporters: ["verbose"],
-      outputFile: "./benchmark-results.json",
     },
   },
 });

@@ -116,13 +116,6 @@ export const DATASET_CONFIGS: DatasetConfig[] = [
     density: 0.2,
     withMetadata: true,
   },
-  {
-    name: "xlarge",
-    rowCount: 1000,
-    colCount: 1000,
-    density: 0.1,
-    withMetadata: true,
-  },
   // Asymmetrical datasets
   {
     name: "wide",
@@ -173,6 +166,15 @@ export function getDatasetStats(data: ScellopData) {
   const nonZeroCells = data.countsMatrix.length;
   const density = nonZeroCells / cellCount;
 
+  // Calculate row sums
+  const rowSums: Record<string, number> = {};
+  for (const row of data.rowNames) {
+    rowSums[row] = 0;
+  }
+  for (const [row, _col, value] of data.countsMatrix) {
+    rowSums[row] += value;
+  }
+
   return {
     rows: data.rowNames.length,
     cols: data.colNames.length,
@@ -180,5 +182,49 @@ export function getDatasetStats(data: ScellopData) {
     nonZeroCells,
     density: (density * 100).toFixed(1) + "%",
     hasMetadata: !!data.metadata,
+    rowSums,
   };
+}
+
+/**
+ * Prints row sums for a dataset in a formatted way
+ */
+export function printRowSums(data: ScellopData, datasetName?: string) {
+  const stats = getDatasetStats(data);
+  const rowSumsArray = Object.entries(stats.rowSums).map(([row, sum]) => ({
+    row,
+    sum,
+  }));
+
+  const totalSum = rowSumsArray.reduce((acc, { sum }) => acc + sum, 0);
+  const avgSum = totalSum / rowSumsArray.length;
+  const minSum = Math.min(...rowSumsArray.map(({ sum }) => sum));
+  const maxSum = Math.max(...rowSumsArray.map(({ sum }) => sum));
+
+  console.log(
+    `\n${datasetName ? `${datasetName}: ` : ""}Row Sums Statistics (${stats.rows} rows)`,
+  );
+  console.log(`  Total Sum: ${totalSum.toLocaleString()}`);
+  console.log(`  Average: ${avgSum.toFixed(2)}`);
+  console.log(`  Min: ${minSum.toLocaleString()}`);
+  console.log(`  Max: ${maxSum.toLocaleString()}`);
+  console.log(`  Range: ${(maxSum - minSum).toLocaleString()}`);
+
+  // Print first 5 and last 5 rows if there are more than 10 rows
+  if (rowSumsArray.length > 10) {
+    console.log("  First 5 rows:");
+    rowSumsArray.slice(0, 5).forEach(({ row, sum }) => {
+      console.log(`    ${row}: ${sum.toLocaleString()}`);
+    });
+    console.log("  ...");
+    console.log("  Last 5 rows:");
+    rowSumsArray.slice(-5).forEach(({ row, sum }) => {
+      console.log(`    ${row}: ${sum.toLocaleString()}`);
+    });
+  } else {
+    console.log("  Row sums:");
+    rowSumsArray.forEach(({ row, sum }) => {
+      console.log(`    ${row}: ${sum.toLocaleString()}`);
+    });
+  }
 }

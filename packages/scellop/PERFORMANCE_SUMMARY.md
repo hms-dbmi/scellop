@@ -141,7 +141,7 @@ Three comprehensive guides created:
 
 ### 5. Performance Report Generator
 
-**`scripts/generate-performance-report.js`**:
+**`scripts/generate-performance-report.ts`**:
 
 - Parses JSON benchmark output
 - Generates markdown performance report
@@ -152,7 +152,7 @@ Usage:
 
 ```bash
 pnpm run bench -- --reporter=json --outputFile=benchmark-results.json
-node scripts/generate-performance-report.js
+tsx scripts/generate-performance-report.ts
 ```
 
 ## Key Performance Findings

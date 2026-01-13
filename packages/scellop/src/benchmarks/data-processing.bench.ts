@@ -13,6 +13,7 @@ import {
   generateSyntheticData,
   getDatasetStats,
 } from "./fixtures/synthetic-datasets";
+import { BENCHMARK_DATASETS } from "./setup-benchmarks";
 
 // Import the same memoized selectors used in DataContext
 // We'll recreate them here for benchmarking
@@ -94,7 +95,10 @@ function calculateLogDataMap(
 }
 
 describe("Data Processing Benchmarks", () => {
-  const datasets = generateAllDatasets();
+  // Use the same datasets that were generated and logged in setup-benchmarks.ts
+  // If BENCHMARK_DATASETS is empty, fall back to generating new ones
+  const datasets =
+    BENCHMARK_DATASETS.size > 0 ? BENCHMARK_DATASETS : generateAllDatasets();
 
   describe("DataMap Creation (Raw Counts)", () => {
     for (const [name, data] of datasets) {

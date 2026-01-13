@@ -13,11 +13,18 @@ This benchmark suite measures:
 
 ## Running Benchmarks
 
+**Dataset Fixture Information**: Each benchmark run automatically outputs complete dataset statistics (including row sums) at the beginning. Since datasets are procedurally generated with random values, this ensures you have the exact fixture data used in that specific run.
+
 ### Run All Benchmarks
 
 ```bash
 pnpm run bench
 ```
+
+Output includes:
+
+1. **Dataset statistics** (formatted + JSON) with dimensions, cell counts, and row sums
+2. **Benchmark results** with performance metrics
 
 ### Run Specific Benchmark Suites
 
@@ -53,8 +60,7 @@ Benchmarks use procedurally generated datasets with controlled characteristics:
 - **Small**: 50×50 (60% density) - Small real-world datasets
 - **Medium**: 100×100 (40% density) - Typical use case (similar to demo)
 - **Large**: 200×300 (30% density) - Large multi-tissue datasets
-- **Huge**: 500×500 (20% density) - Stress testing
-- **XLarge**: 1000×1000 (10% density) - Extreme scalability tests
+- **Huge**: 500×500 (20% density) - Stress testing and scalability validation
 
 **Asymmetrical datasets:**
 

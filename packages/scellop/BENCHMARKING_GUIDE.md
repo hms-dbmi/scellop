@@ -30,6 +30,8 @@ A comprehensive performance benchmarking suite for Scellop with:
 - `pnpm run bench:render` - Heatmap rendering only
 - `pnpm run bench:graphs` - Side graphs only
 - `pnpm run bench:export` - Export performance only
+- `pnpm run bench:stats` - Display dataset statistics with row sums
+- `pnpm run bench:stats:json` - Output dataset statistics as JSON
 
 ✅ **Documentation**:
 
@@ -45,6 +47,13 @@ A comprehensive performance benchmarking suite for Scellop with:
 cd /home/nikolay/projects/cellpop/packages/scellop
 pnpm run bench
 ```
+
+**Important**: Each benchmark run generates fresh synthetic datasets with random values. Dataset statistics (dimensions, cell counts, row sums) are printed **before** benchmarks execute to ensure you have the exact fixture data used in that run.
+
+The output includes:
+
+1. **Dataset statistics** (formatted and JSON) for all fixtures
+2. **Benchmark results** with operations per second, latencies, etc.
 
 This will run all benchmarks and display results in the terminal with:
 
@@ -73,6 +82,82 @@ pnpm run bench:graphs
 
 # Just export performance
 pnpm run bench:export
+```
+
+### View Dataset Statistics
+
+**Note**: When running benchmarks, dataset statistics are automatically printed at the start of each run. The standalone stats commands below are useful for inspecting dataset properties without running benchmarks.
+
+To see detailed statistics about synthetic datasets independently:
+
+```bash
+# Formatted console output
+pnpm run bench:stats
+
+# JSON output (useful for programmatic analysis)
+pnpm run bench:stats:json
+
+# Save JSON to file
+pnpm run bench:stats:json > stats.json
+```
+
+The formatted output displays for each dataset:
+
+- Dimensions (rows × columns)
+- Total and non-zero cell counts
+- Density percentage
+- **Row sum statistics**: total, average, min, max, and range
+- Individual row sums (first/last 5 for large datasets)
+
+Example output:
+
+```
+Dataset: MEDIUM (100×100)
+Dimensions: 100 rows × 100 columns
+Total cells: 10,000
+Non-zero cells: 3,984
+Density: 39.8%
+
+medium: Row Sums Statistics (100 rows)
+  Total Sum: 2,011,539
+  Average: 20115.39
+  Min: 13,838
+  Max: 28,017
+  Range: 14,179
+```
+
+The JSON output provides the same data in a structured format for programmatic analysis:
+
+```json
+{
+  "name": "medium",
+  "config": {
+    "rowCount": 100,
+    "colCount": 100,
+    "density": 0.4,
+    "withMetadata": true
+  },
+  "stats": {
+    "rows": 100,
+    "cols": 100,
+    "totalCells": 10000,
+    "nonZeroCells": 3984,
+    "density": "39.8%",
+    "hasMetadata": true
+  },
+  "rowSums": {
+    "total": 2011539,
+    "average": 20115.39,
+    "min": 13838,
+    "max": 28017,
+    "range": 14179,
+    "values": {
+      "row_0": 21316,
+      "row_1": 18067,
+      ...
+    }
+  }
+}
 ```
 
 ## Key Results from Initial Run

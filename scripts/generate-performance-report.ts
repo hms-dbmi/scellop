@@ -1,8 +1,8 @@
 /**
  * Performance Report Generator
- * 
+ *
  * Run this script to generate a markdown performance report from benchmark results
- * 
+ *
  * Usage:
  *   1. Run benchmarks: pnpm run bench -- --reporter=json --outputFile=benchmark-results.json
  *   2. Generate report: node scripts/generate-performance-report.js
@@ -12,7 +12,9 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 interface BenchmarkResult {
+  id: string;
   name: string;
+  rank: number;
   hz: number; // operations per second
   period: number; // time per operation (ms)
   mean: number;
@@ -23,11 +25,22 @@ interface BenchmarkResult {
   p99: number;
   p995: number;
   p999: number;
+  median: number;
+  sampleCount: number;
 }
 
-interface BenchmarkSuite {
-  name: string;
+interface BenchmarkGroup {
+  fullName: string;
   benchmarks: BenchmarkResult[];
+}
+
+interface BenchmarkFile {
+  filepath: string;
+  groups: BenchmarkGroup[];
+}
+
+interface BenchmarkResults {
+  files: BenchmarkFile[];
 }
 
 function formatNumber(num: number, precision = 2): string {
@@ -42,7 +55,7 @@ function formatTime(ms: number): string {
   return `${(ms / 1000).toFixed(2)}s`;
 }
 
-function generateMarkdownReport(results: BenchmarkSuite[]): string {
+function generateMarkdownReport(results: BenchmarkResults): string {
   let markdown = "# Scellop Performance Report\n\n";
   markdown += `Generated: ${new Date().toISOString()}\n\n`;
 
@@ -50,22 +63,29 @@ function generateMarkdownReport(results: BenchmarkSuite[]): string {
   markdown +=
     "This report presents benchmark results for Scellop's core operations across various dataset sizes.\n\n";
 
-  for (const suite of results) {
-    markdown += `## ${suite.name}\n\n`;
-    markdown += "| Benchmark | Ops/sec | Mean | p75 | p99 | Min | Max |\n";
-    markdown += "|-----------|---------|------|-----|-----|-----|-----|\n";
+  for (const file of results.files) {
+    const fileName = file.filepath.split("/").pop()?.replace(".bench.ts", "") || "Unknown";
+    markdown += `# ${fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/-/g, " ")}\n\n`;
+    
+    for (const group of file.groups) {
+      // Extract just the test suite name from the full name
+      const suiteName = group.fullName.split(" > ").slice(-1)[0];
+      markdown += `## ${suiteName}\n\n`;
+      markdown += "| Benchmark | Ops/sec | Mean | p75 | p99 | Min | Max |\n";
+      markdown += "|-----------|---------|------|-----|-----|-----|-----|\n";
 
-    for (const bench of suite.benchmarks) {
-      markdown += `| ${bench.name} `;
-      markdown += `| ${formatNumber(bench.hz)} `;
-      markdown += `| ${formatTime(bench.mean)} `;
-      markdown += `| ${formatTime(bench.p75)} `;
-      markdown += `| ${formatTime(bench.p99)} `;
-      markdown += `| ${formatTime(bench.min)} `;
-      markdown += `| ${formatTime(bench.max)} |\n`;
+      for (const bench of group.benchmarks) {
+        markdown += `| ${bench.name} `;
+        markdown += `| ${formatNumber(bench.hz)} `;
+        markdown += `| ${formatTime(bench.mean)} `;
+        markdown += `| ${formatTime(bench.p75)} `;
+        markdown += `| ${formatTime(bench.p99)} `;
+        markdown += `| ${formatTime(bench.min)} `;
+        markdown += `| ${formatTime(bench.max)} |\n`;
+      }
+
+      markdown += "\n";
     }
-
-    markdown += "\n";
   }
 
   markdown += "## Key Takeaways\n\n";
@@ -75,7 +95,8 @@ function generateMarkdownReport(results: BenchmarkSuite[]): string {
     "- **Heatmap Rendering**: Efficient for typical datasets (<100ms for 100×100)\n";
   markdown +=
     "- **Violin Plots**: Most expensive operation due to KDE calculations\n";
-  markdown += "- **Export**: High-resolution exports scale with resolution²\n\n";
+  markdown +=
+    "- **Export**: High-resolution exports scale with resolution²\n\n";
 
   markdown += "## Performance Targets\n\n";
   markdown += "For 100×100 datasets (~4000 non-zero cells):\n\n";

@@ -13,9 +13,11 @@ import {
   generateSyntheticData,
   getDatasetStats,
 } from "./fixtures/synthetic-datasets";
+import { BENCHMARK_DATASETS } from "./setup-benchmarks";
 
 describe("Side Graph Benchmarks", () => {
-  const datasets = generateAllDatasets();
+  const datasets =
+    BENCHMARK_DATASETS.size > 0 ? BENCHMARK_DATASETS : generateAllDatasets();
 
   describe("Data Preparation for Side Graphs", () => {
     for (const [name, data] of datasets) {

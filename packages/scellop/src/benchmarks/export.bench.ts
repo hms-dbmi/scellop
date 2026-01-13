@@ -11,9 +11,11 @@ import {
   generateAllDatasets,
   getDatasetStats,
 } from "./fixtures/synthetic-datasets";
+import { BENCHMARK_DATASETS } from "./setup-benchmarks";
 
 describe("Export Performance Benchmarks", () => {
-  const datasets = generateAllDatasets();
+  const datasets =
+    BENCHMARK_DATASETS.size > 0 ? BENCHMARK_DATASETS : generateAllDatasets();
 
   describe("High-Resolution Canvas Export", () => {
     const exportSizes = ["tiny", "small", "medium"];
