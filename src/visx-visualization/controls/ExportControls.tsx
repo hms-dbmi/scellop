@@ -1,48 +1,47 @@
 import { Download } from "@mui/icons-material";
 import {
-    Alert,
-    AlertTitle,
-    Box,
-    Button,
-    Checkbox,
-    CircularProgress,
-    FormControl,
-    FormControlLabel,
-    FormHelperText,
-    Radio,
-    RadioGroup,
-    Slider,
-    Stack,
-    TextField,
-    Typography,
+  Alert,
+  AlertTitle,
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  Radio,
+  RadioGroup,
+  Slider,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
-    useColumnConfig,
-    useRowConfig,
+  useColumnConfig,
+  useRowConfig,
 } from "../../contexts/AxisConfigContext";
 import { useColorScale } from "../../contexts/ColorScaleContext";
-import { useParentRef } from "../../contexts/ContainerRefContext";
 import {
-    useColumnCounts,
-    useColumnMaxes,
-    useColumns,
-    useData,
-    useFractionDataMap,
-    useRowCounts,
-    useRowMaxes,
-    useRows,
+  useColumnCounts,
+  useColumnMaxes,
+  useColumns,
+  useData,
+  useFractionDataMap,
+  useRowCounts,
+  useRowMaxes,
+  useRows,
 } from "../../contexts/DataContext";
 import {
-    useHeatmapDimensions,
-    usePanelDimensions,
+  useHeatmapDimensions,
+  usePanelDimensions,
 } from "../../contexts/DimensionsContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 import { useSelectedValues } from "../../contexts/ExpandedValuesContext";
 import {
-    useLeftGraphType,
-    useTopGraphType,
+  useLeftGraphType,
+  useTopGraphType,
 } from "../../contexts/IndividualGraphTypeContext";
 import { useGetFieldDisplayName } from "../../contexts/MetadataConfigContext";
 import { useNormalization } from "../../contexts/NormalizationContext";
@@ -51,7 +50,10 @@ import { useViewType } from "../../contexts/ViewTypeContext";
 import { calculateMetadataBarDimensions } from "../../export/metadata-utils";
 import { renderMultiPanelToCanvas } from "../../export/multi-panel-export";
 import { calculateBars, calculateViolins } from "../../export/side-graph-utils";
-import { exportAsSvg, exportCategoricalLegendsAsSvg } from "../../export/svg-export";
+import {
+  exportAsSvg,
+  exportCategoricalLegendsAsSvg,
+} from "../../export/svg-export";
 import { UserAgentTester } from "../../utils/user-agent";
 
 /**
@@ -139,7 +141,6 @@ const getMaxCanvasArea = (navigatorString = navigator.userAgent) => {
  * ExportControls component provides functionality to export the visualization as PNG or SVG
  */
 export default function ExportControls() {
-  const visualizationContainerRef = useParentRef();
   const trackEvent = useTrackEvent();
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -149,11 +150,6 @@ export default function ExportControls() {
   const [resolution, setResolution] = useState<number>(2);
   const [exportLegendsAsSeparateFile, setExportLegendsAsSeparateFile] =
     useState(false);
-  const [dimensions, setDimensions] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
-
   const theme = useTheme();
 
   // Get visualization data and state
@@ -201,26 +197,111 @@ export default function ExportControls() {
         ? logScale
         : percentageScale;
 
+  // Calculate actual export dimensions including all padding, axes, and metadata
+  const calculateExportDimensions = useCallback(() => {
+    // Calculate layout dimensions
+    const topGraphHeight = topGraphDims.height;
+    const leftGraphWidth = leftGraphDims.width;
+
+    // Calculate leftPadding based on longest row label
+    const fontSize = 11;
+    const longestRowLabel = rows.reduce(
+      (max, row) => (row.length > max.length ? row : max),
+      "",
+    );
+    const maxRowLabelLength = Math.min(longestRowLabel.length, 20);
+    const charWidth = fontSize * 0.6; // Approximate character width
+    const tickLength = 6;
+    const axisLabelSpace = 20; // Space for axis label
+    const margin = 16; // Margin from edge
+    const leftPadding = Math.max(
+      120,
+      margin + axisLabelSpace + tickLength + maxRowLabelLength * charWidth + 4,
+    ); // Padding for left axis (margin + axis label + ticks + labels + spacing)
+
+    // Calculate topPadding based on longest column label
+    const longestColumnLabel = columns.reduce(
+      (max, col) => (col.length > max.length ? col : max),
+      "",
+    );
+    const maxColumnLabelLength = Math.min(longestColumnLabel.length, 20);
+    const topPadding = Math.max(
+      100,
+      margin +
+        axisLabelSpace +
+        tickLength +
+        maxColumnLabelLength * charWidth +
+        4,
+    ); // Padding for top axis (margin + axis label + ticks + labels + spacing)
+
+    const rightAxisWidth = 60; // Space for top graph axis
+    const bottomAxisHeight = 60; // Space for left graph axis (increased for label space)
+    const categoricalAxisSpace = 500; // Space for rotated column labels and row labels
+
+    // Calculate metadata bar dimensions dynamically
+    const rowMetadataBarWidth = calculateMetadataBarDimensions(
+      rows,
+      rowMetadata,
+      rowSortOrders,
+      "Y",
+    );
+    const columnMetadataBarHeight = calculateMetadataBarDimensions(
+      columns,
+      columnMetadata,
+      columnSortOrders,
+      "X",
+    );
+
+    const totalWidth =
+      leftPadding +
+      leftGraphWidth +
+      heatmapWidth +
+      rowMetadataBarWidth +
+      rightAxisWidth +
+      categoricalAxisSpace;
+    const totalHeight =
+      topPadding +
+      topGraphHeight +
+      heatmapHeight +
+      columnMetadataBarHeight +
+      bottomAxisHeight +
+      categoricalAxisSpace;
+
+    return { width: totalWidth, height: totalHeight };
+  }, [
+    topGraphDims.height,
+    leftGraphDims.width,
+    rows,
+    columns,
+    rowMetadata,
+    columnMetadata,
+    rowSortOrders,
+    columnSortOrders,
+    heatmapWidth,
+    heatmapHeight,
+  ]);
+
   // Calculate maximum safe resolution based on browser canvas limits
   const maxResolution = useMemo(() => {
-    if (!dimensions) return 5; // Default fallback
+    // Calculate actual export dimensions
+    const exportDimensions = calculateExportDimensions();
 
     const maxSize = getMaxCanvasSize();
     const maxArea = getMaxCanvasArea();
 
     // Calculate max resolution based on dimension constraints
     const maxFromSize = Math.floor(
-      maxSize / Math.max(dimensions.width, dimensions.height),
+      maxSize / Math.max(exportDimensions.width, exportDimensions.height),
     );
 
     // Calculate max resolution based on area constraints
     const maxFromArea = Math.floor(
-      Math.sqrt(maxArea / (dimensions.width * dimensions.height)),
+      Math.sqrt(maxArea / (exportDimensions.width * exportDimensions.height)),
     );
 
     // Use the more restrictive limit, with a minimum of 1 and reasonable upper bound
     return Math.max(1, Math.min(maxFromSize, maxFromArea, 100));
-  }, [dimensions]);
+  }, [calculateExportDimensions]);
 
   // Generate slider marks based on max resolution
   const sliderMarks = useMemo(() => {
@@ -242,27 +323,6 @@ export default function ExportControls() {
     return marks;
   }, [maxResolution]);
 
-  // Update dimensions when parent ref changes
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (visualizationContainerRef?.current) {
-        const rect = visualizationContainerRef.current.getBoundingClientRect();
-        setDimensions({
-          width: Math.round(rect.width),
-          height: Math.round(rect.height),
-        });
-      }
-    };
-
-    updateDimensions();
-
-    // Update dimensions on window resize
-    const handleResize = () => updateDimensions();
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, [visualizationContainerRef]);
-
   const exportAsPNG = useCallback(async () => {
     setIsExporting(true);
     setExportError(null);
@@ -270,7 +330,11 @@ export default function ExportControls() {
     try {
       trackEvent?.("Export Visualization", "png");
 
-      // Calculate layout dimensions
+      // Calculate actual export dimensions using the helper function
+      const { width: totalWidth, height: totalHeight } =
+        calculateExportDimensions();
+
+      // Calculate layout dimensions (needed for rendering)
       const topGraphHeight = topGraphDims.height;
       const leftGraphWidth = leftGraphDims.width;
 
@@ -309,10 +373,6 @@ export default function ExportControls() {
           4,
       ); // Padding for top axis (margin + axis label + ticks + labels + spacing)
 
-      const rightAxisWidth = 60; // Space for top graph axis
-      const bottomAxisHeight = 60; // Space for left graph axis (increased for label space)
-      const categoricalAxisSpace = 500; // Space for rotated column labels and row labels
-
       // Calculate metadata bar dimensions dynamically
       const rowMetadataBarWidth = calculateMetadataBarDimensions(
         rows,
@@ -326,21 +386,6 @@ export default function ExportControls() {
         columnSortOrders,
         "X",
       );
-
-      const totalWidth =
-        leftPadding +
-        leftGraphWidth +
-        heatmapWidth +
-        rowMetadataBarWidth +
-        rightAxisWidth +
-        categoricalAxisSpace;
-      const totalHeight =
-        topPadding +
-        topGraphHeight +
-        heatmapHeight +
-        columnMetadataBarHeight +
-        bottomAxisHeight +
-        categoricalAxisSpace;
 
       // Calculate side graph data
       const topBars =
@@ -555,6 +600,7 @@ export default function ExportControls() {
     }
   }, [
     trackEvent,
+    calculateExportDimensions,
     topGraphDims.height,
     leftGraphDims.width,
     heatmapWidth,
@@ -568,7 +614,9 @@ export default function ExportControls() {
     removedColumns,
     removedRows,
     xScale.scale,
+    xScale.tickLabelSize,
     yScale.scale,
+    yScale.tickLabelSize,
     normalization,
     rawDataMap,
     dataMap,
@@ -586,6 +634,15 @@ export default function ExportControls() {
     resolution,
     filename,
     includeTimestamp,
+    rowMetadata,
+    columnMetadata,
+    rowSortOrders,
+    columnSortOrders,
+    getFieldDisplayName,
+    rowConfig.pluralLabel,
+    columnConfig.pluralLabel,
+    rowNormalizedDataMap,
+    columnNormalizedDataMap,
   ]);
 
   const exportAsSVG = useCallback(async () => {
