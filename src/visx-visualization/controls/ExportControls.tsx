@@ -1,5 +1,8 @@
-import { Download } from "@mui/icons-material";
+import { Download, ExpandMore } from "@mui/icons-material";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   AlertTitle,
   Box,
@@ -150,6 +153,17 @@ export default function ExportControls() {
   const [resolution, setResolution] = useState<number>(2);
   const [exportLegendsAsSeparateFile, setExportLegendsAsSeparateFile] =
     useState(false);
+
+  // Advanced SVG export settings
+  const [cellSize, setCellSize] = useState(20);
+  const [fontSize, setFontSize] = useState(11);
+  const [tickLength, setTickLength] = useState(6);
+  const [labelMargin, setLabelMargin] = useState(8);
+  const [expansionRatio, setExpansionRatio] = useState(3);
+  const [expandedRowPadding, setExpandedRowPadding] = useState(8);
+  const [legendPanelSpacing, setLegendPanelSpacing] = useState(16);
+  const [colorLegendLeftMargin, setColorLegendLeftMargin] = useState(20);
+
   const theme = useTheme();
 
   // Get visualization data and state
@@ -849,6 +863,16 @@ export default function ExportControls() {
           getFieldDisplayName,
           includeAxes: true,
           includeLegend: true,
+          advancedSettings: {
+            cellSize,
+            fontSize,
+            tickLength,
+            labelMargin,
+            expansionRatio,
+            expandedRowPadding,
+            legendPanelSpacing,
+            colorLegendLeftMargin,
+          },
         },
         `${baseFilename}${timestamp}.svg`,
       );
@@ -925,6 +949,14 @@ export default function ExportControls() {
     exportLegendsAsSeparateFile,
     rowConfig.pluralLabel,
     columnConfig.pluralLabel,
+    cellSize,
+    fontSize,
+    tickLength,
+    labelMargin,
+    expansionRatio,
+    expandedRowPadding,
+    legendPanelSpacing,
+    colorLegendLeftMargin,
   ]);
 
   const handleExport = useCallback(() => {
@@ -974,7 +1006,7 @@ export default function ExportControls() {
       </FormControl>
 
       {/* Filename Configuration */}
-      <Stack direction="column" spacing={1} width="100%">
+      <Stack direction="column" spacing={2} width="100%">
         <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
           <TextField
             label="Filename"
@@ -1021,9 +1053,208 @@ export default function ExportControls() {
           />
         )}
 
+      {/* Advanced SVG Settings - only for SVG */}
+      {exportFormat === "svg" && (
+        <Accordion sx={{ width: "100%" }}>
+          <AccordionSummary expandIcon={<ExpandMore />}>
+            <Typography variant="subtitle2">Advanced Settings</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={2} width="100%">
+              <Typography variant="body2" color="text.secondary">
+                Fine-tune the SVG export layout and sizing parameters.
+              </Typography>
+
+              {/* Cell Size */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Cell Size: {cellSize}px
+                </Typography>
+                <Slider
+                  value={cellSize}
+                  onChange={(_, value) => setCellSize(value as number)}
+                  min={5}
+                  max={50}
+                  step={1}
+                  marks={[{ value: 5 }, { value: 20 }, { value: 50 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Heatmap cell size"
+                />
+                <FormHelperText>
+                  Size of each heatmap cell in pixels. Larger values create more
+                  spacious layouts.
+                </FormHelperText>
+              </Stack>
+
+              {/* Font Size */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Font Size: {fontSize}px
+                </Typography>
+                <Slider
+                  value={fontSize}
+                  onChange={(_, value) => setFontSize(value as number)}
+                  min={6}
+                  max={20}
+                  step={1}
+                  marks={[{ value: 6 }, { value: 11 }, { value: 20 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Label font size"
+                />
+                <FormHelperText>
+                  Font size for axis labels and other text elements.
+                </FormHelperText>
+              </Stack>
+
+              {/* Tick Length */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Tick Length: {tickLength}px
+                </Typography>
+                <Slider
+                  value={tickLength}
+                  onChange={(_, value) => setTickLength(value as number)}
+                  min={0}
+                  max={20}
+                  step={1}
+                  marks={[{ value: 0 }, { value: 6 }, { value: 20 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Axis tick length"
+                />
+                <FormHelperText>Length of axis tick marks.</FormHelperText>
+              </Stack>
+
+              {/* Label Margin */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Label Margin: {labelMargin}px
+                </Typography>
+                <Slider
+                  value={labelMargin}
+                  onChange={(_, value) => setLabelMargin(value as number)}
+                  min={0}
+                  max={30}
+                  step={1}
+                  marks={[{ value: 0 }, { value: 8 }, { value: 30 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Gap between labels and graphs"
+                />
+                <FormHelperText>
+                  Gap between labels and side graphs.
+                </FormHelperText>
+              </Stack>
+
+              {/* Expansion Ratio */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Expansion Ratio: {expansionRatio}x
+                </Typography>
+                <Slider
+                  value={expansionRatio}
+                  onChange={(_, value) => setExpansionRatio(value as number)}
+                  min={1}
+                  max={10}
+                  step={0.5}
+                  marks={[{ value: 1 }, { value: 3 }, { value: 10 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Expanded row size ratio"
+                />
+                <FormHelperText>
+                  Size ratio for expanded rows relative to collapsed rows.
+                </FormHelperText>
+              </Stack>
+
+              {/* Expanded Row Padding */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Expanded Row Padding: {expandedRowPadding}px
+                </Typography>
+                <Slider
+                  value={expandedRowPadding}
+                  onChange={(_, value) =>
+                    setExpandedRowPadding(value as number)
+                  }
+                  min={0}
+                  max={30}
+                  step={1}
+                  marks={[{ value: 0 }, { value: 8 }, { value: 30 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Padding for expanded rows"
+                />
+                <FormHelperText>
+                  Vertical padding between expanded rows and other rows.
+                </FormHelperText>
+              </Stack>
+
+              {/* Legend Panel Spacing */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Legend Panel Spacing: {legendPanelSpacing}px
+                </Typography>
+                <Slider
+                  value={legendPanelSpacing}
+                  onChange={(_, value) =>
+                    setLegendPanelSpacing(value as number)
+                  }
+                  min={0}
+                  max={50}
+                  step={2}
+                  marks={[{ value: 0 }, { value: 16 }, { value: 50 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Spacing between legend panels"
+                />
+                <FormHelperText>
+                  Horizontal spacing between categorical legend panels.
+                </FormHelperText>
+              </Stack>
+
+              {/* Color Legend Left Margin */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Color Legend Left Margin: {colorLegendLeftMargin}px
+                </Typography>
+                <Slider
+                  value={colorLegendLeftMargin}
+                  onChange={(_, value) =>
+                    setColorLegendLeftMargin(value as number)
+                  }
+                  min={0}
+                  max={50}
+                  step={2}
+                  marks={[{ value: 0 }, { value: 20 }, { value: 50 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Margin before color legends"
+                />
+                <FormHelperText>
+                  Left margin before categorical color legends.
+                </FormHelperText>
+              </Stack>
+
+              {/* Reset Button */}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  setCellSize(20);
+                  setFontSize(11);
+                  setTickLength(6);
+                  setLabelMargin(8);
+                  setExpansionRatio(3);
+                  setExpandedRowPadding(8);
+                  setLegendPanelSpacing(16);
+                  setColorLegendLeftMargin(20);
+                }}
+              >
+                Reset to Defaults
+              </Button>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+      )}
+
       {/* Resolution Configuration - only for PNG */}
       {exportFormat === "png" && (
-        <Stack direction="column" spacing={1} width="100%">
+        <Stack direction="column" spacing={2} width="100%">
           <FormControl fullWidth>
             <Typography variant="body2" gutterBottom>
               Export Resolution: {resolution}x

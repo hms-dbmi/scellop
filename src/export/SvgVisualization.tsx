@@ -95,6 +95,18 @@ export interface SvgExportConfig {
   // Optional flags
   includeAxes?: boolean;
   includeLegend?: boolean;
+
+  // Advanced SVG export settings
+  advancedSettings?: {
+    cellSize?: number; // Size of each heatmap cell (default: 20)
+    fontSize?: number; // Font size for labels (default: 11)
+    tickLength?: number; // Length of axis ticks (default: 6)
+    labelMargin?: number; // Gap between labels and graphs (default: 8)
+    expansionRatio?: number; // Ratio for expanded rows (default: 3)
+    expandedRowPadding?: number; // Padding for expanded rows (default: 8)
+    legendPanelSpacing?: number; // Spacing between legend panels (default: 16)
+    colorLegendLeftMargin?: number; // Margin before color legends (default: 20)
+  };
 }
 
 /**
@@ -140,14 +152,24 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
     getFieldDisplayName,
     includeAxes = true,
     includeLegend = true,
+    advancedSettings = {},
   } = config;
 
+  // Extract advanced settings with defaults
+  const {
+    cellSize = 20,
+    fontSize = 11,
+    tickLength = 6,
+    labelMargin = 8,
+    expansionRatio = 3,
+    expandedRowPadding = 8,
+    legendPanelSpacing = 16,
+    colorLegendLeftMargin = 20,
+  } = advancedSettings;
+
   // Calculate dynamic padding based on longest labels
-  const fontSize = 11;
   const charWidth = fontSize * 0.75; // Match SvgCategoricalAxis calculation
-  const tickLength = 6;
   const axisLabelFontSize = fontSize + 2; // Axis labels are bold and larger
-  const labelMargin = 8; // Gap between labels and side graphs
 
   const longestRowLabel = rows.reduce(
     (max, row) => (row.length > max.length ? row : max),
@@ -230,9 +252,6 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
   const axisSpacing = 30; // Space for top axis only
   const effectiveTopPadding = calculatedTopPadding + axisSpacing;
 
-  // Set square cell size for optimal label spacing
-  const cellSize = 20;
-
   // Calculate heatmap dimensions with square cells
   const squareWidth = cellSize * columns.length;
   const squareHeight = cellSize * rows.length;
@@ -270,14 +289,12 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
     }
 
     // Handle expanded rows with different heights
-    const expansionRatio = 3;
     const expandedRowHeight =
       squareHeight / (expansionRatio + effectiveExpandedRows.size);
     const totalExpandedHeight = effectiveExpandedRows.size * expandedRowHeight;
     const totalCollapsedHeight = squareHeight - totalExpandedHeight;
     const numberOfUnselectedRows = rows.length - effectiveExpandedRows.size;
     const collapsedRowHeight = totalCollapsedHeight / numberOfUnselectedRows;
-    const EXPANDED_ROW_PADDING = 8;
 
     // Split domain into sections
     const domains = rows
@@ -315,9 +332,9 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         cumulativeHeight -= domainHeight;
         const isExpanded = domain.some((row) => effectiveExpandedRows.has(row));
         const rangeTop =
-          cumulativeHeight + (isExpanded ? EXPANDED_ROW_PADDING : 0);
+          cumulativeHeight + (isExpanded ? expandedRowPadding : 0);
         const rangeBottom =
-          initialHeight - (isExpanded ? EXPANDED_ROW_PADDING : 0);
+          initialHeight - (isExpanded ? expandedRowPadding : 0);
         return scaleBand<string>({
           range: [rangeTop, rangeBottom],
           domain,
@@ -471,7 +488,6 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
       : { width: 0, height: 0 };
 
   // Add spacing between panels
-  const legendPanelSpacing = 16;
   const totalColorLegendWidth =
     (rowColorLegendDims.width > 0 ? rowColorLegendDims.width : 0) +
     (columnColorLegendDims.width > 0 ? columnColorLegendDims.width : 0) +
@@ -480,7 +496,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
       : 0);
 
   // Add spacing before color legends if they exist
-  const colorLegendLeftMargin = totalColorLegendWidth > 0 ? 20 : 0;
+  const effectiveColorLegendLeftMargin =
+    totalColorLegendWidth > 0 ? colorLegendLeftMargin : 0;
 
   // Recalculate total dimensions with square heatmap, metadata bars, and color legends
   const squareTotalWidth =
@@ -491,7 +508,7 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         squareWidth +
         columnMetadataBarWidth +
         rightAxisWidth +
-        colorLegendLeftMargin +
+        effectiveColorLegendLeftMargin +
         totalColorLegendWidth;
   const squareTotalHeight =
     viewType === "traditional"
@@ -772,7 +789,7 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
                     squareWidth +
                     columnMetadataBarWidth +
                     rightAxisWidth +
-                    colorLegendLeftMargin
+                    effectiveColorLegendLeftMargin
                   }
                   y={effectiveTopPadding + topGraphHeight}
                   maxWidth={200}
@@ -799,7 +816,7 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
                     squareWidth +
                     columnMetadataBarWidth +
                     rightAxisWidth +
-                    colorLegendLeftMargin +
+                    effectiveColorLegendLeftMargin +
                     (rowColorLegendDims.width > 0
                       ? rowColorLegendDims.width + legendPanelSpacing
                       : 0)
