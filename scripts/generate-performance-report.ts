@@ -61,18 +61,23 @@ function generateMarkdownReport(results: BenchmarkResults): string {
 
   markdown += "## Summary\n\n";
   markdown +=
-    "This report presents benchmark results for Scellop's core operations across various dataset sizes.\n\n";
+    "This report presents benchmark results for Scellop's core operations across various dataset sizes. ";
+  markdown +=
+    "Cell counts in benchmark names refer to non-empty cells in the sparse heatmap matrix.\n\n";
 
   for (const file of results.files) {
-    const fileName = file.filepath.split("/").pop()?.replace(".bench.ts", "") || "Unknown";
+    const fileName =
+      file.filepath.split("/").pop()?.replace(".bench.ts", "") || "Unknown";
     markdown += `# ${fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/-/g, " ")}\n\n`;
-    
+
     for (const group of file.groups) {
       // Extract just the test suite name from the full name
       const suiteName = group.fullName.split(" > ").slice(-1)[0];
       markdown += `## ${suiteName}\n\n`;
-      markdown += "| Benchmark | Ops/sec | Mean | p75 | p99 | Min | Max |\n";
-      markdown += "|-----------|---------|------|-----|-----|-----|-----|\n";
+      markdown +=
+        "| Benchmark | Ops/sec | Mean | p75 | p99 | Min | Max | Samples |\n";
+      markdown +=
+        "|-----------|---------|------|-----|-----|-----|-----|---------|\n";
 
       for (const bench of group.benchmarks) {
         markdown += `| ${bench.name} `;
@@ -81,7 +86,8 @@ function generateMarkdownReport(results: BenchmarkResults): string {
         markdown += `| ${formatTime(bench.p75)} `;
         markdown += `| ${formatTime(bench.p99)} `;
         markdown += `| ${formatTime(bench.min)} `;
-        markdown += `| ${formatTime(bench.max)} |\n`;
+        markdown += `| ${formatTime(bench.max)} `;
+        markdown += `| ${formatNumber(bench.sampleCount, 0)} |\n`;
       }
 
       markdown += "\n";
