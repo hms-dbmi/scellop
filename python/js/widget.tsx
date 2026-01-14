@@ -1,10 +1,10 @@
 import { createRender, useModelState } from "@anywidget/react";
+import { loadDataWithCounts, type ScellopData } from "@scellop/data-loading";
+import { Scellop } from "@scellop/scellop";
 import * as React from "react";
-import * as scellop from "scellop";
-import { ScellopData } from "../../src/scellop-schema";
 
 const render = createRender(() => {
-  const [dataDict, _] = useModelState<{
+  const [dataDict] = useModelState<{
     counts: Record<string, Record<string, number>>;
     metadata: {
       row: Record<string, Record<string, number>>;
@@ -16,7 +16,7 @@ const render = createRender(() => {
 
   React.useEffect(() => {
     if (Object.keys(dataDict).length > 0) {
-      const loaded = scellop.loadDataWithCounts(dataDict.counts);
+      const loaded = loadDataWithCounts(dataDict.counts);
       loaded.metadata = {
         rows: dataDict.metadata.row ?? {},
         cols: dataDict.metadata.col ?? {},
@@ -64,7 +64,7 @@ const render = createRender(() => {
   return (
     <div className="scellop" style={{ position: "relative" }} ref={ref}>
       {data ? (
-        <scellop.Scellop
+        <Scellop
           data={data}
           theme={"light"}
           dimensions={dimensions}

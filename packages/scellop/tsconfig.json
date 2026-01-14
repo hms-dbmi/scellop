@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist-tsc",
+    "paths": {
+      "@scellop/data-loading": ["../data-loading/src"]
+    }
+  },
+  "include": ["src", "scripts/add-metadata-to-results.ts"],
+  "exclude": ["node_modules", "dist", "dist-tsc"]
+}

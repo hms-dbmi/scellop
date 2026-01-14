@@ -1,0 +1,26 @@
+{
+  "name": "@scellop/demo",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@scellop/data-loading": "workspace:*",
+    "@scellop/hubmap-data-loading": "workspace:*",
+    "@scellop/scellop": "workspace:*",
+    "@mui/icons-material": "^6.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.5"
+  }
+}
