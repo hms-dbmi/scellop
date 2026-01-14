@@ -2,234 +2,144 @@
 
 ## Project Overview
 
-**Scellop** (formerly CellPop) is a React-based interactive visualization library for exploring cell type compositions from single-cell RNA-seq data. It provides flexible heatmaps with side views (bar charts, violin plots) and supports both NPM/PyPI distribution. Built with TypeScript, React 18+, Vite, and visx.
+**Scellop** is a React visualization library for interactive exploration of cell type compositions from single-cell RNA-seq data. Provides flexible heatmaps with side views (bar/violin charts) distributed via NPM and PyPI.
 
-**Architecture**: Monorepo using pnpm workspaces with three main packages:
-- `@scellop/data-loading`: Core data types and loading utilities (zero dependencies)
-- `@scellop/hubmap-data-loading`: HuBMAP-specific data loading (depends on @vitessce/zarr)
-- `@scellop/scellop`: Main visualization library
+**Stack**: TypeScript, React 18, Vite, visx, Zustand, MUI, Canvas rendering
 
-## Architecture & Key Patterns
+**Monorepo** (pnpm workspaces):
 
-### Context-Driven State Management
+- `@scellop/data-loading` - Core types/schema (zero dependencies)
+- `@scellop/hubmap-data-loading` - HuBMAP Zarr data loading
+- `@scellop/scellop` - Main visualization library
+- `sites/demo` - Demo site (not published)
+- `python/` - Jupyter widget via anywidget
 
-State is managed via **Zustand stores wrapped in React Context** (see [packages/scellop/src/utils/zustand.tsx](packages/scellop/src/utils/zustand.tsx)). The entire app wraps in 15+ nested context providers via [packages/scellop/src/contexts/Providers.tsx](packages/scellop/src/contexts/Providers.tsx). This enables:
+## Architecture Essentials
 
-- Type-safe state access with custom hooks like `useData()`, `useScale()`, `useColorScale()`
-- **Temporal state** (undo/redo) via `zundo` for `DataContext`
-- **Memoized selectors** via `proxy-memoize` for performance
+### State: Zustand + Context Pattern
 
-**Pattern**: To add new state:
+State uses **Zustand stores wrapped in React Context** ([packages/scellop/src/utils/zustand.tsx](packages/scellop/src/utils/zustand.tsx)). All 15+ providers nest in [packages/scellop/src/contexts/Providers.tsx](packages/scellop/src/contexts/Providers.tsx).
+
+**Critical features**:
+
+- `DataContext` has **temporal state** (undo/redo via `zundo`)
+- Selectors use `proxy-memoize` for performance
+- Provider nesting order matters (dependencies must nest inside)
+
+**Adding state**:
 
 ```tsx
-// 1. Create store with zustand helper
 const [Provider, useMyStore] = createStoreContext(
-  (initialProps) => createStore<MyState>(() => ({ ...initialProps })),
+  (props) => createStore<State>(() => ({ ...props })),
   "MyContext"
 );
-
-// 2. Add to Providers.tsx nesting
-// 3. Use via hook: const value = useMyStore((s) => s.value)
+// Add to Providers.tsx, use: useMyStore((s) => s.value)
 ```
 
-### Data Schema
+### Data Model: ScellopData
 
-Core type is `ScellopData` (see [packages/data-loading/src/scellop-schema.ts](packages/data-loading/src/scellop-schema.ts)):
+Schema in [packages/data-loading/src/scellop-schema.ts](packages/data-loading/src/scellop-schema.ts):
 
-- `rowNames`/`colNames`: Dataset IDs and cell type identifiers
-- `countsMatrix`: Array of `[rowKey, colKey, count]` tuples
-- `metadata`: Nested object for rows/cols with arbitrary key-value pairs
+```tsx
+type ScellopData = {
+  rowNames: string[];           // Dataset IDs
+  colNames: string[];           // Cell types
+  countsMatrix: [string, string, number][]; // [row, col, count]
+  metadata: { rows: {...}, cols: {...} };
+}
+```
 
-**Critical**: The `DataContext` ([packages/scellop/src/contexts/DataContext.tsx](packages/scellop/src/contexts/DataContext.tsx)) manages:
+**DataContext** ([packages/scellop/src/contexts/DataContext.tsx](packages/scellop/src/contexts/DataContext.tsx)) handles filtering, sorting, removal, transposition - all without mutating source data.
 
-- Filtering (hiding rows/cols based on metadata)
-- Sorting (by count, alphabetically, or metadata fields)
-- Removal (transient hide without data mutation)
-- Transposition (swap X/Y axes)
+### Dual Export System
 
-### Dual Export Pipeline
+**PNG**: Offscreen Canvas at 4x+ resolution (NOT html2canvas)  
+**SVG**: React components render `<svg>` with data-driven elements
 
-The export system ([packages/scellop/src/export/](packages/scellop/src/export/)) provides **high-quality PNG and SVG exports**:
+Both share logic in [packages/scellop/src/export/rendering-utils.ts](packages/scellop/src/export/rendering-utils.ts). When adding visualizations:
 
-- **PNG**: Offscreen canvas rendering at 4x+ resolution (not html2canvas screenshots)
-- **SVG**: React components generate `<svg>` with data-driven `<rect>` elements
-
-Both use shared utilities in [packages/scellop/src/export/rendering-utils.ts](packages/scellop/src/export/rendering-utils.ts) for calculating cell positions/colors from the same data as the interactive view. See [packages/scellop/src/export/README.md](packages/scellop/src/export/README.md) for details.
-
-**Pattern**: When adding visualizations, create:
-
-1. `calculateMyGraph()` in `rendering-utils.ts`
-2. `renderMyGraphToCanvas()` for PNG
-3. `SvgMyGraph.tsx` component for SVG
+1. Add `calculateMyGraph()` to `rendering-utils.ts`
+2. Add `renderMyGraphToCanvas()` for PNG
+3. Create `SvgMyGraph.tsx` for SVG
 4. Update `canvas-export.ts` and `svg-export.tsx`
 
-### Responsive Sizing with visx
+**Gotcha**: Browser canvas size limits (65535px Chrome, 32767px Firefox)
 
-The root component uses `withParentSize` HOC from `@visx/responsive` to get container dimensions. Scales are created via `@visx/scale` (e.g., `scaleBand`, `scaleLinear`) and passed through context providers.
+### Rendering: Canvas + visx
 
-**Note**: We use Canvas for the main heatmap rendering (performance), not `@visx/heatmap`, but visx provides axes, scales, and side graphs.
+Interactive heatmap uses **Canvas** (not `@visx/heatmap`) for performance. `@visx` provides scales, axes, side graphs. Root uses `withParentSize` HOC for responsive sizing.
 
 ## Development Workflow
 
-### Monorepo Structure
-
-```
-packages/
-  data-loading/          # Core types, schemas, DataLoader interface
-  hubmap-data-loading/   # HuBMAP-specific data loading with Zarr
-  scellop/               # Main visualization library
-sites/
-  demo/                  # Demo site (not part of library build)
-python/                  # Python widget for Jupyter notebooks
-```
-
-### Setup & Commands
+**Setup**:
 
 ```bash
-pnpm install         # Install all workspace dependencies
-pnpm run dev         # Build packages + start demo with watch mode
-pnpm run build       # Build all packages for distribution
-pnpm run test        # Run vitest unit tests across all packages
-pnpm run lint        # Biome check across entire monorepo
-pnpm run lint:fix    # Auto-fix with Biome
+pnpm install      # Install all deps
+pnpm run dev      # Build packages in watch + demo
+pnpm run build    # Production builds
+pnpm run test     # Vitest across all packages
+pnpm run lint:fix # Biome auto-fix
+pnpm run bench    # Performance benchmarks
 ```
 
-**Development mode**: `pnpm run dev` performs an initial build of all packages, then runs them in watch mode alongside the demo site. Changes to any package will automatically rebuild and hot-reload in the demo.
+**Dev mode**: Builds all packages once, then watches + hot-reloads demo at [sites/demo/src/demo.tsx](sites/demo/src/demo.tsx)
 
-### Demo Site
-
-The demo ([sites/demo/src/demo.tsx](sites/demo/src/demo.tsx)) loads HuBMAP data via `loadHuBMAPData()` from `@scellop/hubmap-data-loading`. Test data is available in [sites/demo/src/testData.ts](sites/demo/src/testData.ts).
-
-### Python Widget Development
-
-The Python package ([python/](python/)) uses **anywidget** to embed the React app in Jupyter notebooks:
+**Python widget**:
 
 ```bash
 cd python
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pnpm install && pnpm run build  # Build widget
-# Open example.ipynb in JupyterLab or VS Code
+pnpm install && pnpm run build
+# Open example.ipynb
 ```
 
-Changes in [python/js/widget.tsx](python/js/widget.tsx) require rebuilding with `pnpm run build`. The widget imports from `@scellop/scellop` and `@scellop/data-loading`.
+Changes in [python/js/widget.tsx](python/js/widget.tsx) need `pnpm run build`
 
-### Build Configuration
-
-Each package has its own Vite config:
-- **packages/*/vite.config.ts**: Library builds (ES + UMD) with TypeScript declarations
-- **sites/demo/vite.config.ts**: Demo site with sourcemaps for debugging
-
-TypeScript path mappings in `tsconfig.json` files resolve workspace dependencies during development.
-
-## Testing
-
-Tests use **vitest** with jsdom. Each package has its own test setup.
-
-**Key tests**:
-
-- [packages/scellop/src/test/rendering-utils.test.ts](packages/scellop/src/test/rendering-utils.test.ts): Export calculations
-- [packages/scellop/src/test/side-graph-utils.test.ts](packages/scellop/src/test/side-graph-utils.test.ts): Bar/violin rendering
-
-**Pattern**: Test data-driven calculations, not React components. Mock Zustand stores when needed.
+**Path mappings**: TypeScript resolves `@scellop/*` imports to source via `tsconfig.json` paths. Vite/vitest configs alias these for bundling/testing.
 
 ## Code Conventions
 
-### Formatting & Linting
+**Biome** ([biome.json](biome.json)): double quotes, semicolons, 2-space indent, unix LF. Run `pnpm run lint:fix` before commits.
 
-- **Biome** for linting and formatting ([biome.json](biome.json)): double quotes, semicolons, unix line endings
-- Run `pnpm run lint:fix` before committing to auto-fix issues
-- VS Code integration via Biome extension (recommended in `.vscode/extensions.json`)
+**TypeScript**: Strict mode ([tsconfig.base.json](tsconfig.base.json)), explicit types, avoid `any`, JSX transform `react-jsx` (no React imports needed).
 
-### TypeScript Strictness
+**Naming**:
 
-- Strict mode enabled in [tsconfig.base.json](tsconfig.base.json) (shared across all packages)
-- Use explicit types for props, state, and function returns
-- Avoid `any`; use `unknown` and type guards
-- JSX transform: `react-jsx` (no need to import React in JSX files)
+- Contexts: `MyContext` with `useMyContext()` hook
+- Files: PascalCase components, kebab-case utils (`array-reordering.ts`)
 
-### Naming Conventions
+**Testing**: Vitest + jsdom. Test data calculations, not React components. See [packages/scellop/src/test/rendering-utils.test.ts](packages/scellop/src/test/rendering-utils.test.ts).
 
-- **Contexts**: `MyContext`, hooks are `useMyContext()`
-- **Components**: PascalCase, colocate related components in directories (e.g., `visx-visualization/`)
-- **Utilities**: camelCase functions, kebab-case filenames (e.g., `array-reordering.ts`)
+## Data Loading Pattern
 
-### File Organization
-
-- **packages/scellop/src/contexts/**: Zustand stores + providers
-- **packages/scellop/src/visx-visualization/**: Canvas-based interactive visualization
-- **packages/scellop/src/export/**: High-quality export system
-- **packages/data-loading/src/**: Core types and utilities
-- **packages/hubmap-data-loading/src/**: HuBMAP-specific loaders
-- **packages/scellop/src/utils/**: Pure functions (colors, normalizations, graph types)
-- **packages/scellop/src/hooks/**: Reusable React hooks
-
-## Integration Points
-
-### Data Loading
-
-Two primary loaders in separate packages:
-
-1. **HuBMAP Loader** ([packages/hubmap-data-loading/src/HuBMAPDataLoader.ts](packages/hubmap-data-loading/src/HuBMAPDataLoader.ts)): Fetches Zarr arrays from HuBMAP portal using `@vitessce/zarr`
-2. **Generic Loader** ([packages/data-loading/src/dataWrangling.ts](packages/data-loading/src/dataWrangling.ts)): `loadDataWithCounts()` utility for converting counts dictionaries to `ScellopData`
-
-**DataLoader Interface**: Create custom loaders by implementing `DataLoader<TParams>` from `@scellop/data-loading`:
+Implement `DataLoader<TParams>` from `@scellop/data-loading`:
 
 ```tsx
-import { BaseDataLoader, type ScellopData } from '@scellop/data-loading';
+import { BaseDataLoader, ScellopData } from "@scellop/data-loading";
 
-interface MyLoaderParams {
-  url: string;
-  // ... custom params
-}
-
-class MyDataLoader extends BaseDataLoader<MyLoaderParams> {
-  async load(params: MyLoaderParams): Promise<ScellopData | undefined> {
-    // Implement loading logic
-    return data;
+class MyLoader extends BaseDataLoader<{ url: string }> {
+  async load({ url }): Promise<ScellopData | undefined> {
+    // Fetch and transform to ScellopData schema
   }
 }
 ```
 
-**Pattern**: Users pass `ScellopData` to `<Scellop data={...} />`:
+See [packages/hubmap-data-loading/src/HuBMAPDataLoader.ts](packages/hubmap-data-loading/src/HuBMAPDataLoader.ts) for reference implementation with Zarr.
 
-```tsx
-import { Scellop } from '@scellop/scellop';
-import { loadHuBMAPData } from '@scellop/hubmap-data-loading';
+## Key Files
 
-const data = await loadHuBMAPData(['uuid1', 'uuid2']);
-<Scellop data={data} />
-```
-
-### External Dependencies
-
-- **@visx**: Scales, axes, shapes for D3-like visualizations
-- **@mui/material**: UI components (buttons, icons, switches)
-- **@dnd-kit**: Drag-and-drop for reordering axes
-- **@vitessce/zarr**: Zarr array loading (isolated to `@scellop/hubmap-data-loading`)
-- **d3**: Used sparingly (e.g., color scales, violin KDE)
-- **zustand**: Global state management
+- [packages/scellop/src/ScellopComponent.tsx](packages/scellop/src/ScellopComponent.tsx) - Main entry point
+- [packages/scellop/src/contexts/Providers.tsx](packages/scellop/src/contexts/Providers.tsx) - Provider nesting (ORDER MATTERS)
+- [packages/scellop/src/utils/zustand.tsx](packages/scellop/src/utils/zustand.tsx) - Context+Zustand factory
+- [packages/scellop/src/export/rendering-utils.ts](packages/scellop/src/export/rendering-utils.ts) - Export calculations
+- [sites/demo/src/demo.tsx](sites/demo/src/demo.tsx) - Full API usage example
+- [packages/scellop/src/benchmarks/README.md](packages/scellop/src/benchmarks/README.md) - Performance testing guide
 
 ## Common Gotchas
 
-1. **Context Nesting Order**: Providers must be nested in specific order (see [packages/scellop/src/contexts/Providers.tsx](packages/scellop/src/contexts/Providers.tsx)). If a context depends on another, it must be nested inside.
-
-2. **Canvas vs SVG**: The main heatmap uses Canvas for performance. Export generates both Canvas (PNG) and SVG (vector) versions. Don't confuse the two rendering paths.
-
-3. **Reactive Providers**: Some contexts have `reactive` prop to reset state when props change. Use cautiously (causes re-renders).
-
-4. **Memoization**: Use `useMemo` for expensive calculations (e.g., scales, data maps). Use `proxy-memoize` for derived state in Zustand selectors.
-
-5. **Browser Canvas Limits**: PNG export checks browser-specific canvas size limits (65535px in Chrome, 32767px in Firefox). See [packages/scellop/src/export/README.md](packages/scellop/src/export/README.md).
-
-6. **Workspace Dependencies**: TypeScript path mappings in `tsconfig.json` resolve `@scellop/*` imports to source files during development. Changes to `@scellop/data-loading` or `@scellop/hubmap-data-loading` require rebuilding (automatic in watch mode).
-
-## Useful Files as References
-
-- **Example Usage**: [sites/demo/src/demo.tsx](sites/demo/src/demo.tsx) - Shows full API with HuBMAP data
-- **Component API**: [packages/scellop/src/ScellopComponent.tsx](packages/scellop/src/ScellopComponent.tsx) - Main entry point
-- **State Patterns**: [packages/scellop/src/contexts/DataContext.tsx](packages/scellop/src/contexts/DataContext.tsx) - Complex Zustand with temporal state
-- **Custom Hooks**: [packages/scellop/src/utils/zustand.tsx](packages/scellop/src/utils/zustand.tsx) - Context + Zustand factory functions
-- **Rendering Logic**: [packages/scellop/src/export/rendering-utils.ts](packages/scellop/src/export/rendering-utils.ts) - Data-to-pixels calculations
-- **Data Loading Interface**: [packages/data-loading/src/DataLoader.ts](packages/data-loading/src/DataLoader.ts) - Generic DataLoader with typed generics
-- **HuBMAP Implementation**: [packages/hubmap-data-loading/src/HuBMAPDataLoader.ts](packages/hubmap-data-loading/src/HuBMAPDataLoader.ts) - Example DataLoader implementation
+1. **Provider order**: Dependencies must nest inside dependents in `Providers.tsx`
+2. **Canvas vs SVG**: Separate render paths for interactive (Canvas) vs export (both)
+3. **Reactive providers**: Have `reactive` prop that resets state on prop changes (expensive)
+4. **Memoization**: Use `proxy-memoize` in Zustand selectors, `useMemo` for scales/maps
+5. **Workspace deps**: Changes to `@scellop/data-loading` auto-rebuild in watch mode
