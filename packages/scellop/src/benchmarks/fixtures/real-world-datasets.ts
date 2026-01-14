@@ -25,6 +25,7 @@ export const REAL_WORLD_DATASETS: RealWorldDatasetConfig[] = [
     description: "HuBMAP Lung cell type composition (45×71 dimensions)",
     loader: async () => {
       // Use @demo alias configured in vitest.bench.config.ts
+      // @ts-expect-error -- dynamic import
       const { default: data } = await import("@demo/hubmapLung");
       return data;
     },
@@ -33,6 +34,7 @@ export const REAL_WORLD_DATASETS: RealWorldDatasetConfig[] = [
     name: "hubmap-kidney",
     description: "HuBMAP Kidney cell type composition (108×48 dimensions)",
     loader: async () => {
+      // @ts-expect-error -- dynamic import
       const { default: data } = await import("@demo/hubmapKidney");
       return data;
     },
@@ -41,6 +43,7 @@ export const REAL_WORLD_DATASETS: RealWorldDatasetConfig[] = [
     name: "hca-data",
     description: "Human Cell Atlas dataset (484×51 dimensions)",
     loader: async () => {
+      // @ts-expect-error -- dynamic import
       const { hcaData } = await import("@demo/hcaData");
       return hcaData;
     },
