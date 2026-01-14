@@ -538,6 +538,67 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         columnMetadataLabelOverhang +
         bottomAxisHeight;
 
+  // Transform left bars to use squareYScale when there are expanded rows
+  const transformedLeftBars = React.useMemo(() => {
+    if (!leftBars || leftBars.length === 0) return leftBars;
+
+    const effectiveExpandedRows = expandedRows || new Set<string>();
+    // Only transform if there are expanded rows
+    if (
+      effectiveExpandedRows.size === 0 ||
+      effectiveExpandedRows.size === rows.length
+    ) {
+      return leftBars;
+    }
+
+    // Transform each bar's position and height
+    return leftBars.map((bar) => {
+      const originalY = bar.backgroundY;
+      const originalHeight = bar.backgroundHeight;
+      const squareY = squareYScale(bar.key);
+      const squareBandwidth =
+        typeof squareYScale.bandwidth === "function"
+          ? (squareYScale.bandwidth as (item?: string) => number)(bar.key)
+          : squareYScale.bandwidth;
+
+      if (squareY === undefined || squareBandwidth === undefined) {
+        return bar;
+      }
+
+      // Calculate the scale factor for this specific bar
+      const originalBandwidth = originalHeight;
+      const scaleFactorForBar = squareBandwidth / originalBandwidth;
+
+      // Transform all segments
+      const transformedSegments = bar.segments.map((segment) => {
+        // Calculate position relative to bar start
+        const relativeY = segment.y - originalY;
+        const newY = squareY + relativeY * scaleFactorForBar;
+        const newHeight = segment.height * scaleFactorForBar;
+
+        return {
+          ...segment,
+          y: newY,
+          height: newHeight,
+        };
+      });
+
+      return {
+        ...bar,
+        backgroundY: squareY,
+        backgroundHeight: squareBandwidth,
+        segments: transformedSegments,
+      };
+    });
+  }, [leftBars, squareYScale, expandedRows, rows.length]);
+
+  // Similarly for top bars (though they typically don't have expansion)
+  const transformedTopBars = React.useMemo(() => {
+    if (!topBars || topBars.length === 0) return topBars;
+    // Top bars use xScale which is always uniform, so just apply simple scale factor
+    return topBars;
+  }, [topBars]);
+
   return (
     <svg
       width={squareTotalWidth}
@@ -568,13 +629,13 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         )}
 
         {/* Top side graphs */}
-        {topBars && topBars.length > 0 && (
+        {transformedTopBars && transformedTopBars.length > 0 && (
           <g
             transform={`translate(${leftGraphWidth}, ${effectiveTopPadding}) scale(${xScaleFactor}, 1)`}
             className="top-bars"
           >
             <SvgBars
-              bars={topBars}
+              bars={transformedTopBars}
               backgroundColor={backgroundColor}
               drawStripes={true}
               orderedValues={columns}
@@ -594,40 +655,44 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         )}
 
         {/* Top graph numeric axis (right side) */}
-        {topAxisScale && topBars && topBars.length > 0 && (
-          <SvgNumericAxis
-            scale={topAxisScale}
-            orientation="right"
-            width={60}
-            height={topGraphHeight}
-            tickLabelSize={tickLabelSize}
-            color={defaultColor}
-            hideZero={true}
-            x={
-              viewType === "traditional"
-                ? squareWidth
-                : leftGraphWidth + squareWidth
-            }
-            y={effectiveTopPadding}
-          />
-        )}
+        {topAxisScale &&
+          transformedTopBars &&
+          transformedTopBars.length > 0 && (
+            <SvgNumericAxis
+              scale={topAxisScale}
+              orientation="right"
+              width={60}
+              height={topGraphHeight}
+              tickLabelSize={tickLabelSize}
+              color={defaultColor}
+              hideZero={true}
+              x={
+                viewType === "traditional"
+                  ? squareWidth
+                  : leftGraphWidth + squareWidth
+              }
+              y={effectiveTopPadding}
+            />
+          )}
 
         {/* Left side graphs */}
-        {viewType !== "traditional" && leftBars && leftBars.length > 0 && (
-          <g
-            transform={`translate(${0}, ${effectiveTopPadding + topGraphHeight}) scale(1, ${yScaleFactor})`}
-            className="left-bars"
-          >
-            <SvgBars
-              bars={leftBars}
-              backgroundColor={backgroundColor}
-              drawStripes={true}
-              orderedValues={rows}
-              stripeEvenColor="#eeeeee"
-              stripeOddColor="#ffffff"
-            />
-          </g>
-        )}
+        {viewType !== "traditional" &&
+          transformedLeftBars &&
+          transformedLeftBars.length > 0 && (
+            <g
+              transform={`translate(${0}, ${effectiveTopPadding + topGraphHeight})`}
+              className="left-bars"
+            >
+              <SvgBars
+                bars={transformedLeftBars}
+                backgroundColor={backgroundColor}
+                drawStripes={true}
+                orderedValues={rows}
+                stripeEvenColor="#eeeeee"
+                stripeOddColor="#ffffff"
+              />
+            </g>
+          )}
 
         {viewType !== "traditional" &&
           leftViolins &&
@@ -643,8 +708,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         {/* Left graph numeric axis (bottom side) */}
         {viewType !== "traditional" &&
           leftAxisScale &&
-          leftBars &&
-          leftBars.length > 0 && (
+          transformedLeftBars &&
+          transformedLeftBars.length > 0 && (
             <SvgNumericAxis
               scale={leftAxisScale}
               orientation="bottom"
