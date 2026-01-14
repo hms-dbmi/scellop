@@ -89,8 +89,10 @@ export const SvgCategoricalColorLegend: React.FC<
   let legendHeight: number;
 
   if (isVertical) {
-    // When not truncating labels, use full item width; otherwise respect maxWidth
-    legendWidth = truncateLabels ? Math.min(itemWidth, maxWidth) : itemWidth;
+    // When not truncating labels, use full item width plus left padding; otherwise respect maxWidth
+    legendWidth = truncateLabels
+      ? Math.min(itemWidth, maxWidth)
+      : itemWidth + padding;
     const naturalHeight =
       titleFontSize + titleMargin + categoriesWithColors.length * itemHeight;
     legendHeight = showAllItems
@@ -243,8 +245,10 @@ export function calculateCategoricalColorLegendDimensions(
   const itemHeight = Math.max(colorBoxSize, itemFontSize) + itemSpacing;
 
   if (isVertical) {
-    // When not truncating labels, use full item width; otherwise respect maxWidth
-    const width = truncateLabels ? Math.min(itemWidth, maxWidth) : itemWidth;
+    // When not truncating labels, use full item width plus left padding; otherwise respect maxWidth
+    const width = truncateLabels
+      ? Math.min(itemWidth, maxWidth)
+      : itemWidth + padding;
     const naturalHeight =
       titleFontSize + titleMargin + categoriesWithColors.length * itemHeight;
     const height = showAllItems

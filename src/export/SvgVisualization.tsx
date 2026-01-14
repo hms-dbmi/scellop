@@ -12,6 +12,7 @@ import {
 import { SvgHeatmap } from "./SvgHeatmap";
 import { SvgLegend } from "./SvgLegend";
 import {
+  calculateMetadataLabelOverhang,
   calculateSvgMetadataBarDimensions,
   SvgMetadataValueBars,
 } from "./SvgMetadataValueBars";
@@ -501,7 +502,21 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
   const effectiveColorLegendLeftMargin =
     totalColorLegendWidth > 0 ? colorLegendLeftMargin : 0;
 
-  // Recalculate total dimensions with square heatmap, metadata bars, and color legends
+  // Calculate extra space needed for metadata labels that extend beyond bars
+  const rowMetadataLabelOverhang = calculateMetadataLabelOverhang(
+    rows,
+    rowMetadata,
+    filteredRowSortOrders,
+    "Y",
+  );
+  const columnMetadataLabelOverhang = calculateMetadataLabelOverhang(
+    columns,
+    columnMetadata,
+    filteredColumnSortOrders,
+    "X",
+  );
+
+  // Recalculate total dimensions with square heatmap, metadata bars, color legends, and label overhang
   const squareTotalWidth =
     viewType === "traditional"
       ? effectiveLeftPadding + squareWidth + rightAxisWidth
@@ -509,6 +524,7 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         leftGraphWidth +
         squareWidth +
         columnMetadataBarWidth +
+        rowMetadataLabelOverhang +
         rightAxisWidth +
         effectiveColorLegendLeftMargin +
         totalColorLegendWidth;
@@ -519,6 +535,7 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         topGraphHeight +
         squareHeight +
         rowMetadataBarHeight +
+        columnMetadataLabelOverhang +
         bottomAxisHeight;
 
   return (
