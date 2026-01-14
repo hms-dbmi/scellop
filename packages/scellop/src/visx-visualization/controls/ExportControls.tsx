@@ -511,14 +511,26 @@ export default function ExportControls() {
           : "Counts";
 
       const minValueLabel = isNormalized ? "0%" : "1";
+
+      // Filter dataMap to only include visible (non-removed) rows and columns
+      const visibleDataMap = Object.fromEntries(
+        Object.entries(dataMap).filter(([key]) => {
+          const [row, col] = key.split("-");
+          return !removedRows.has(row) && !removedColumns.has(col);
+        }),
+      );
+
       const maxValueLabel = isNormalized
         ? "100%"
         : Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
-            Object.values(dataMap).reduce((max, val) => Math.max(max, val), 0),
+            Object.values(visibleDataMap).reduce(
+              (max, val) => Math.max(max, val),
+              0,
+            ),
           );
 
       // dataMap already contains normalized/log-transformed values based on normalization setting
-      const maxValue = Object.values(dataMap).reduce(
+      const maxValue = Object.values(visibleDataMap).reduce(
         (max, val) => Math.max(max, val),
         0,
       );
@@ -781,14 +793,26 @@ export default function ExportControls() {
           : "Counts";
 
       const minValueLabel = isNormalized ? "0%" : "1";
+
+      // Filter dataMap to only include visible (non-removed) rows and columns
+      const visibleDataMap = Object.fromEntries(
+        Object.entries(dataMap).filter(([key]) => {
+          const [row, col] = key.split("-");
+          return !removedRows.has(row) && !removedColumns.has(col);
+        }),
+      );
+
       const maxValueLabel = isNormalized
         ? "100%"
         : Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
-            Object.values(dataMap).reduce((max, val) => Math.max(max, val), 0),
+            Object.values(visibleDataMap).reduce(
+              (max, val) => Math.max(max, val),
+              0,
+            ),
           );
 
       // dataMap already contains normalized/log-transformed values based on normalization setting
-      const maxValue = Object.values(dataMap).reduce(
+      const maxValue = Object.values(visibleDataMap).reduce(
         (max, val) => Math.max(max, val),
         0,
       );
