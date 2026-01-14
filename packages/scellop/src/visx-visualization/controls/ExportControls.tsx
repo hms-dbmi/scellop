@@ -513,28 +513,15 @@ export default function ExportControls() {
       const minValueLabel = isNormalized ? "0%" : "1";
       const maxValueLabel = isNormalized
         ? "100%"
-        : isLogTransformed
-          ? Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
-              Math.log(
-                Object.values(dataMap).reduce(
-                  (max, val) => Math.max(max, val),
-                  0,
-                ) + 1,
-              ),
-            )
-          : Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
-              Object.values(dataMap).reduce(
-                (max, val) => Math.max(max, val),
-                0,
-              ),
-            );
+        : Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
+            Object.values(dataMap).reduce((max, val) => Math.max(max, val), 0),
+          );
 
-      const maxValue = isLogTransformed
-        ? Math.log(
-            Object.values(dataMap).reduce((max, val) => Math.max(max, val), 0) +
-              1,
-          )
-        : Object.values(dataMap).reduce((max, val) => Math.max(max, val), 0);
+      // dataMap already contains normalized/log-transformed values based on normalization setting
+      const maxValue = Object.values(dataMap).reduce(
+        (max, val) => Math.max(max, val),
+        0,
+      );
 
       // Render complete multi-panel visualization
       renderMultiPanelToCanvas({
@@ -796,28 +783,15 @@ export default function ExportControls() {
       const minValueLabel = isNormalized ? "0%" : "1";
       const maxValueLabel = isNormalized
         ? "100%"
-        : isLogTransformed
-          ? Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
-              Math.log(
-                Object.values(dataMap).reduce(
-                  (max, val) => Math.max(max, val),
-                  0,
-                ) + 1,
-              ),
-            )
-          : Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
-              Object.values(dataMap).reduce(
-                (max, val) => Math.max(max, val),
-                0,
-              ),
-            );
+        : Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
+            Object.values(dataMap).reduce((max, val) => Math.max(max, val), 0),
+          );
 
-      const maxValue = isLogTransformed
-        ? Math.log(
-            Object.values(dataMap).reduce((max, val) => Math.max(max, val), 0) +
-              1,
-          )
-        : Object.values(dataMap).reduce((max, val) => Math.max(max, val), 0);
+      // dataMap already contains normalized/log-transformed values based on normalization setting
+      const maxValue = Object.values(dataMap).reduce(
+        (max, val) => Math.max(max, val),
+        0,
+      );
 
       // Export SVG with all panels
       exportAsSvg(
