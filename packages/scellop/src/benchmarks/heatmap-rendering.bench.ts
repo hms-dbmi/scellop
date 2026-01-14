@@ -8,15 +8,13 @@ import { bench, describe } from "vitest";
 import { calculateHeatmapCells } from "../utils/calculations/heatmap-cells";
 import { renderCellsToCanvas } from "../utils/rendering/canvas-utils";
 import {
-  generateAllDatasets,
   generateSyntheticData,
   getDatasetStats,
 } from "./fixtures/synthetic-datasets";
-import { BENCHMARK_DATASETS } from "./setup-benchmarks";
+import {  getBenchmarkDatasets } from "./setup-benchmarks";
 
-describe("Heatmap Rendering Benchmarks", () => {
-  const datasets =
-    BENCHMARK_DATASETS.size > 0 ? BENCHMARK_DATASETS : generateAllDatasets();
+describe("Heatmap Rendering Benchmarks", async () => {
+  const datasets = await getBenchmarkDatasets();
 
   describe("Calculate Heatmap Cells", () => {
     for (const [name, data] of datasets) {
@@ -61,67 +59,71 @@ describe("Heatmap Rendering Benchmarks", () => {
   });
 
   describe("Calculate Heatmap Cells with Expanded Rows", () => {
-    const medium = datasets.get("medium");
-    if (!medium) return;
-    const cellWidth = 10;
-    const cellHeight = 10;
-    const xScale = scaleBand<string>()
-      .domain(medium.colNames)
-      .range([0, medium.colNames.length * cellWidth])
-      .padding(0);
-    const yScale = scaleBand<string>()
-      .domain(medium.rowNames)
-      .range([0, medium.rowNames.length * cellHeight])
-      .padding(0);
+    for (const [name, data] of datasets) {
+      // Skip very large datasets for expanded rows tests
+      if (name === "huge" || name === "extraWide" || name === "extraTall") continue;
 
-    const dataMap: Record<string, number> = {};
-    medium.countsMatrix.forEach(([row, col, value]) => {
-      dataMap[`${row}-${col}`] = value;
-    });
+      const stats = getDatasetStats(data);
+      const cellWidth = 10;
+      const cellHeight = 10;
+      const xScale = scaleBand<string>()
+        .domain(data.colNames)
+        .range([0, data.colNames.length * cellWidth])
+        .padding(0);
+      const yScale = scaleBand<string>()
+        .domain(data.rowNames)
+        .range([0, data.rowNames.length * cellHeight])
+        .padding(0);
 
-    const colorScale = (value: number) => `rgb(${Math.min(255, value)}, 0, 0)`;
-
-    bench("No expanded rows", () => {
-      calculateHeatmapCells({
-        rows: medium.rowNames,
-        columns: medium.colNames,
-        dataMap,
-        xScale,
-        yScale,
-        colorScale,
-        backgroundColor: "white",
+      const dataMap: Record<string, number> = {};
+      data.countsMatrix.forEach(([row, col, value]) => {
+        dataMap[`${row}-${col}`] = value;
       });
-    });
 
-    bench("10% expanded rows", () => {
-      const expandedCount = Math.floor(medium.rowNames.length * 0.1);
-      const selectedValues = new Set(medium.rowNames.slice(0, expandedCount));
-      calculateHeatmapCells({
-        rows: medium.rowNames,
-        columns: medium.colNames,
-        dataMap,
-        xScale,
-        yScale,
-        colorScale,
-        backgroundColor: "white",
-        selectedValues,
-      });
-    });
+      const colorScale = (value: number) => `rgb(${Math.min(255, value)}, 0, 0)`;
 
-    bench("50% expanded rows", () => {
-      const expandedCount = Math.floor(medium.rowNames.length * 0.5);
-      const selectedValues = new Set(medium.rowNames.slice(0, expandedCount));
-      calculateHeatmapCells({
-        rows: medium.rowNames,
-        columns: medium.colNames,
-        dataMap,
-        xScale,
-        yScale,
-        colorScale,
-        backgroundColor: "white",
-        selectedValues,
+      bench(`${name} - no expanded rows (${stats.rows}×${stats.cols})`, () => {
+        calculateHeatmapCells({
+          rows: data.rowNames,
+          columns: data.colNames,
+          dataMap,
+          xScale,
+          yScale,
+          colorScale,
+          backgroundColor: "white",
+        });
       });
-    });
+
+      bench(`${name} - 10% expanded rows (${stats.rows}×${stats.cols})`, () => {
+        const expandedCount = Math.floor(data.rowNames.length * 0.1);
+        const selectedValues = new Set(data.rowNames.slice(0, expandedCount));
+        calculateHeatmapCells({
+          rows: data.rowNames,
+          columns: data.colNames,
+          dataMap,
+          xScale,
+          yScale,
+          colorScale,
+          backgroundColor: "white",
+          selectedValues,
+        });
+      });
+
+      bench(`${name} - 50% expanded rows (${stats.rows}×${stats.cols})`, () => {
+        const expandedCount = Math.floor(data.rowNames.length * 0.5);
+        const selectedValues = new Set(data.rowNames.slice(0, expandedCount));
+        calculateHeatmapCells({
+          rows: data.rowNames,
+          columns: data.colNames,
+          dataMap,
+          xScale,
+          yScale,
+          colorScale,
+          backgroundColor: "white",
+          selectedValues,
+        });
+      });
+    }
   });
 
   describe("Render Cells to Canvas", () => {

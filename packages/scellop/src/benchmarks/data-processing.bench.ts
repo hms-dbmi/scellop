@@ -9,11 +9,10 @@ import { temporal } from "zundo";
 import { createStore } from "zustand";
 import type { DatasetConfig } from "./fixtures/synthetic-datasets";
 import {
-  generateAllDatasets,
   generateSyntheticData,
   getDatasetStats,
 } from "./fixtures/synthetic-datasets";
-import { BENCHMARK_DATASETS } from "./setup-benchmarks";
+import { getBenchmarkDatasets } from "./setup-benchmarks";
 
 // Import the same memoized selectors used in DataContext
 // We'll recreate them here for benchmarking
@@ -94,11 +93,11 @@ function calculateLogDataMap(
   return dataMap;
 }
 
-describe("Data Processing Benchmarks", () => {
-  // Use the same datasets that were generated and logged in setup-benchmarks.ts
-  // If BENCHMARK_DATASETS is empty, fall back to generating new ones
-  const datasets =
-    BENCHMARK_DATASETS.size > 0 ? BENCHMARK_DATASETS : generateAllDatasets();
+describe("Data Processing Benchmarks", async () => {
+  // BENCHMARK_DATASETS is populated by setup-benchmarks.ts beforeAll hook
+  // and includes both synthetic and real-world datasets
+  const datasets = await getBenchmarkDatasets();
+  console.log(`Running Data Processing Benchmarks on ${datasets.size} datasets`);
 
   describe("DataMap Creation (Raw Counts)", () => {
     for (const [name, data] of datasets) {

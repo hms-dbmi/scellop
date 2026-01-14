@@ -16,19 +16,35 @@ export interface RealWorldDatasetConfig {
 }
 
 /**
- * Placeholder for real-world datasets
- * Users can add their actual data loading logic here
+ * Real-world datasets from demo directory
+ * These are actual HuBMAP and HCA datasets used in the demo site
  */
 export const REAL_WORLD_DATASETS: RealWorldDatasetConfig[] = [
-  // Example: HuBMAP Kidney dataset
-  // {
-  //   name: "hubmap-kidney",
-  //   description: "HuBMAP Kidney cell type composition",
-  //   loader: async () => {
-  //     const { loadHuBMAPData } = await import("@scellop/hubmap-data-loading");
-  //     return await loadHuBMAPData(["uuid1", "uuid2", ...]);
-  //   },
-  // },
+  {
+    name: "hubmap-lung",
+    description: "HuBMAP Lung cell type composition (45×71 dimensions)",
+    loader: async () => {
+      // Use @demo alias configured in vitest.bench.config.ts
+      const { default: data } = await import("@demo/hubmapLung");
+      return data;
+    },
+  },
+  {
+    name: "hubmap-kidney",
+    description: "HuBMAP Kidney cell type composition (108×48 dimensions)",
+    loader: async () => {
+      const { default: data } = await import("@demo/hubmapKidney");
+      return data;
+    },
+  },
+  {
+    name: "hca-data",
+    description: "Human Cell Atlas dataset (484×51 dimensions)",
+    loader: async () => {
+      const { hcaData } = await import("@demo/hcaData");
+      return hcaData;
+    },
+  },
 ];
 
 /**

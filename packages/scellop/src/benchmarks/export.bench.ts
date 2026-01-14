@@ -8,14 +8,12 @@ import { bench, describe } from "vitest";
 import { calculateHeatmapCells } from "../utils/calculations/heatmap-cells";
 import { renderCellsToCanvas } from "../utils/rendering/canvas-utils";
 import {
-  generateAllDatasets,
   getDatasetStats,
 } from "./fixtures/synthetic-datasets";
-import { BENCHMARK_DATASETS } from "./setup-benchmarks";
+import { getBenchmarkDatasets } from "./setup-benchmarks";
 
-describe("Export Performance Benchmarks", () => {
-  const datasets =
-    BENCHMARK_DATASETS.size > 0 ? BENCHMARK_DATASETS : generateAllDatasets();
+describe("Export Performance Benchmarks", async () => {
+  const datasets = await getBenchmarkDatasets();
 
   describe("High-Resolution Canvas Export", () => {
     const exportSizes = ["tiny", "small", "medium"];

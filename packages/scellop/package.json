@@ -47,7 +47,7 @@
     "bench:render": "vitest bench --config vitest.bench.config.ts heatmap-rendering",
     "bench:graphs": "vitest bench --config vitest.bench.config.ts side-graphs",
     "bench:export": "vitest bench --config vitest.bench.config.ts export",
-    "bench:json": "vitest bench --config vitest.bench.config.ts --outputJson=benchmark-results.json",
+    "bench:json": "vitest bench --config vitest.bench.config.ts --outputJson=benchmark-results.json && tsx src/benchmarks/add-metadata-to-results.ts benchmark-results.json",
     "bench:stats": "tsx scripts/show-dataset-stats.ts",
     "bench:stats:json": "tsx scripts/show-dataset-stats.ts --json",
     "lint": "biome check .",

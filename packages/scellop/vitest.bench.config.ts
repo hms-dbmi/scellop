@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@scellop/data-loading": path.resolve(__dirname, "../data-loading/src"),
+      "@demo": path.resolve(__dirname, "../../sites/demo/src"),
     },
   },
   test: {

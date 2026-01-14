@@ -11,6 +11,24 @@ This benchmark suite measures:
 - **Side Graphs**: Violin plot KDE calculations, bar chart rendering
 - **Export**: High-resolution PNG generation, memory efficiency
 
+All benchmarks run on both **synthetic and real-world datasets** for comprehensive performance analysis.
+
+### Dataset Types
+
+**Synthetic Datasets** (9 sizes):
+
+- Procedurally generated with controlled dimensions and density
+- Range from tiny (10×10) to huge (500×500)
+- Include asymmetrical layouts (wide, tall, extraWide, extraTall)
+
+**Real-World Datasets** (3 datasets):
+
+- `hubmap-lung`: 45×71 samples, actual HuBMAP lung tissue data
+- `hubmap-kidney`: 108×48 samples, actual HuBMAP kidney tissue data
+- `hca-data`: 484×51 samples, Human Cell Atlas dataset
+
+**Total**: 12 datasets used across all benchmark suites
+
 ## Running Benchmarks
 
 **Dataset Fixture Information**: Each benchmark run automatically outputs complete dataset statistics (including row sums) at the beginning. Since datasets are procedurally generated with random values, this ensures you have the exact fixture data used in that specific run.
@@ -45,8 +63,29 @@ pnpm run bench -- export
 ### Generate JSON Report
 
 ```bash
-pnpm run bench -- --reporter=json --outputFile=benchmark-results.json
+pnpm run bench:json
 ```
+
+Creates `benchmark-results.json` with detailed metrics including:
+
+- Operations per second (`hz`)
+- Mean, median, standard deviation (`sd`)
+- Percentiles (p75, p99, p995, p999)
+- Relative margin of error (`rme`)
+- Sample count
+- **Dataset metadata**: Array of all datasets with dimensions, cell counts, and density
+
+The `bench:json` script automatically adds dataset metadata to the output for complete reproducibility.
+
+### Generate Performance Report
+
+After running benchmarks with JSON output:
+
+```bash
+pnpm dlx tsx scripts/generate-performance-report.ts
+```
+
+Creates `PERFORMANCE_REPORT.md` with formatted tables including SD, RME, and sample counts.
 
 ## Benchmark Structure
 
@@ -73,17 +112,32 @@ Datasets include metadata (tissue types, conditions, donors) to test metadata pr
 
 ### Real-World Datasets
 
-Add your own datasets to `fixtures/real-world-datasets.ts`:
+The benchmark suite includes actual datasets from the demo site:
+
+**Included Datasets:**
+
+- `hubmap-lung`: 45 samples × varying cell types (HuBMAP lung tissue)
+- `hubmap-kidney`: 151 samples × varying cell types (HuBMAP kidney tissue)
+- `hca-data`: 194 samples × varying cell types (Human Cell Atlas)
+
+These are automatically loaded from `sites/demo/src/` and benchmarked alongside synthetic datasets.
+
+**Adding Custom Datasets:**
+
+To add your own real-world datasets, edit `fixtures/real-world-datasets.ts`:
 
 ```typescript
-import { registerRealWorldDataset } from "./fixtures/real-world-datasets";
-import { hubmapKidney } from "./my-datasets";
-
-registerRealWorldDataset({
-  name: "hubmap-kidney",
-  description: "HuBMAP Kidney cell type composition",
-  loader: () => hubmapKidney,
-});
+export const REAL_WORLD_DATASETS: RealWorldDatasetConfig[] = [
+  // ... existing datasets ...
+  {
+    name: "my-custom-dataset",
+    description: "My custom dataset description",
+    loader: async () => {
+      const { myData } = await import("path/to/my/data");
+      return myData;
+    },
+  },
+];
 ```
 
 ## Benchmark Suites
