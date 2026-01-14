@@ -1,5 +1,8 @@
-import { Download } from "@mui/icons-material";
+import { Download, ExpandMore } from "@mui/icons-material";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   AlertTitle,
   Box,
@@ -17,13 +20,12 @@ import {
   Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   useColumnConfig,
   useRowConfig,
 } from "../../contexts/AxisConfigContext";
 import { useColorScale } from "../../contexts/ColorScaleContext";
-import { useParentRef } from "../../contexts/ContainerRefContext";
 import {
   useColumnCounts,
   useColumnMaxes,
@@ -142,7 +144,6 @@ const getMaxCanvasArea = (navigatorString = navigator.userAgent) => {
  * ExportControls component provides functionality to export the visualization as PNG or SVG
  */
 export default function ExportControls() {
-  const visualizationContainerRef = useParentRef();
   const trackEvent = useTrackEvent();
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -152,10 +153,17 @@ export default function ExportControls() {
   const [resolution, setResolution] = useState<number>(2);
   const [exportLegendsAsSeparateFile, setExportLegendsAsSeparateFile] =
     useState(false);
-  const [dimensions, setDimensions] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
+
+  // Advanced SVG export settings
+  const [cellWidth, setCellWidth] = useState(20);
+  const [cellHeight, setCellHeight] = useState(20);
+  const [fontSize, setFontSize] = useState(11);
+  const [tickLength, setTickLength] = useState(6);
+  const [labelMargin, setLabelMargin] = useState(8);
+  const [expansionRatio, setExpansionRatio] = useState(3);
+  const [expandedRowPadding, setExpandedRowPadding] = useState(8);
+  const [legendPanelSpacing, setLegendPanelSpacing] = useState(16);
+  const [colorLegendLeftMargin, setColorLegendLeftMargin] = useState(20);
 
   const theme = useTheme();
 
@@ -204,26 +212,111 @@ export default function ExportControls() {
         ? logScale
         : percentageScale;
 
+  // Calculate actual export dimensions including all padding, axes, and metadata
+  const calculateExportDimensions = useCallback(() => {
+    // Calculate layout dimensions
+    const topGraphHeight = topGraphDims.height;
+    const leftGraphWidth = leftGraphDims.width;
+
+    // Calculate leftPadding based on longest row label
+    const fontSize = 11;
+    const longestRowLabel = rows.reduce(
+      (max, row) => (row.length > max.length ? row : max),
+      "",
+    );
+    const maxRowLabelLength = Math.min(longestRowLabel.length, 20);
+    const charWidth = fontSize * 0.6; // Approximate character width
+    const tickLength = 6;
+    const axisLabelSpace = 20; // Space for axis label
+    const margin = 16; // Margin from edge
+    const leftPadding = Math.max(
+      120,
+      margin + axisLabelSpace + tickLength + maxRowLabelLength * charWidth + 4,
+    ); // Padding for left axis (margin + axis label + ticks + labels + spacing)
+
+    // Calculate topPadding based on longest column label
+    const longestColumnLabel = columns.reduce(
+      (max, col) => (col.length > max.length ? col : max),
+      "",
+    );
+    const maxColumnLabelLength = Math.min(longestColumnLabel.length, 20);
+    const topPadding = Math.max(
+      100,
+      margin +
+        axisLabelSpace +
+        tickLength +
+        maxColumnLabelLength * charWidth +
+        4,
+    ); // Padding for top axis (margin + axis label + ticks + labels + spacing)
+
+    const rightAxisWidth = 60; // Space for top graph axis
+    const bottomAxisHeight = 60; // Space for left graph axis (increased for label space)
+    const categoricalAxisSpace = 500; // Space for rotated column labels and row labels
+
+    // Calculate metadata bar dimensions dynamically
+    const rowMetadataBarWidth = calculateMetadataBarDimensions(
+      rows,
+      rowMetadata,
+      rowSortOrders,
+      "Y",
+    );
+    const columnMetadataBarHeight = calculateMetadataBarDimensions(
+      columns,
+      columnMetadata,
+      columnSortOrders,
+      "X",
+    );
+
+    const totalWidth =
+      leftPadding +
+      leftGraphWidth +
+      heatmapWidth +
+      rowMetadataBarWidth +
+      rightAxisWidth +
+      categoricalAxisSpace;
+    const totalHeight =
+      topPadding +
+      topGraphHeight +
+      heatmapHeight +
+      columnMetadataBarHeight +
+      bottomAxisHeight +
+      categoricalAxisSpace;
+
+    return { width: totalWidth, height: totalHeight };
+  }, [
+    topGraphDims.height,
+    leftGraphDims.width,
+    rows,
+    columns,
+    rowMetadata,
+    columnMetadata,
+    rowSortOrders,
+    columnSortOrders,
+    heatmapWidth,
+    heatmapHeight,
+  ]);
+
   // Calculate maximum safe resolution based on browser canvas limits
   const maxResolution = useMemo(() => {
-    if (!dimensions) return 5; // Default fallback
+    // Calculate actual export dimensions
+    const exportDimensions = calculateExportDimensions();
 
     const maxSize = getMaxCanvasSize();
     const maxArea = getMaxCanvasArea();
 
     // Calculate max resolution based on dimension constraints
     const maxFromSize = Math.floor(
-      maxSize / Math.max(dimensions.width, dimensions.height),
+      maxSize / Math.max(exportDimensions.width, exportDimensions.height),
     );
 
     // Calculate max resolution based on area constraints
     const maxFromArea = Math.floor(
-      Math.sqrt(maxArea / (dimensions.width * dimensions.height)),
+      Math.sqrt(maxArea / (exportDimensions.width * exportDimensions.height)),
     );
 
     // Use the more restrictive limit, with a minimum of 1 and reasonable upper bound
     return Math.max(1, Math.min(maxFromSize, maxFromArea, 100));
-  }, [dimensions]);
+  }, [calculateExportDimensions]);
 
   // Generate slider marks based on max resolution
   const sliderMarks = useMemo(() => {
@@ -245,27 +338,6 @@ export default function ExportControls() {
     return marks;
   }, [maxResolution]);
 
-  // Update dimensions when parent ref changes
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (visualizationContainerRef?.current) {
-        const rect = visualizationContainerRef.current.getBoundingClientRect();
-        setDimensions({
-          width: Math.round(rect.width),
-          height: Math.round(rect.height),
-        });
-      }
-    };
-
-    updateDimensions();
-
-    // Update dimensions on window resize
-    const handleResize = () => updateDimensions();
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, [visualizationContainerRef]);
-
   const exportAsPNG = useCallback(async () => {
     setIsExporting(true);
     setExportError(null);
@@ -273,7 +345,11 @@ export default function ExportControls() {
     try {
       trackEvent?.("Export Visualization", "png");
 
-      // Calculate layout dimensions
+      // Calculate actual export dimensions using the helper function
+      const { width: totalWidth, height: totalHeight } =
+        calculateExportDimensions();
+
+      // Calculate layout dimensions (needed for rendering)
       const topGraphHeight = topGraphDims.height;
       const leftGraphWidth = leftGraphDims.width;
 
@@ -312,10 +388,6 @@ export default function ExportControls() {
           4,
       ); // Padding for top axis (margin + axis label + ticks + labels + spacing)
 
-      const rightAxisWidth = 60; // Space for top graph axis
-      const bottomAxisHeight = 60; // Space for left graph axis (increased for label space)
-      const categoricalAxisSpace = 500; // Space for rotated column labels and row labels
-
       // Calculate metadata bar dimensions dynamically
       const rowMetadataBarWidth = calculateMetadataBarDimensions(
         rows,
@@ -329,21 +401,6 @@ export default function ExportControls() {
         columnSortOrders,
         "X",
       );
-
-      const totalWidth =
-        leftPadding +
-        leftGraphWidth +
-        heatmapWidth +
-        rowMetadataBarWidth +
-        rightAxisWidth +
-        categoricalAxisSpace;
-      const totalHeight =
-        topPadding +
-        topGraphHeight +
-        heatmapHeight +
-        columnMetadataBarHeight +
-        bottomAxisHeight +
-        categoricalAxisSpace;
 
       // Calculate side graph data
       const topBars =
@@ -558,6 +615,7 @@ export default function ExportControls() {
     }
   }, [
     trackEvent,
+    calculateExportDimensions,
     topGraphDims.height,
     leftGraphDims.width,
     heatmapWidth,
@@ -571,7 +629,9 @@ export default function ExportControls() {
     removedColumns,
     removedRows,
     xScale.scale,
+    xScale.tickLabelSize,
     yScale.scale,
+    yScale.tickLabelSize,
     normalization,
     rawDataMap,
     dataMap,
@@ -598,8 +658,6 @@ export default function ExportControls() {
     rowMetadata,
     rowNormalizedDataMap,
     rowSortOrders,
-    xScale.tickLabelSize,
-    yScale.tickLabelSize,
   ]);
 
   const exportAsSVG = useCallback(async () => {
@@ -806,6 +864,17 @@ export default function ExportControls() {
           getFieldDisplayName,
           includeAxes: true,
           includeLegend: true,
+          advancedSettings: {
+            cellWidth,
+            cellHeight,
+            fontSize,
+            tickLength,
+            labelMargin,
+            expansionRatio,
+            expandedRowPadding,
+            legendPanelSpacing,
+            colorLegendLeftMargin,
+          },
         },
         `${baseFilename}${timestamp}.svg`,
       );
@@ -892,6 +961,15 @@ export default function ExportControls() {
     viewType,
     xScale.tickLabelSize,
     yScale.tickLabelSize,
+    cellWidth,
+    cellHeight,
+    fontSize,
+    tickLength,
+    labelMargin,
+    expansionRatio,
+    expandedRowPadding,
+    legendPanelSpacing,
+    colorLegendLeftMargin,
   ]);
 
   const handleExport = useCallback(() => {
@@ -941,7 +1019,7 @@ export default function ExportControls() {
       </FormControl>
 
       {/* Filename Configuration */}
-      <Stack direction="column" spacing={1} width="100%">
+      <Stack direction="column" spacing={2} width="100%">
         <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
           <TextField
             label="Filename"
@@ -988,9 +1066,228 @@ export default function ExportControls() {
           />
         )}
 
+      {/* Advanced SVG Settings - only for SVG */}
+      {exportFormat === "svg" && (
+        <Accordion sx={{ width: "100%" }}>
+          <AccordionSummary expandIcon={<ExpandMore />}>
+            <Typography variant="subtitle2">Advanced Settings</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={2} width="100%">
+              <Typography variant="body2" color="text.secondary">
+                Fine-tune the SVG export layout and sizing parameters.
+              </Typography>
+
+              {/* Cell Width */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Cell Width: {cellWidth}px
+                </Typography>
+                <Slider
+                  value={cellWidth}
+                  onChange={(_, value) => setCellWidth(value as number)}
+                  min={5}
+                  max={50}
+                  step={1}
+                  marks={[{ value: 5 }, { value: 20 }, { value: 50 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Heatmap cell width"
+                />
+                <FormHelperText>
+                  Width of each heatmap cell in pixels.
+                </FormHelperText>
+              </Stack>
+
+              {/* Cell Height */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Cell Height: {cellHeight}px
+                </Typography>
+                <Slider
+                  value={cellHeight}
+                  onChange={(_, value) => setCellHeight(value as number)}
+                  min={5}
+                  max={50}
+                  step={1}
+                  marks={[{ value: 5 }, { value: 20 }, { value: 50 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Heatmap cell height"
+                />
+                <FormHelperText>
+                  Height of each heatmap cell in pixels.
+                </FormHelperText>
+              </Stack>
+
+              {/* Font Size */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Font Size: {fontSize}px
+                </Typography>
+                <Slider
+                  value={fontSize}
+                  onChange={(_, value) => setFontSize(value as number)}
+                  min={6}
+                  max={20}
+                  step={1}
+                  marks={[{ value: 6 }, { value: 11 }, { value: 20 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Label font size"
+                />
+                <FormHelperText>
+                  Font size for axis labels and other text elements.
+                </FormHelperText>
+              </Stack>
+
+              {/* Tick Length */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Tick Length: {tickLength}px
+                </Typography>
+                <Slider
+                  value={tickLength}
+                  onChange={(_, value) => setTickLength(value as number)}
+                  min={0}
+                  max={20}
+                  step={1}
+                  marks={[{ value: 0 }, { value: 6 }, { value: 20 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Axis tick length"
+                />
+                <FormHelperText>Length of axis tick marks.</FormHelperText>
+              </Stack>
+
+              {/* Label Margin */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Label Margin: {labelMargin}px
+                </Typography>
+                <Slider
+                  value={labelMargin}
+                  onChange={(_, value) => setLabelMargin(value as number)}
+                  min={0}
+                  max={30}
+                  step={1}
+                  marks={[{ value: 0 }, { value: 8 }, { value: 30 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Gap between labels and graphs"
+                />
+                <FormHelperText>
+                  Gap between labels and side graphs.
+                </FormHelperText>
+              </Stack>
+
+              {/* Expansion Ratio */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Expansion Ratio: {expansionRatio}x
+                </Typography>
+                <Slider
+                  value={expansionRatio}
+                  onChange={(_, value) => setExpansionRatio(value as number)}
+                  min={1}
+                  max={10}
+                  step={0.5}
+                  marks={[{ value: 1 }, { value: 3 }, { value: 10 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Expanded row size ratio"
+                />
+                <FormHelperText>
+                  Size ratio for expanded rows relative to collapsed rows.
+                </FormHelperText>
+              </Stack>
+
+              {/* Expanded Row Padding */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Expanded Row Padding: {expandedRowPadding}px
+                </Typography>
+                <Slider
+                  value={expandedRowPadding}
+                  onChange={(_, value) =>
+                    setExpandedRowPadding(value as number)
+                  }
+                  min={0}
+                  max={30}
+                  step={1}
+                  marks={[{ value: 0 }, { value: 8 }, { value: 30 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Padding for expanded rows"
+                />
+                <FormHelperText>
+                  Vertical padding between expanded rows and other rows.
+                </FormHelperText>
+              </Stack>
+
+              {/* Legend Panel Spacing */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Legend Panel Spacing: {legendPanelSpacing}px
+                </Typography>
+                <Slider
+                  value={legendPanelSpacing}
+                  onChange={(_, value) =>
+                    setLegendPanelSpacing(value as number)
+                  }
+                  min={0}
+                  max={50}
+                  step={2}
+                  marks={[{ value: 0 }, { value: 16 }, { value: 50 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Spacing between legend panels"
+                />
+                <FormHelperText>
+                  Horizontal spacing between categorical legend panels.
+                </FormHelperText>
+              </Stack>
+
+              {/* Color Legend Left Margin */}
+              <Stack direction="column" spacing={1}>
+                <Typography variant="body2" gutterBottom>
+                  Color Legend Left Margin: {colorLegendLeftMargin}px
+                </Typography>
+                <Slider
+                  value={colorLegendLeftMargin}
+                  onChange={(_, value) =>
+                    setColorLegendLeftMargin(value as number)
+                  }
+                  min={0}
+                  max={50}
+                  step={2}
+                  marks={[{ value: 0 }, { value: 20 }, { value: 50 }]}
+                  valueLabelDisplay="auto"
+                  aria-label="Margin before color legends"
+                />
+                <FormHelperText>
+                  Left margin before categorical color legends.
+                </FormHelperText>
+              </Stack>
+
+              {/* Reset Button */}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  setCellWidth(20);
+                  setCellHeight(20);
+                  setFontSize(11);
+                  setTickLength(6);
+                  setLabelMargin(8);
+                  setExpansionRatio(3);
+                  setExpandedRowPadding(8);
+                  setLegendPanelSpacing(16);
+                  setColorLegendLeftMargin(20);
+                }}
+              >
+                Reset to Defaults
+              </Button>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+      )}
+
       {/* Resolution Configuration - only for PNG */}
       {exportFormat === "png" && (
-        <Stack direction="column" spacing={1} width="100%">
+        <Stack direction="column" spacing={2} width="100%">
           <FormControl fullWidth>
             <Typography variant="body2" gutterBottom>
               Export Resolution: {resolution}x

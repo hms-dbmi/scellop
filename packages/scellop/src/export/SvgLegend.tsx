@@ -56,6 +56,12 @@ export const SvgLegend: React.FC<SvgLegendProps> = ({
 
   const gradientId = `legend-gradient-${Math.random().toString(36).substr(2, 9)}`;
 
+  // Calculate colors for min/max labels (use opposite end colors for contrast)
+  // For non-normalized data, the minimum value is 1, not 0
+  const minValue = minValueLabel === "0%" || minValueLabel === "0" ? 0 : 1;
+  const minColor = colorScale(minValue);
+  const maxColor = colorScale(maxValue);
+
   // Legend bar position
   const legendLabelY = currentY + 12;
   const legendX = isVertical
@@ -134,24 +140,25 @@ export const SvgLegend: React.FC<SvgLegendProps> = ({
       {/* Min/Max labels */}
       {isVertical ? (
         <>
+          {/* Min value at bottom, uses max color for contrast */}
           <text
             x={legendX + legendBarThickness / 2}
-            y={legendY + legendBarLength + 12}
-            fill={textColor}
+            y={legendY + legendBarLength + 14}
+            fill={maxColor}
             fontSize="11px"
             fontFamily="sans-serif"
             textAnchor="middle"
           >
             {minValueLabel}
           </text>
+          {/* Max value at top, uses min color for contrast */}
           <text
             x={legendX + legendBarThickness / 2}
-            y={legendY - 4}
-            fill={textColor}
+            y={legendY - 6}
+            fill={minColor}
             fontSize="11px"
             fontFamily="sans-serif"
             textAnchor="middle"
-            dominantBaseline="auto"
           >
             {maxValueLabel}
           </text>
@@ -181,10 +188,11 @@ export const SvgLegend: React.FC<SvgLegendProps> = ({
         </>
       ) : (
         <>
+          {/* Min value at left, uses max color for contrast */}
           <text
-            x={legendX + 4}
+            x={legendX + 8}
             y={legendY + legendBarThickness / 2}
-            fill={textColor}
+            fill={maxColor}
             fontSize="11px"
             fontFamily="sans-serif"
             textAnchor="start"
@@ -192,10 +200,11 @@ export const SvgLegend: React.FC<SvgLegendProps> = ({
           >
             {minValueLabel}
           </text>
+          {/* Max value at right, uses min color for contrast */}
           <text
-            x={legendX + legendBarLength - 4}
+            x={legendX + legendBarLength - 8}
             y={legendY + legendBarThickness / 2}
-            fill={textColor}
+            fill={minColor}
             fontSize="11px"
             fontFamily="sans-serif"
             textAnchor="end"

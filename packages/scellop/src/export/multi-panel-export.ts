@@ -70,8 +70,8 @@ export interface MultiPanelExportParams {
   columnAxisLabel?: string;
 
   // Metadata bars
-  rowMetadata?: Record<string, Record<string, string | number>>;
-  columnMetadata?: Record<string, Record<string, string | number>>;
+  rowMetadata?: Record<string, Record<string, string | number | undefined>>;
+  columnMetadata?: Record<string, Record<string, string | number | undefined>>;
   rowSortOrders?: Array<{ key: string; direction: "asc" | "desc" }>;
   columnSortOrders?: Array<{ key: string; direction: "asc" | "desc" }>;
   getFieldDisplayName?: (field: string) => string;
@@ -141,10 +141,18 @@ export function renderMultiPanelToCanvas(params: MultiPanelExportParams): void {
   canvas.width = totalWidth * resolution;
   canvas.height = totalHeight * resolution;
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", {
+    // Enable better rendering quality
+    alpha: false,
+    willReadFrequently: false,
+  });
   if (!ctx) {
     throw new Error("Failed to get 2D context from canvas");
   }
+
+  // Disable image smoothing for crisp rendering of dense visualizations
+  // This prevents blurriness in heatmaps with many small cells
+  ctx.imageSmoothingEnabled = false;
 
   // Scale the context to match resolution
   ctx.scale(resolution, resolution);

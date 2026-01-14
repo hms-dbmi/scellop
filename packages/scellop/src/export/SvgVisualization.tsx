@@ -1,6 +1,7 @@
 import { scaleBand, scaleLinear } from "@visx/scale";
 import type { ScaleBand } from "d3";
 import type React from "react";
+import { useMemo } from "react";
 import type { ScaleBand as CustomScaleBand } from "../contexts/types";
 import { SvgNumericAxis } from "./SvgAxis";
 import { SvgBars } from "./SvgBars";
@@ -12,6 +13,7 @@ import {
 import { SvgHeatmap } from "./SvgHeatmap";
 import { SvgLegend } from "./SvgLegend";
 import {
+  calculateMetadataLabelOverhang,
   calculateSvgMetadataBarDimensions,
   SvgMetadataValueBars,
 } from "./SvgMetadataValueBars";
@@ -86,8 +88,8 @@ export interface SvgExportConfig {
   columnAxisLabel?: string;
 
   // Metadata
-  rowMetadata?: Record<string, Record<string, string | number>>;
-  columnMetadata?: Record<string, Record<string, string | number>>;
+  rowMetadata?: Record<string, Record<string, string | number | undefined>>;
+  columnMetadata?: Record<string, Record<string, string | number | undefined>>;
   rowSortOrders?: Array<{ key: string; direction: "asc" | "desc" }>;
   columnSortOrders?: Array<{ key: string; direction: "asc" | "desc" }>;
   getFieldDisplayName?: (field: string) => string;
@@ -95,6 +97,19 @@ export interface SvgExportConfig {
   // Optional flags
   includeAxes?: boolean;
   includeLegend?: boolean;
+
+  // Advanced SVG export settings
+  advancedSettings?: {
+    cellWidth?: number; // Width of each heatmap cell (default: 20)
+    cellHeight?: number; // Height of each heatmap cell (default: 20)
+    fontSize?: number; // Font size for labels (default: 11)
+    tickLength?: number; // Length of axis ticks (default: 6)
+    labelMargin?: number; // Gap between labels and graphs (default: 8)
+    expansionRatio?: number; // Ratio for expanded rows (default: 3)
+    expandedRowPadding?: number; // Padding for expanded rows (default: 8)
+    legendPanelSpacing?: number; // Spacing between legend panels (default: 16)
+    colorLegendLeftMargin?: number; // Margin before color legends (default: 20)
+  };
 }
 
 /**
@@ -140,14 +155,25 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
     getFieldDisplayName,
     includeAxes = true,
     includeLegend = true,
+    advancedSettings = {},
   } = config;
 
+  // Extract advanced settings with defaults
+  const {
+    cellWidth = 20,
+    cellHeight = 20,
+    fontSize = 11,
+    tickLength = 6,
+    labelMargin = 8,
+    expansionRatio = 3,
+    expandedRowPadding = 8,
+    legendPanelSpacing = 16,
+    colorLegendLeftMargin = 20,
+  } = advancedSettings;
+
   // Calculate dynamic padding based on longest labels
-  const fontSize = 11;
   const charWidth = fontSize * 0.75; // Match SvgCategoricalAxis calculation
-  const tickLength = 6;
   const axisLabelFontSize = fontSize + 2; // Axis labels are bold and larger
-  const labelMargin = 8; // Gap between labels and side graphs
 
   const longestRowLabel = rows.reduce(
     (max, row) => (row.length > max.length ? row : max),
@@ -230,12 +256,9 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
   const axisSpacing = 30; // Space for top axis only
   const effectiveTopPadding = calculatedTopPadding + axisSpacing;
 
-  // Set square cell size for optimal label spacing
-  const cellSize = 20;
-
-  // Calculate heatmap dimensions with square cells
-  const squareWidth = cellSize * columns.length;
-  const squareHeight = cellSize * rows.length;
+  // Calculate heatmap dimensions with cells
+  const squareWidth = cellWidth * columns.length;
+  const squareHeight = cellHeight * rows.length;
 
   // Recreate scales with square dimensions
   const squareXScale = xScale.copy().range([0, squareWidth]);
@@ -270,14 +293,12 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
     }
 
     // Handle expanded rows with different heights
-    const expansionRatio = 3;
     const expandedRowHeight =
       squareHeight / (expansionRatio + effectiveExpandedRows.size);
     const totalExpandedHeight = effectiveExpandedRows.size * expandedRowHeight;
     const totalCollapsedHeight = squareHeight - totalExpandedHeight;
     const numberOfUnselectedRows = rows.length - effectiveExpandedRows.size;
     const collapsedRowHeight = totalCollapsedHeight / numberOfUnselectedRows;
-    const EXPANDED_ROW_PADDING = 8;
 
     // Split domain into sections
     const domains = rows
@@ -315,9 +336,9 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         cumulativeHeight -= domainHeight;
         const isExpanded = domain.some((row) => effectiveExpandedRows.has(row));
         const rangeTop =
-          cumulativeHeight + (isExpanded ? EXPANDED_ROW_PADDING : 0);
+          cumulativeHeight + (isExpanded ? expandedRowPadding : 0);
         const rangeBottom =
-          initialHeight - (isExpanded ? EXPANDED_ROW_PADDING : 0);
+          initialHeight - (isExpanded ? expandedRowPadding : 0);
         return scaleBand<string>({
           range: [rangeTop, rangeBottom],
           domain,
@@ -471,7 +492,6 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
       : { width: 0, height: 0 };
 
   // Add spacing between panels
-  const legendPanelSpacing = 16;
   const totalColorLegendWidth =
     (rowColorLegendDims.width > 0 ? rowColorLegendDims.width : 0) +
     (columnColorLegendDims.width > 0 ? columnColorLegendDims.width : 0) +
@@ -480,9 +500,24 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
       : 0);
 
   // Add spacing before color legends if they exist
-  const colorLegendLeftMargin = totalColorLegendWidth > 0 ? 20 : 0;
+  const effectiveColorLegendLeftMargin =
+    totalColorLegendWidth > 0 ? colorLegendLeftMargin : 0;
 
-  // Recalculate total dimensions with square heatmap, metadata bars, and color legends
+  // Calculate extra space needed for metadata labels that extend beyond bars
+  const rowMetadataLabelOverhang = calculateMetadataLabelOverhang(
+    rows,
+    rowMetadata,
+    filteredRowSortOrders,
+    "Y",
+  );
+  const columnMetadataLabelOverhang = calculateMetadataLabelOverhang(
+    columns,
+    columnMetadata,
+    filteredColumnSortOrders,
+    "X",
+  );
+
+  // Recalculate total dimensions with square heatmap, metadata bars, color legends, and label overhang
   const squareTotalWidth =
     viewType === "traditional"
       ? effectiveLeftPadding + squareWidth + rightAxisWidth
@@ -490,8 +525,9 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         leftGraphWidth +
         squareWidth +
         columnMetadataBarWidth +
+        rowMetadataLabelOverhang +
         rightAxisWidth +
-        colorLegendLeftMargin +
+        effectiveColorLegendLeftMargin +
         totalColorLegendWidth;
   const squareTotalHeight =
     viewType === "traditional"
@@ -500,7 +536,69 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         topGraphHeight +
         squareHeight +
         rowMetadataBarHeight +
+        columnMetadataLabelOverhang +
         bottomAxisHeight;
+
+  // Transform left bars to use squareYScale when there are expanded rows
+  const transformedLeftBars = useMemo(() => {
+    if (!leftBars || leftBars.length === 0) return leftBars;
+
+    const effectiveExpandedRows = expandedRows || new Set<string>();
+    // Only transform if there are expanded rows
+    if (
+      effectiveExpandedRows.size === 0 ||
+      effectiveExpandedRows.size === rows.length
+    ) {
+      return leftBars;
+    }
+
+    // Transform each bar's position and height
+    return leftBars.map((bar) => {
+      const originalY = bar.backgroundY;
+      const originalHeight = bar.backgroundHeight;
+      const squareY = squareYScale(bar.key);
+      const squareBandwidth =
+        typeof squareYScale.bandwidth === "function"
+          ? (squareYScale.bandwidth as (item?: string) => number)(bar.key)
+          : squareYScale.bandwidth;
+
+      if (squareY === undefined || squareBandwidth === undefined) {
+        return bar;
+      }
+
+      // Calculate the scale factor for this specific bar
+      const originalBandwidth = originalHeight;
+      const scaleFactorForBar = squareBandwidth / originalBandwidth;
+
+      // Transform all segments
+      const transformedSegments = bar.segments.map((segment) => {
+        // Calculate position relative to bar start
+        const relativeY = segment.y - originalY;
+        const newY = squareY + relativeY * scaleFactorForBar;
+        const newHeight = segment.height * scaleFactorForBar;
+
+        return {
+          ...segment,
+          y: newY,
+          height: newHeight,
+        };
+      });
+
+      return {
+        ...bar,
+        backgroundY: squareY,
+        backgroundHeight: squareBandwidth,
+        segments: transformedSegments,
+      };
+    });
+  }, [leftBars, squareYScale, expandedRows, rows.length]);
+
+  // Similarly for top bars (though they typically don't have expansion)
+  const transformedTopBars = useMemo(() => {
+    if (!topBars || topBars.length === 0) return topBars;
+    // Top bars use xScale which is always uniform, so just apply simple scale factor
+    return topBars;
+  }, [topBars]);
 
   return (
     <svg
@@ -533,18 +631,18 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         )}
 
         {/* Top side graphs */}
-        {topBars && topBars.length > 0 && (
+        {transformedTopBars && transformedTopBars.length > 0 && (
           <g
             transform={`translate(${leftGraphWidth}, ${effectiveTopPadding}) scale(${xScaleFactor}, 1)`}
             className="top-bars"
           >
             <SvgBars
-              bars={topBars}
+              bars={transformedTopBars}
               backgroundColor={backgroundColor}
               drawStripes={true}
               orderedValues={columns}
-              stripeEvenColor="rgba(0, 0, 0, 0.04)"
-              stripeOddColor={backgroundColor}
+              stripeEvenColor="#eeeeee"
+              stripeOddColor="#ffffff"
             />
           </g>
         )}
@@ -559,40 +657,44 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         )}
 
         {/* Top graph numeric axis (right side) */}
-        {topAxisScale && topBars && topBars.length > 0 && (
-          <SvgNumericAxis
-            scale={topAxisScale}
-            orientation="right"
-            width={60}
-            height={topGraphHeight}
-            tickLabelSize={tickLabelSize}
-            color={defaultColor}
-            hideZero={true}
-            x={
-              viewType === "traditional"
-                ? squareWidth
-                : leftGraphWidth + squareWidth
-            }
-            y={effectiveTopPadding}
-          />
-        )}
+        {topAxisScale &&
+          transformedTopBars &&
+          transformedTopBars.length > 0 && (
+            <SvgNumericAxis
+              scale={topAxisScale}
+              orientation="right"
+              width={60}
+              height={topGraphHeight}
+              tickLabelSize={tickLabelSize}
+              color={defaultColor}
+              hideZero={true}
+              x={
+                viewType === "traditional"
+                  ? squareWidth
+                  : leftGraphWidth + squareWidth
+              }
+              y={effectiveTopPadding}
+            />
+          )}
 
         {/* Left side graphs */}
-        {viewType !== "traditional" && leftBars && leftBars.length > 0 && (
-          <g
-            transform={`translate(${0}, ${effectiveTopPadding + topGraphHeight}) scale(1, ${yScaleFactor})`}
-            className="left-bars"
-          >
-            <SvgBars
-              bars={leftBars}
-              backgroundColor={backgroundColor}
-              drawStripes={true}
-              orderedValues={rows}
-              stripeEvenColor="rgba(0, 0, 0, 0.04)"
-              stripeOddColor={backgroundColor}
-            />
-          </g>
-        )}
+        {viewType !== "traditional" &&
+          transformedLeftBars &&
+          transformedLeftBars.length > 0 && (
+            <g
+              transform={`translate(${0}, ${effectiveTopPadding + topGraphHeight})`}
+              className="left-bars"
+            >
+              <SvgBars
+                bars={transformedLeftBars}
+                backgroundColor={backgroundColor}
+                drawStripes={true}
+                orderedValues={rows}
+                stripeEvenColor="#eeeeee"
+                stripeOddColor="#ffffff"
+              />
+            </g>
+          )}
 
         {viewType !== "traditional" &&
           leftViolins &&
@@ -608,8 +710,8 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
         {/* Left graph numeric axis (bottom side) */}
         {viewType !== "traditional" &&
           leftAxisScale &&
-          leftBars &&
-          leftBars.length > 0 && (
+          transformedLeftBars &&
+          transformedLeftBars.length > 0 && (
             <SvgNumericAxis
               scale={leftAxisScale}
               orientation="bottom"
@@ -773,7 +875,7 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
                     squareWidth +
                     columnMetadataBarWidth +
                     rightAxisWidth +
-                    colorLegendLeftMargin
+                    effectiveColorLegendLeftMargin
                   }
                   y={effectiveTopPadding + topGraphHeight}
                   maxWidth={200}
@@ -800,7 +902,7 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
                     squareWidth +
                     columnMetadataBarWidth +
                     rightAxisWidth +
-                    colorLegendLeftMargin +
+                    effectiveColorLegendLeftMargin +
                     (rowColorLegendDims.width > 0
                       ? rowColorLegendDims.width + legendPanelSpacing
                       : 0)

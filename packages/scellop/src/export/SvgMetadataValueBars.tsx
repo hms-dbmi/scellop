@@ -24,7 +24,7 @@ interface MetadataBar {
 interface SvgMetadataValueBarsProps {
   axis: "X" | "Y";
   keys: string[];
-  metadata: Record<string, Record<string, string | number>>;
+  metadata?: Record<string, Record<string, string | number | undefined>>;
   sortOrders: Array<{ key: string; direction: "asc" | "desc" }>;
   scale: (value: string) => number | undefined;
   bandwidth: (value?: string) => number;
@@ -60,7 +60,9 @@ const numericColorSchemes = [
  */
 export function calculateSvgMetadataBarDimensions(
   keys: string[],
-  metadata: Record<string, Record<string, string | number>> | undefined,
+  metadata:
+    | Record<string, Record<string, string | number | undefined>>
+    | undefined,
   sortOrders: Array<{ key: string; direction: "asc" | "desc" }>,
   axis: "X" | "Y",
 ): number {
@@ -102,6 +104,50 @@ export function calculateSvgMetadataBarDimensions(
   return (
     labelSpacing + totalSorts * barThickness + (totalSorts - 1) * sortSpacing
   );
+}
+
+/**
+ * Calculate extra space needed for metadata bar labels that extend beyond the bars
+ */
+export function calculateMetadataLabelOverhang(
+  keys: string[],
+  metadata:
+    | Record<string, Record<string, string | number | undefined>>
+    | undefined,
+  sortOrders: Array<{ key: string; direction: "asc" | "desc" }>,
+  axis: "X" | "Y",
+): number {
+  if (!metadata || keys.length === 0) return 0;
+
+  const filteredSortOrders = sortOrders.filter(
+    (s) => s.key !== "count" && s.key !== "alphabetical",
+  );
+
+  if (filteredSortOrders.length === 0) return 0;
+
+  // Calculate maximum label length across all sorts
+  const calculateMaxLabelLength = (sortKey: string): number => {
+    const charWidth = 8 * 0.6; // fontSize 8px * 0.6
+    let maxLength = 0;
+    keys.forEach((key) => {
+      const value = metadata[key]?.[sortKey];
+      if (value !== undefined && value !== "[No Value]") {
+        const label = String(value);
+        maxLength = Math.max(maxLength, label.length * charWidth);
+      }
+    });
+    return maxLength;
+  };
+
+  const maxLabelLengths = filteredSortOrders.map((sort) =>
+    calculateMaxLabelLength(sort.key),
+  );
+  const maxLabelLength = Math.max(...maxLabelLengths, 30);
+
+  // Return label overhang: labels extend beyond bars for both axes
+  // X-axis: rotated labels extend below
+  // Y-axis: labels extend to the right
+  return maxLabelLength + 8;
 }
 
 export const SvgMetadataValueBars: React.FC<SvgMetadataValueBarsProps> = ({

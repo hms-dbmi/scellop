@@ -23,7 +23,7 @@ interface MetadataBar {
 export interface MetadataBarsParams {
   axis: "X" | "Y";
   keys: string[];
-  metadata: Record<string, Record<string, string | number>>;
+  metadata: Record<string, Record<string, string | number | undefined>>;
   sortOrders: Array<{ key: string; direction: "asc" | "desc" }>;
   scale: (value: string) => number | undefined;
   bandwidth: (value?: string) => number;
@@ -57,7 +57,9 @@ const numericColorSchemes = [
  */
 export function calculateMetadataBarDimensions(
   keys: string[],
-  metadata: Record<string, Record<string, string | number>> | undefined,
+  metadata:
+    | Record<string, Record<string, string | number | undefined>>
+    | undefined,
   sortOrders: Array<{ key: string; direction: "asc" | "desc" }>,
   axis: "X" | "Y",
 ): number {
@@ -93,7 +95,7 @@ export function calculateMetadataBarDimensions(
  */
 function calculateMaxLabelLength(
   keys: string[],
-  metadata: Record<string, Record<string, string | number>>,
+  metadata: Record<string, Record<string, string | number | undefined>>,
   sortKey: string,
   fontSize: number = 8,
 ): number {
