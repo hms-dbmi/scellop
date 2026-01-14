@@ -682,7 +682,11 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
           transformedLeftBars &&
           transformedLeftBars.length > 0 && (
             <g
-              transform={`translate(${0}, ${effectiveTopPadding + topGraphHeight})`}
+              transform={`translate(${0}, ${effectiveTopPadding + topGraphHeight})${
+                !expandedRows || expandedRows.size === 0 || expandedRows.size === rows.length
+                  ? ` scale(1, ${yScaleFactor})`
+                  : ""
+              }`}
               className="left-bars"
             >
               <SvgBars
