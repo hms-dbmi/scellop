@@ -828,7 +828,7 @@ const getColumnNames = memoize((state: DataContextStore) => {
 });
 
 const getMetadataKeys = (
-  metadata: Record<string, Record<string, string | number>> | undefined,
+  metadata: Record<string, Record<string, string | number | undefined>> | undefined,
 ) => {
   if (!metadata) {
     return [];
@@ -847,7 +847,7 @@ const getMetadataKeys = (
 };
 
 const getMetadataObject = (
-  metadata: Record<string, Record<string, string | number>> | undefined,
+  metadata: Record<string, Record<string, string | number | undefined>> | undefined,
 ) => {
   if (!metadata) {
     return [];

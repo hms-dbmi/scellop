@@ -6,6 +6,6 @@
       "@scellop/data-loading": ["../data-loading/src"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "scripts/add-metadata-to-results.ts"],
   "exclude": ["node_modules", "dist", "dist-tsc"]
 }

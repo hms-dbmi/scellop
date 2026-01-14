@@ -1,3 +1,4 @@
+#!/usr/bin/env tsx
 /**
  * Add dataset metadata to benchmark results JSON
  * This script enhances the benchmark-results.json with dataset statistics
@@ -63,33 +64,20 @@ interface DatasetMetadata {
 }
 
 /**
- * Extract dataset info from benchmark name
- * Format: "name (rows×cols, cells cells)" or "name - description (rows×cols)"
+ * Extract dataset name from benchmark name
+ * Format: "name" or "name - description" or "name @2x resolution"
  */
-function extractDatasetMetadata(benchmarkName: string): DatasetMetadata | null {
+function extractDatasetName(benchmarkName: string): string | null {
   // Match patterns like:
-  // "tiny (10×10, 82 cells)"
-  // "hubmap-lung (45×71, 3195 cells)"
-  // "tiny - no expanded rows (10×10)"
-  const match = benchmarkName.match(/^([\w-]+)(?:\s*-\s*[^(]+)?\s*\((\d+)×(\d+)(?:,\s*(\d+)\s*cells)?\)/);
+  // "tiny"
+  // "hubmap-lung @2x resolution"
+  // "medium - 10% expanded rows"
+  // "large - violin aggregation"
+  const match = benchmarkName.match(/^([\w-]+)(?:\s+[@-]|$)/);
   
   if (!match) return null;
-
-  const [, name, rows, cols, cells] = match;
-  const rowCount = Number.parseInt(rows, 10);
-  const colCount = Number.parseInt(cols, 10);
-  const nonZeroCells = cells ? Number.parseInt(cells, 10) : 0;
-  const totalCells = rowCount * colCount;
-
-  return {
-    name,
-    rows: rowCount,
-    cols: colCount,
-    nonZeroCells,
-    totalCells,
-    density: nonZeroCells > 0 ? `${((nonZeroCells / totalCells) * 100).toFixed(1)}%` : "N/A",
-    type: name.includes("-") ? "real-world" : "synthetic",
-  };
+  
+  return match[1];
 }
 
 interface EnhancedBenchmarkResults extends BenchmarkResults {
@@ -110,35 +98,41 @@ function addMetadataToResults(results: BenchmarkResults): EnhancedBenchmarkResul
     const statsJson = readFileSync(statsPath, "utf-8");
     detailedStats = JSON.parse(statsJson);
   } catch (error) {
-    console.warn("Could not load benchmark-dataset-stats.json, using extracted data only");
+    console.error("❌ Could not load benchmark-dataset-stats.json");
+    console.error("Make sure benchmarks have been run to generate this file.");
+    return { ...enhancedResults, datasets: [] };
   }
+
+  // Create a map from stats for quick lookup
+  const statsMap = new Map(detailedStats.map((s) => [s.name, s]));
 
   // First pass: collect unique datasets from benchmark names
   for (const file of enhancedResults.files) {
     for (const group of file.groups) {
       for (const bench of group.benchmarks) {
-        const metadata = extractDatasetMetadata(bench.name);
-        if (metadata && !datasetMap.has(metadata.name)) {
+        const datasetName = extractDatasetName(bench.name);
+        if (datasetName && !datasetMap.has(datasetName)) {
           // Find matching detailed stats
-          const detailedStat = detailedStats.find((s) => s.name === metadata.name);
+          const detailedStat = statsMap.get(datasetName);
           if (detailedStat) {
-            metadata.rowSums = {
-              total: detailedStat.rowSums.total,
-              average: detailedStat.rowSums.average,
-              min: detailedStat.rowSums.min,
-              max: detailedStat.rowSums.max,
-              range: detailedStat.rowSums.range,
+            const metadata: DatasetMetadata = {
+              name: datasetName,
+              rows: detailedStat.stats.rows,
+              cols: detailedStat.stats.cols,
+              nonZeroCells: detailedStat.stats.nonZeroCells,
+              totalCells: detailedStat.stats.totalCells,
+              density: detailedStat.stats.density,
+              type: datasetName.includes("-") ? "real-world" : "synthetic",
+              rowSums: {
+                total: detailedStat.rowSums.total,
+                average: detailedStat.rowSums.average,
+                min: detailedStat.rowSums.min,
+                max: detailedStat.rowSums.max,
+                range: detailedStat.rowSums.range,
+              },
             };
-            // Calculate column sums from row sums (for sparse matrices)
-            metadata.colSums = {
-              total: detailedStat.rowSums.total,
-              average: detailedStat.rowSums.total / metadata.cols,
-              min: 0, // Sparse data, some columns may be empty
-              max: 0, // Would need actual data to calculate
-              range: 0,
-            };
+            datasetMap.set(datasetName, metadata);
           }
-          datasetMap.set(metadata.name, metadata);
         }
       }
     }

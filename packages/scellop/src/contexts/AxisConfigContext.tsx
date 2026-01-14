@@ -2,15 +2,17 @@ import { temporal } from "zundo";
 import { createStore } from "zustand";
 import { createTemporalStoreContext } from "../utils/zustand";
 
+export type MetadataValues = Record<string, string | number | undefined>;
+
 export interface AxisConfig {
   label: string;
   createHref?: (
     tick: string,
-    metadataValues?: Record<string, string | number>,
+    metadataValues?: MetadataValues,
   ) => string;
   createSubtitle?: (
     value: string,
-    metadataValues?: Record<string, string | number>,
+    metadataValues?: MetadataValues,
   ) => string;
   icon?: React.ReactElement<unknown>;
   // Plural label for the axis, used in tooltips and other places
@@ -37,13 +39,13 @@ interface AxisConfigActions {
   setCreateHref: (
     createHref: (
       tick: string,
-      metadataValues?: Record<string, string | number>,
+      metadataValues?: MetadataValues,
     ) => string,
   ) => void;
   setCreateSubtitle: (
     createSubtitle: (
       value: string,
-      metadataValues?: Record<string, string | number>,
+      metadataValues?: MetadataValues,
     ) => string,
   ) => void;
   zoomIn: () => void;
@@ -70,13 +72,13 @@ const createAxisConfigStore =
         setCreateHref: (
           createHref: (
             tick: string,
-            metadataValues?: Record<string, string | number>,
+            metadataValues?: MetadataValues,
           ) => string,
         ) => set({ createHref }),
         setCreateSubtitle: (
           createSubtitle: (
             value: string,
-            metadataValues?: Record<string, string | number>,
+            metadataValues?: MetadataValues,
           ) => string,
         ) => set({ createSubtitle }),
         get pluralLabel() {

@@ -1,3 +1,4 @@
+#!/usr/bin/env tsx
 /**
  * Performance Report Generator
  *
@@ -5,7 +6,8 @@
  *
  * Usage:
  *   1. Run benchmarks: pnpm run bench -- --reporter=json --outputFile=benchmark-results.json
- *   2. Generate report: node scripts/generate-performance-report.js
+ *   2. Add metadata: tsx scripts/add-metadata-to-results.ts benchmark-results.json
+ *   3.. Generate report: tsx scripts/generate-performance-report.ts
  */
 
 import { readFileSync, writeFileSync } from "node:fs";

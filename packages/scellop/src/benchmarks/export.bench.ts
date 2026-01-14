@@ -16,12 +16,7 @@ describe("Export Performance Benchmarks", async () => {
   const datasets = await getBenchmarkDatasets();
 
   describe("High-Resolution Canvas Export", () => {
-    const exportSizes = ["tiny", "small", "medium"];
-
-    for (const name of exportSizes) {
-      const data = datasets.get(name);
-      if (!data) continue;
-
+    for (const [name, data] of datasets) {
       const stats = getDatasetStats(data);
       const cellWidth = 10;
       const cellHeight = 10;
@@ -48,7 +43,7 @@ describe("Export Performance Benchmarks", async () => {
 
       for (const resolution of resolutions) {
         bench(
-          `${name} @${resolution}x resolution (${stats.rows}×${stats.cols})`,
+          `${name} @${resolution}x resolution`,
           () => {
             const canvas = document.createElement("canvas");
             canvas.width = data.colNames.length * cellWidth * resolution;
@@ -79,119 +74,112 @@ describe("Export Performance Benchmarks", async () => {
   });
 
   describe("Canvas Size Limits", () => {
-    const small = datasets.get("small");
-    if (!small) return;
+    for (const [name, data] of datasets) {
+      const stats = getDatasetStats(data);
 
-    const stats = getDatasetStats(small);
+      // Test increasing cell sizes to approach browser limits
+      const cellSizes = [10, 20, 50, 100];
 
-    // Test increasing cell sizes to approach browser limits
-    const cellSizes = [10, 20, 50, 100];
+      for (const cellSize of cellSizes) {
+        const width = data.colNames.length * cellSize;
+        const height = data.rowNames.length * cellSize;
 
-    for (const cellSize of cellSizes) {
-      const width = small.colNames.length * cellSize;
-      const height = small.rowNames.length * cellSize;
+        bench(
+          `${name} - ${cellSize}px cells (${width}×${height}px canvas)`,
+          () => {
+            const xScale = scaleBand<string>()
+              .domain(data.colNames)
+              .range([0, width])
+              .padding(0);
+            const yScale = scaleBand<string>()
+              .domain(data.rowNames)
+              .range([0, height])
+              .padding(0);
 
-      bench(
-        `${stats.rows}×${stats.cols} @ ${cellSize}px cells (${width}×${height}px canvas)`,
-        () => {
-          const xScale = scaleBand<string>()
-            .domain(small.colNames)
-            .range([0, width])
-            .padding(0);
-          const yScale = scaleBand<string>()
-            .domain(small.rowNames)
-            .range([0, height])
-            .padding(0);
+            const dataMap: Record<string, number> = {};
+            data.countsMatrix.forEach(([row, col, value]) => {
+              dataMap[`${row}-${col}`] = value;
+            });
 
-          const dataMap: Record<string, number> = {};
-          small.countsMatrix.forEach(([row, col, value]) => {
-            dataMap[`${row}-${col}`] = value;
-          });
+            const colorScale = (value: number) =>
+              `rgb(${Math.min(255, value)}, 0, 0)`;
 
-          const colorScale = (value: number) =>
-            `rgb(${Math.min(255, value)}, 0, 0)`;
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
 
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return;
+            const cells = calculateHeatmapCells({
+              rows: data.rowNames,
+              columns: data.colNames,
+              dataMap,
+              xScale,
+              yScale,
+              colorScale,
+              backgroundColor: "white",
+            });
 
-          const cells = calculateHeatmapCells({
-            rows: small.rowNames,
-            columns: small.colNames,
-            dataMap,
-            xScale,
-            yScale,
-            colorScale,
-            backgroundColor: "white",
-          });
-
-          renderCellsToCanvas(ctx, cells);
-        },
-      );
+            renderCellsToCanvas(ctx, cells);
+          },
+        );
+      }
     }
   });
 
   describe("Export Memory Efficiency", () => {
-    // Test memory impact of creating multiple canvases
-    const medium = datasets.get("medium");
-    if (!medium) return;
+    // Test memory impact of creating canvases for different dataset sizes
+    for (const [name, data] of datasets) {
+      const stats = getDatasetStats(data);
+      const cellWidth = 10;
+      const cellHeight = 10;
 
-    const stats = getDatasetStats(medium);
-    const cellWidth = 10;
-    const cellHeight = 10;
+      bench(`${name}`, () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = data.colNames.length * cellWidth;
+        canvas.height = data.rowNames.length * cellHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
-    bench(`Create single canvas (${stats.rows}×${stats.cols})`, () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = medium.colNames.length * cellWidth;
-      canvas.height = medium.rowNames.length * cellHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+        const xScale = scaleBand<string>()
+          .domain(data.colNames)
+          .range([0, data.colNames.length * cellWidth])
+          .padding(0);
+        const yScale = scaleBand<string>()
+          .domain(data.rowNames)
+          .range([0, data.rowNames.length * cellHeight])
+          .padding(0);
 
-      const xScale = scaleBand<string>()
-        .domain(medium.colNames)
-        .range([0, medium.colNames.length * cellWidth])
-        .padding(0);
-      const yScale = scaleBand<string>()
-        .domain(medium.rowNames)
-        .range([0, medium.rowNames.length * cellHeight])
-        .padding(0);
+        const dataMap: Record<string, number> = {};
+        data.countsMatrix.forEach(([row, col, value]) => {
+          dataMap[`${row}-${col}`] = value;
+        });
 
-      const dataMap: Record<string, number> = {};
-      medium.countsMatrix.forEach(([row, col, value]) => {
-        dataMap[`${row}-${col}`] = value;
+        const colorScale = (value: number) =>
+          `rgb(${Math.min(255, value)}, 0, 0)`;
+
+        const cells = calculateHeatmapCells({
+          rows: data.rowNames,
+          columns: data.colNames,
+          dataMap,
+          xScale,
+          yScale,
+          colorScale,
+          backgroundColor: "white",
+        });
+
+        renderCellsToCanvas(ctx, cells);
       });
-
-      const colorScale = (value: number) =>
-        `rgb(${Math.min(255, value)}, 0, 0)`;
-
-      const cells = calculateHeatmapCells({
-        rows: medium.rowNames,
-        columns: medium.colNames,
-        dataMap,
-        xScale,
-        yScale,
-        colorScale,
-        backgroundColor: "white",
-      });
-
-      renderCellsToCanvas(ctx, cells);
-    });
+    }
   });
 
   describe("Complete Export Pipeline", () => {
     // Simulate the full export workflow
-    const benchmarkSizes = ["tiny", "small", "medium"];
-
-    for (const name of benchmarkSizes) {
-      const data = datasets.get(name);
-      if (!data) continue;
-
+    for (const [name, data] of datasets) {
       const stats = getDatasetStats(data);
 
       bench(
-        `Full export pipeline - ${name} (${stats.rows}×${stats.cols})`,
+        `${name} - full pipeline`,
         () => {
           const resolution = 2;
           const cellWidth = 10;
@@ -240,7 +228,7 @@ describe("Export Performance Benchmarks", async () => {
           renderCellsToCanvas(ctx, cells);
 
           // Step 6: Generate blob (simulated - would normally convert to PNG)
-          // canvas.toDataURL('image/png') would be called here
+          // canvas.toDataURL('image/png') would be called here, but jsdom doesn't support it fully
         },
       );
     }

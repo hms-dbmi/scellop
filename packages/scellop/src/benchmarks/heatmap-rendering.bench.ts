@@ -8,7 +8,6 @@ import { bench, describe } from "vitest";
 import { calculateHeatmapCells } from "../utils/calculations/heatmap-cells";
 import { renderCellsToCanvas } from "../utils/rendering/canvas-utils";
 import {
-  generateSyntheticData,
   getDatasetStats,
 } from "./fixtures/synthetic-datasets";
 import {  getBenchmarkDatasets } from "./setup-benchmarks";
@@ -18,7 +17,6 @@ describe("Heatmap Rendering Benchmarks", async () => {
 
   describe("Calculate Heatmap Cells", () => {
     for (const [name, data] of datasets) {
-      const stats = getDatasetStats(data);
 
       // Create scales for benchmarking
       const cellWidth = 10;
@@ -42,7 +40,7 @@ describe("Heatmap Rendering Benchmarks", async () => {
         `rgb(${Math.min(255, value)}, 0, 0)`;
 
       bench(
-        `${name} (${stats.rows}×${stats.cols}, ${stats.nonZeroCells} cells)`,
+        `${name}`,
         () => {
           calculateHeatmapCells({
             rows: data.rowNames,
@@ -60,10 +58,6 @@ describe("Heatmap Rendering Benchmarks", async () => {
 
   describe("Calculate Heatmap Cells with Expanded Rows", () => {
     for (const [name, data] of datasets) {
-      // Skip very large datasets for expanded rows tests
-      if (name === "huge" || name === "extraWide" || name === "extraTall") continue;
-
-      const stats = getDatasetStats(data);
       const cellWidth = 10;
       const cellHeight = 10;
       const xScale = scaleBand<string>()
@@ -82,7 +76,7 @@ describe("Heatmap Rendering Benchmarks", async () => {
 
       const colorScale = (value: number) => `rgb(${Math.min(255, value)}, 0, 0)`;
 
-      bench(`${name} - no expanded rows (${stats.rows}×${stats.cols})`, () => {
+      bench(`${name} - no expanded rows`, () => {
         calculateHeatmapCells({
           rows: data.rowNames,
           columns: data.colNames,
@@ -94,7 +88,7 @@ describe("Heatmap Rendering Benchmarks", async () => {
         });
       });
 
-      bench(`${name} - 10% expanded rows (${stats.rows}×${stats.cols})`, () => {
+      bench(`${name} - 10% expanded rows`, () => {
         const expandedCount = Math.floor(data.rowNames.length * 0.1);
         const selectedValues = new Set(data.rowNames.slice(0, expandedCount));
         calculateHeatmapCells({
@@ -109,7 +103,7 @@ describe("Heatmap Rendering Benchmarks", async () => {
         });
       });
 
-      bench(`${name} - 50% expanded rows (${stats.rows}×${stats.cols})`, () => {
+      bench(`${name} - 50% expanded rows`, () => {
         const expandedCount = Math.floor(data.rowNames.length * 0.5);
         const selectedValues = new Set(data.rowNames.slice(0, expandedCount));
         calculateHeatmapCells({
@@ -131,7 +125,6 @@ describe("Heatmap Rendering Benchmarks", async () => {
       // Skip huge datasets for canvas rendering (too slow)
       if (name === "xlarge") continue;
 
-      const stats = getDatasetStats(data);
       const cellWidth = 10;
       const cellHeight = 10;
 
@@ -171,7 +164,7 @@ describe("Heatmap Rendering Benchmarks", async () => {
       if (!ctx) continue;
 
       bench(
-        `${name} (${stats.rows}×${stats.cols}, ${cells.length} rendered cells)`,
+        `${name}`,
         () => {
           renderCellsToCanvas(ctx, cells);
         },
@@ -180,12 +173,7 @@ describe("Heatmap Rendering Benchmarks", async () => {
   });
 
   describe("End-to-End: Calculate + Render", () => {
-    const benchmarkSizes = ["tiny", "small", "medium", "large"];
-
-    for (const name of benchmarkSizes) {
-      const data = datasets.get(name);
-      if (!data) continue;
-
+    for (const [name, data] of datasets) {
       const stats = getDatasetStats(data);
       const cellWidth = 10;
       const cellHeight = 10;
@@ -214,7 +202,7 @@ describe("Heatmap Rendering Benchmarks", async () => {
 
       if (!ctx) continue;
 
-      bench(`${name} (${stats.rows}×${stats.cols} complete render)`, () => {
+      bench(`${name}`, () => {
         const cells = calculateHeatmapCells({
           rows: data.rowNames,
           columns: data.colNames,
@@ -230,25 +218,7 @@ describe("Heatmap Rendering Benchmarks", async () => {
   });
 
   describe("Scalability: Cell Calculation Complexity", () => {
-    const scaleTests = [
-      { rows: 10, cols: 10 },
-      { rows: 50, cols: 50 },
-      { rows: 100, cols: 100 },
-      { rows: 200, cols: 200 },
-      { rows: 500, cols: 500 },
-      { rows: 1000, cols: 1000 },
-    ];
-
-    for (const { rows, cols } of scaleTests) {
-      const data = generateSyntheticData({
-        name: `scale-${rows}x${cols}`,
-        rowCount: rows,
-        colCount: cols,
-        density: 0.3,
-        withMetadata: false,
-      });
-
-      const stats = getDatasetStats(data);
+    for (const [name, data] of datasets) {
       const cellWidth = 10;
       const cellHeight = 10;
 
@@ -270,63 +240,7 @@ describe("Heatmap Rendering Benchmarks", async () => {
         `rgb(${Math.min(255, value)}, 0, 0)`;
 
       bench(
-        `${rows}×${cols} = ${stats.nonZeroCells}/${rows * cols} non zero cells`,
-        () => {
-          calculateHeatmapCells({
-            rows: data.rowNames,
-            columns: data.colNames,
-            dataMap,
-            xScale,
-            yScale,
-            colorScale,
-            backgroundColor: "white",
-          });
-        },
-      );
-    }
-  });
-
-  describe("Asymmetrical Dataset Rendering", () => {
-    const asymmetricalTests = [
-      { name: "square-50x50", rows: 50, cols: 50 },
-      { name: "wide-50x500", rows: 50, cols: 500 },
-      { name: "tall-500x50", rows: 500, cols: 50 },
-      { name: "extraWide-20x1000", rows: 20, cols: 1000 },
-      { name: "extraTall-1000x20", rows: 1000, cols: 20 },
-    ];
-
-    for (const { name, rows, cols } of asymmetricalTests) {
-      const data = generateSyntheticData({
-        name,
-        rowCount: rows,
-        colCount: cols,
-        density: 0.3,
-        withMetadata: false,
-      });
-
-      const stats = getDatasetStats(data);
-      const cellWidth = 10;
-      const cellHeight = 10;
-
-      const xScale = scaleBand<string>()
-        .domain(data.colNames)
-        .range([0, data.colNames.length * cellWidth])
-        .padding(0);
-      const yScale = scaleBand<string>()
-        .domain(data.rowNames)
-        .range([0, data.rowNames.length * cellHeight])
-        .padding(0);
-
-      const dataMap: Record<string, number> = {};
-      data.countsMatrix.forEach(([row, col, value]) => {
-        dataMap[`${row}-${col}`] = value;
-      });
-
-      const colorScale = (value: number) =>
-        `rgb(${Math.min(255, value)}, 0, 0)`;
-
-      bench(
-        `${name}: ${stats.rows}×${stats.cols} (${stats.nonZeroCells} cells)`,
+        `${name}`,
         () => {
           calculateHeatmapCells({
             rows: data.rowNames,

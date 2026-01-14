@@ -111,66 +111,15 @@ export async function getBenchmarkDatasets() {
 
 beforeAll(async () => {
 
-  const datasets = await getBenchmarkDatasets();
+  // Ensure datasets are loaded and their stats are calculated before benchmarks run
+  await getBenchmarkDatasets();
 
-  console.log("\n" + "-".repeat(80));
-  console.log("🌍 REAL-WORLD DATASETS");
-  console.log("-".repeat(80));
-
-  // Load real-world datasets
-  const realWorldDatasets = await loadAllRealWorldDatasets();
-  
-  for (const [name, data] of realWorldDatasets) {
-    BENCHMARK_DATASETS.set(name, data);
-    
-    const stats = getDatasetStats(data);
-    const rowSumsArray = Object.values(stats.rowSums);
-    const totalSum = rowSumsArray.reduce((acc, sum) => acc + sum, 0);
-    const avgSum = totalSum / rowSumsArray.length;
-    const minSum = Math.min(...rowSumsArray);
-    const maxSum = Math.max(...rowSumsArray);
-
-    const datasetInfo = {
-      name,
-      config: {
-        rowCount: stats.rows,
-        colCount: stats.cols,
-        density: stats.nonZeroCells / stats.totalCells,
-        withMetadata: stats.hasMetadata,
-      },
-      stats: {
-        rows: stats.rows,
-        cols: stats.cols,
-        totalCells: stats.totalCells,
-        nonZeroCells: stats.nonZeroCells,
-        density: stats.density,
-        hasMetadata: stats.hasMetadata,
-      },
-      rowSums: {
-        total: totalSum,
-        average: avgSum,
-        min: minSum,
-        max: maxSum,
-        range: maxSum - minSum,
-        values: stats.rowSums,
-      },
-    };
-
-    BENCHMARK_DATASET_STATS.push(datasetInfo);
-
+  console.log("Successfully loaded benchmark datasets:");
+  for (const info of BENCHMARK_DATASET_STATS) {
     console.log(
-      `${name.toUpperCase()}: ${stats.rows}×${stats.cols} (${stats.nonZeroCells} cells)`,
-    );
-    console.log(
-      `  Row sums: total=${totalSum}, avg=${avgSum.toFixed(2)}, min=${minSum}, max=${maxSum}`,
+      `- ${info.name}: ${info.stats.rows} rows × ${info.stats.cols} cols = ${info.stats.nonZeroCells} cells (${info.stats.density} density, metadata: ${info.stats.hasMetadata})`,
     );
   }
-
-  console.log("\n" + "=".repeat(80));
-  console.log("BENCHMARK DATASET STATISTICS (JSON)");
-  console.log("=".repeat(80));
-  console.log(JSON.stringify(BENCHMARK_DATASET_STATS, null, 2));
-  console.log("=".repeat(80) + "\n");
 
   // Write stats to file for use by metadata script
   const { writeFileSync } = await import("node:fs");

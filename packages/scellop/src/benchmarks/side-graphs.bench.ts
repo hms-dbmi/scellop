@@ -8,20 +8,16 @@
 
 import { scaleBand, scaleLinear } from "@visx/scale";
 import { bench, describe } from "vitest";
-import {
-  getDatasetStats,
-} from "./fixtures/synthetic-datasets";
-import {  getBenchmarkDatasets } from "./setup-benchmarks";
+import { getBenchmarkDatasets } from "./setup-benchmarks";
 
 describe("Side Graph Benchmarks", async () => {
   // BENCHMARK_DATASETS is populated by setup-benchmarks.ts beforeAll hook
   const datasets = await getBenchmarkDatasets();
   describe("Data Preparation for Side Graphs", () => {
     for (const [name, data] of datasets) {
-      const stats = getDatasetStats(data);
 
       bench(
-        `${name} - Calculate fraction dataMap (${stats.rows}×${stats.cols})`,
+        `${name}`,
         () => {
           // Calculate row counts
           const rowCounts: Record<string, number> = {};
@@ -43,7 +39,7 @@ describe("Side Graph Benchmarks", async () => {
     for (const [name, data] of datasets) {
       const cellWidth = 100;
 
-      bench(`${name} - categorical scale (${data.colNames.length} items)`, () => {
+      bench(`${name}`, () => {
         scaleBand<string>()
           .domain(data.colNames)
           .range([0, data.colNames.length * cellWidth])
@@ -63,10 +59,9 @@ describe("Side Graph Benchmarks", async () => {
     // This tests the core data aggregation that violins perform
     // The KDE calculation happens on top of this aggregated data
     for (const [name, data] of datasets) {
-      const stats = getDatasetStats(data);
 
       bench(
-        `${name} - Aggregate ${stats.cols} violins × ${stats.rows} categories`,
+        `${name}`,
         () => {
           // Calculate row counts (needed for normalization)
           const rowCounts: Record<string, number> = {};
@@ -97,10 +92,9 @@ describe("Side Graph Benchmarks", async () => {
 
   describe("Fraction Normalization (Violin Prep)", () => {
     for (const [name, data] of datasets) {
-      const stats = getDatasetStats(data);
 
       bench(
-        `${name} - Fraction normalization (${stats.rows}×${stats.cols}, ${stats.nonZeroCells} cells)`,
+        `${name}`,
         () => {
           const rowCounts: Record<string, number> = {};
           data.countsMatrix.forEach(([row, _, value]) => {
@@ -119,10 +113,9 @@ describe("Side Graph Benchmarks", async () => {
   describe("Bar Stacking Calculations", () => {
     // Test stacking multiple segments for bar charts
     for (const [name, data] of datasets) {
-      const stats = getDatasetStats(data);
 
       bench(
-        `${name} - Stack ${stats.rows} segments × ${stats.cols} bars`,
+        `${name} `,
         () => {
           // For each column, calculate stacked values
           for (const col of data.colNames) {
@@ -154,10 +147,9 @@ describe("Side Graph Benchmarks", async () => {
   describe("Scalability Analysis", () => {
     // Demonstrate O(n×m) scaling for side graphs
     for (const [name, data] of datasets) {
-      const stats = getDatasetStats(data);
 
       bench(
-        `${name} - Full data aggregation (${stats.rows}×${stats.cols}, ${stats.nonZeroCells} cells)`,
+        `${name}`,
         () => {
           const rowCounts: Record<string, number> = {};
           data.countsMatrix.forEach(([row, _, value]) => {
