@@ -138,12 +138,42 @@ export default function VisualizationPanelResizer({
       window.addEventListener("mousemove", onMouseMove);
       window.addEventListener("mouseup", onMouseUp);
     },
-    [orientation],
+    [orientation, resize, index, parentRef],
   );
+
+  const onKeyDown: React.KeyboardEventHandler = useCallback(
+    (e) => {
+      const step = 10; // pixels to move per keypress
+      let delta = 0;
+
+      if (orientation === "X") {
+        if (e.key === "ArrowLeft") delta = -step;
+        else if (e.key === "ArrowRight") delta = step;
+      } else {
+        if (e.key === "ArrowUp") delta = -step;
+        else if (e.key === "ArrowDown") delta = step;
+      }
+
+      if (delta !== 0) {
+        e.preventDefault();
+        resize(position + delta, index);
+      }
+    },
+    [orientation, position, resize, index],
+  );
+
+  const orientationLabel = orientation === "X" ? "column" : "row";
+  const positionLabel = index === 0 ? "left" : "right";
+  const ariaLabel = `Resize ${orientationLabel} panels (${positionLabel} boundary, use arrow keys or drag)`;
 
   return (
     <Box
       ref={ref}
+      role="separator"
+      aria-label={ariaLabel}
+      aria-orientation={orientation === "X" ? "vertical" : "horizontal"}
+      aria-valuenow={position}
+      tabIndex={visible ? 0 : -1}
       sx={(theme) => ({
         ...orientationStyles[orientation],
         display: "block",
@@ -173,9 +203,18 @@ export default function VisualizationPanelResizer({
             boxShadow: shadowStyles(theme)[orientation].hover[index] || "",
           },
         }),
+        "&:focus": {
+          outline: `2px solid ${theme.palette.primary.main}`,
+          outlineOffset: 2,
+        },
+        "&:focus-visible": {
+          outline: `2px solid ${theme.palette.primary.main}`,
+          outlineOffset: 2,
+        },
       })}
       data-orientation={orientation}
       onMouseDown={onMouseDown}
+      onKeyDown={onKeyDown}
     />
   );
 }

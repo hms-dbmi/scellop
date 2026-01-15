@@ -41,7 +41,6 @@ function TopBar() {
     <Bars
       orientation="columns"
       categoricalScale={xScale}
-      numericalScale={yScale}
       domainLimit={height}
       width={width}
       height={height}
@@ -102,8 +101,8 @@ export default function TopGraph() {
 
   return (
     <Stack direction="column" width="100%" height={height} overflow="hidden">
-      <HeatmapXAxis />
       <XAxisLabel />
+      <HeatmapXAxis />
       {violins ? <TopViolin /> : <TopBar />}
     </Stack>
   );
