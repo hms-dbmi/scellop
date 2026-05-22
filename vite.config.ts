@@ -26,15 +26,21 @@ export default defineConfig(({ mode }) => {
       lib: {
         entry: path.resolve(__dirname, "src/index.ts"),
         name: "scellop",
-        fileName: (format) => `index.${format}.js`,
+        fileName: (format) => `index.${format === "es" ? "es" : "umd"}.js`,
       },
-      formats: ["es", "cjs"],
       rollupOptions: {
-        external: ["react", "react-dom"],
+        external: [
+          "react",
+          "react-dom",
+          "react/jsx-runtime",
+          "react/jsx-dev-runtime",
+          "zustand",
+        ],
         output: {
           globals: {
             react: "React",
             "react-dom": "ReactDOM",
+            zustand: "zustand",
           },
         },
       },
