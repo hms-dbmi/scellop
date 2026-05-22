@@ -42,9 +42,6 @@ export default defineConfig(({ mode }) => {
           globals: {
             react: "React",
             "react-dom": "ReactDOM",
-            "react-dom/client": "ReactDOM",
-            "react-dom/server": "ReactDOMServer",
-            zustand: "zustand",
           },
         },
       },
