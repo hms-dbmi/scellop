@@ -42,6 +42,11 @@ export default defineConfig(({ mode }) => {
           globals: {
             react: "React",
             "react-dom": "ReactDOM",
+            "react-dom/client": "ReactDOM",
+            "react-dom/server": "ReactDOMServer",
+            "react/jsx-runtime": "ReactJSXRuntime",
+            "react/jsx-dev-runtime": "ReactJSXDevRuntime",
+            zustand: "zustand",
           },
         },
       },
