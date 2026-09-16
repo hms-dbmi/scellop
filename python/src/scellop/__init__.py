@@ -411,8 +411,11 @@ class ScellopWidget(anywidget.AnyWidget):
     df : pd.DataFrame with counts
     """
 
+    # No _css: the library styles itself through emotion/MUI at runtime, so the
+    # build emits no stylesheet (see d2d2b96, "try removing css file in favor of
+    # css in js"). Pointing _css at a file the build never writes makes anywidget
+    # fail to load.
     _esm = pathlib.Path(__file__).parent / "static" / "widget.js"
-    _css = pathlib.Path(__file__).parent / "static" / "widget.css"
 
     data = traitlets.Instance(
         ScellopData, default_value=ScellopData(pd.DataFrame(), list(), list())
