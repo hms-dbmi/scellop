@@ -1,30 +1,30 @@
-# One-shot publish for a package name that does not exist on npm yet.
+# One-shot publish of 0.0.0 placeholders for package names that do not exist on
+# npm yet.
 #
 # npm only accepts a trusted-publisher configuration for a package that already
-# exists, so a brand-new name cannot come from release.yml. Run this once per
-# new package with a short-lived granular token, configure the trusted publisher
-# on npmjs.com, then revoke the token. release.yml handles everything after.
+# exists, so a brand-new name cannot come from release.yml. This claims the two
+# scoped names with a throwaway 0.0.0 using a short-lived granular token. Once
+# the trusted publishers are configured, revoke the token and delete this file;
+# release.yml then publishes every real version tokenlessly via OIDC.
 #
-# This workflow should be deleted once all packages are published.
+# `scellop` is deliberately absent: it already exists on npm and needs no
+# bootstrap.
 name: Bootstrap publish
 
 on:
   workflow_dispatch:
     inputs:
-      package:
-        description: Package name to publish for the first time
+      confirm:
+        description: Type "publish" to confirm. This cannot be undone.
         required: true
-        type: choice
-        options:
-          - "@scellop/data-loading"
-          - "@scellop/hubmap-data-loading"
-          - scellop
+        type: string
 
 jobs:
   bootstrap:
+    if: inputs.confirm == 'publish'
     runs-on: ubuntu-latest
-    # Gate on an environment so the token is only readable by this workflow and
-    # an approval is required to use it.
+    # Gates the token behind an environment so it is readable only here, and
+    # only after any configured approval.
     environment: npm-bootstrap
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +39,19 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Set both versions before publishing either: pnpm rewrites the
+      # `workspace:*` dependency to the exact version it publishes, so
+      # hubmap-data-loading@0.0.0 must point at data-loading@0.0.0.
+      - name: Stamp placeholder versions
+        run: |
+          npm pkg set version=0.0.0 --prefix packages/data-loading
+          npm pkg set version=0.0.0 --prefix packages/hubmap-data-loading
+
       - run: pnpm build
 
-      - run: pnpm --filter "${{ inputs.package }}" publish --access public --no-git-checks
+      - name: Publish placeholders
+        run: |
+          pnpm --filter @scellop/data-loading publish --no-git-checks
+          pnpm --filter @scellop/hubmap-data-loading publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
