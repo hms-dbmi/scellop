@@ -1,4 +1,7 @@
 {
+  "name": "@scellop/widget",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
     "dev": "pnpm run build -- --sourcemap=inline --watch",
     "build": "pnpm exec esbuild js/widget.tsx --minify --format=esm --bundle --outdir=src/scellop/static --alias:react=./node_modules/react --alias:react-dom=./node_modules/react-dom",

@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@scellop/demo"]
+  "ignore": ["@scellop/demo", "@scellop/widget"]
 }
