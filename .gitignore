@@ -1,5 +1,9 @@
 node_modules
 dist
+dist-tsc
+coverage
 .DS_Store
 tmp
 .venv
+benchmark-results.json
+benchmark-dataset-stats.json

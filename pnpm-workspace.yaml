@@ -1,0 +1,12 @@
+packages:
+  - 'packages/*'
+  - 'sites/*'
+  - 'python'
+
+# None of these postinstall scripts are needed. esbuild's in particular must
+# stay off: it swaps esbuild's JS shim for the native binary, which pnpm's
+# node-invoking bin shim then fails to execute.
+allowBuilds:
+  '@danmarshall/deckgl-typings': false
+  canvas: false
+  esbuild: false
