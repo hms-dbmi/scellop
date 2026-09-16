@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.2.0",
+  "packageManager": "pnpm@11.22.0",
   "license": "MIT",
   "author": "Thomas Smits",
   "description": "Monorepo for Scellop packages - Scalable visualization for single-cell data",
