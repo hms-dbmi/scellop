@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useMemo } from "react";
-import type { AxisConfig } from "../../contexts/AxisConfigContext";
+import type {
+  AxisConfig,
+  MetadataValues,
+} from "../../contexts/AxisConfigContext";
 import { useTrackEvent } from "../../contexts/EventTrackerProvider";
 
 export function useOpenInNewTab(
   createHref:
-    | ((
-        tick: string,
-        metadataValues?: Record<string, string | number>,
-      ) => string)
+    | ((tick: string, metadataValues?: MetadataValues) => string)
     | undefined,
 ) {
   const trackEvent = useTrackEvent();
   return useCallback(
-    (tick: string, metadataValues?: Record<string, string | number>) => {
+    (tick: string, metadataValues?: MetadataValues) => {
       const href = createHref?.(tick, metadataValues);
       if (href) {
         trackEvent("Open in new tab", tick, { href });
@@ -25,10 +25,7 @@ export function useOpenInNewTab(
 
 export function useTickTitle(
   createHref:
-    | ((
-        tick: string,
-        metadataValues?: Record<string, string | number>,
-      ) => string)
+    | ((tick: string, metadataValues?: MetadataValues) => string)
     | undefined,
 ) {
   return useCallback(

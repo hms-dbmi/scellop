@@ -9,6 +9,7 @@ import {
   useColumnMetadataKeys,
   useColumns,
   useData,
+  useDataMap,
   useFractionDataMap,
   useMetadataLookup,
   useRowMaxes,
@@ -58,6 +59,7 @@ function Heatmap() {
 
   const colors = useCurrentNormalizedScale();
   const normalization = useNormalization((s) => s.normalization);
+  const countMap = useDataMap();
   const dataMap = useFractionDataMap(normalization);
   const rowMaxes = useRowMaxes();
   const theme = useTheme();
@@ -155,7 +157,7 @@ function Heatmap() {
       }
 
       const key = `${rowKey}-${columnKey}` as keyof typeof dataMap;
-      const value = dataMap[key];
+      const rawCount = countMap[key];
 
       let normalizationInfo: Record<string, string> = {};
 
@@ -188,10 +190,10 @@ function Heatmap() {
         {
           title: `${rowKey} - ${columnKey}`,
           data: {
-            "Cell Count": value,
+            "Cell Count": rawCount,
+            ...normalizationInfo,
             [rowLabel]: rowKey,
             [columnLabel]: columnKey,
-            ...normalizationInfo,
             ...columnMetadata,
             ...rowMetadata,
           },
@@ -204,6 +206,7 @@ function Heatmap() {
       isDragging,
       xScale.scale,
       yScale.scale,
+      countMap,
       dataMap,
       normalization,
       lookupMetadata,

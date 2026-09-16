@@ -508,13 +508,11 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
     rows,
     rowMetadata,
     filteredRowSortOrders,
-    "Y",
   );
   const columnMetadataLabelOverhang = calculateMetadataLabelOverhang(
     columns,
     columnMetadata,
     filteredColumnSortOrders,
-    "X",
   );
 
   // Recalculate total dimensions with square heatmap, metadata bars, color legends, and label overhang
@@ -683,7 +681,9 @@ export const SvgVisualization: React.FC<SvgExportConfig> = (config) => {
           transformedLeftBars.length > 0 && (
             <g
               transform={`translate(${0}, ${effectiveTopPadding + topGraphHeight})${
-                !expandedRows || expandedRows.size === 0 || expandedRows.size === rows.length
+                !expandedRows ||
+                expandedRows.size === 0 ||
+                expandedRows.size === rows.length
                   ? ` scale(1, ${yScaleFactor})`
                   : ""
               }`}

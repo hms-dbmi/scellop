@@ -16,8 +16,10 @@
       "require": "./dist/index.umd.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
-    "src",
     "dist"
   ],
   "repository": {
@@ -49,7 +51,6 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@types/node": "^25.0.3",
-    "@vitejs/plugin-react": "^4.7.0",
     "@vitest/ui": "^4.0.16",
     "jsdom": "^27.3.0",
     "typescript": "^5.8.3",

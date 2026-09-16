@@ -91,9 +91,11 @@ function generateMarkdownReport(results: BenchmarkResults): string {
   if (results.datasets && results.datasets.length > 0) {
     markdown += "## Datasets\n\n";
     markdown += "All benchmarks run on the following datasets:\n\n";
-    markdown += "| Dataset | Type | Dimensions | Non-Zero Cells | Density | Row Sum Avg | Row Sum Range |\n";
-    markdown += "|---------|------|------------|----------------|---------|-------------|---------------|\n";
-    
+    markdown +=
+      "| Dataset | Type | Dimensions | Non-Zero Cells | Density | Row Sum Avg | Row Sum Range |\n";
+    markdown +=
+      "|---------|------|------------|----------------|---------|-------------|---------------|\n";
+
     for (const dataset of results.datasets) {
       markdown += `| ${dataset.name} `;
       markdown += `| ${dataset.type} `;
@@ -125,16 +127,16 @@ function generateMarkdownReport(results: BenchmarkResults): string {
         "|-----------|---------|------|-----|-----|-----|-----|-----|-----|---------|\n";
 
       for (const bench of group.benchmarks) {
-      markdown += `| ${bench.name} `;
-      markdown += `| ${formatNumber(bench.hz)} `;
-      markdown += `| ${formatTime(bench.mean)} `;
-      markdown += `| ${formatTime(bench.sd)} `;
-      markdown += `| ${bench.rme.toFixed(2)}% `;
-      markdown += `| ${formatTime(bench.p75)} `;
-      markdown += `| ${formatTime(bench.p99)} `;
-      markdown += `| ${formatTime(bench.min)} `;
-      markdown += `| ${formatTime(bench.max)} `;
-      markdown += `| ${formatNumber(bench.sampleCount, 0)} |\n`;
+        markdown += `| ${bench.name} `;
+        markdown += `| ${formatNumber(bench.hz)} `;
+        markdown += `| ${formatTime(bench.mean)} `;
+        markdown += `| ${formatTime(bench.sd)} `;
+        markdown += `| ${bench.rme.toFixed(2)}% `;
+        markdown += `| ${formatTime(bench.p75)} `;
+        markdown += `| ${formatTime(bench.p99)} `;
+        markdown += `| ${formatTime(bench.min)} `;
+        markdown += `| ${formatTime(bench.max)} `;
+        markdown += `| ${formatNumber(bench.sampleCount, 0)} |\n`;
       }
 
       markdown += "\n";
@@ -179,14 +181,22 @@ try {
 
   // Validate that we have the expected format
   if (!results.files || !Array.isArray(results.files)) {
-    console.error("❌ Error: benchmark-results.json does not contain benchmark test results");
-    console.error("\nThe file appears to contain only dataset metadata, not actual benchmark results.");
+    console.error(
+      "❌ Error: benchmark-results.json does not contain benchmark test results",
+    );
+    console.error(
+      "\nThe file appears to contain only dataset metadata, not actual benchmark results.",
+    );
     console.error("\nMake sure to run benchmarks first:");
     console.error("  cd packages/scellop");
     console.error("  pnpm run bench:json");
     console.log("\nThis will:");
-    console.log("  1. Run all benchmarks and save results to benchmark-results.json");
-    console.log("  2. Automatically add dataset metadata via add-metadata-to-results.ts");
+    console.log(
+      "  1. Run all benchmarks and save results to benchmark-results.json",
+    );
+    console.log(
+      "  2. Automatically add dataset metadata via add-metadata-to-results.ts",
+    );
     process.exit(1);
   }
 
@@ -196,11 +206,13 @@ try {
   writeFileSync(reportPath, report);
 
   console.log(`✅ Performance report generated: ${reportPath}`);
-  
+
   if (results.datasets && results.datasets.length > 0) {
     console.log(`\nIncluded ${results.datasets.length} datasets:`);
     for (const dataset of results.datasets) {
-      console.log(`  - ${dataset.name} (${dataset.type}): ${dataset.rows}×${dataset.cols}, ${dataset.density} density`);
+      console.log(
+        `  - ${dataset.name} (${dataset.type}): ${dataset.rows}×${dataset.cols}, ${dataset.density} density`,
+      );
     }
   }
 } catch (error) {

@@ -24,6 +24,8 @@ export default defineConfig({
   plugins: [
     dts({
       insertTypesEntry: true,
+      entryRoot: "src",
+      exclude: ["src/test/**", "src/benchmarks/**"],
     }),
   ],
 });

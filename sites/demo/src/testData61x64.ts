@@ -5327,6 +5327,6 @@ const testData: ScellopData = {
       },
     },
   },
-} 
+};
 
 export default testData;

@@ -10,7 +10,7 @@
 
 - `@scellop/data-loading` - Core types/schema (zero dependencies)
 - `@scellop/hubmap-data-loading` - HuBMAP Zarr data loading
-- `@scellop/scellop` - Main visualization library
+- `scellop` - Main visualization library
 - `sites/demo` - Demo site (not published)
 - `python/` - Jupyter widget via anywidget
 
@@ -77,8 +77,9 @@ Interactive heatmap uses **Canvas** (not `@visx/heatmap`) for performance. `@vis
 pnpm install      # Install all deps
 pnpm run dev      # Build packages in watch + demo
 pnpm run build    # Production builds
-pnpm run test     # Vitest across all packages
+pnpm run test     # Vitest across all packages (watch mode; use test:run in CI)
 pnpm run lint:fix # Biome auto-fix
+pnpm run typecheck # tsc --noEmit across packages
 pnpm run bench    # Performance benchmarks
 ```
 
@@ -96,7 +97,7 @@ pnpm install && pnpm run build
 
 Changes in [python/js/widget.tsx](python/js/widget.tsx) need `pnpm run build`
 
-**Path mappings**: TypeScript resolves `@scellop/*` imports to source via `tsconfig.json` paths. Vite/vitest configs alias these for bundling/testing.
+**Cross-package imports**: TypeScript resolves workspace packages through `node_modules` to their built `dist/*.d.ts`, so run `pnpm build` (topologically ordered) before typechecking. The vitest configs and the demo's dev-mode vite config alias them to `src` instead; the demo's *production* build deliberately does not, so it exercises the real package output.
 
 ## Code Conventions
 

@@ -115,7 +115,6 @@ export function calculateMetadataLabelOverhang(
     | Record<string, Record<string, string | number | undefined>>
     | undefined,
   sortOrders: Array<{ key: string; direction: "asc" | "desc" }>,
-  axis: "X" | "Y",
 ): number {
   if (!metadata || keys.length === 0) return 0;
 

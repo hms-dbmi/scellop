@@ -7,17 +7,13 @@ import { scaleBand } from "@visx/scale";
 import { bench, describe } from "vitest";
 import { calculateHeatmapCells } from "../utils/calculations/heatmap-cells";
 import { renderCellsToCanvas } from "../utils/rendering/canvas-utils";
-import {
-  getDatasetStats,
-} from "./fixtures/synthetic-datasets";
-import {  getBenchmarkDatasets } from "./setup-benchmarks";
+import { getBenchmarkDatasets } from "./setup-benchmarks";
 
 describe("Heatmap Rendering Benchmarks", async () => {
   const datasets = await getBenchmarkDatasets();
 
   describe("Calculate Heatmap Cells", () => {
     for (const [name, data] of datasets) {
-
       // Create scales for benchmarking
       const cellWidth = 10;
       const cellHeight = 10;
@@ -39,20 +35,17 @@ describe("Heatmap Rendering Benchmarks", async () => {
       const colorScale = (value: number) =>
         `rgb(${Math.min(255, value)}, 0, 0)`;
 
-      bench(
-        `${name}`,
-        () => {
-          calculateHeatmapCells({
-            rows: data.rowNames,
-            columns: data.colNames,
-            dataMap,
-            xScale,
-            yScale,
-            colorScale,
-            backgroundColor: "white",
-          });
-        },
-      );
+      bench(`${name}`, () => {
+        calculateHeatmapCells({
+          rows: data.rowNames,
+          columns: data.colNames,
+          dataMap,
+          xScale,
+          yScale,
+          colorScale,
+          backgroundColor: "white",
+        });
+      });
     }
   });
 
@@ -74,7 +67,8 @@ describe("Heatmap Rendering Benchmarks", async () => {
         dataMap[`${row}-${col}`] = value;
       });
 
-      const colorScale = (value: number) => `rgb(${Math.min(255, value)}, 0, 0)`;
+      const colorScale = (value: number) =>
+        `rgb(${Math.min(255, value)}, 0, 0)`;
 
       bench(`${name} - no expanded rows`, () => {
         calculateHeatmapCells({
@@ -163,18 +157,14 @@ describe("Heatmap Rendering Benchmarks", async () => {
 
       if (!ctx) continue;
 
-      bench(
-        `${name}`,
-        () => {
-          renderCellsToCanvas(ctx, cells);
-        },
-      );
+      bench(`${name}`, () => {
+        renderCellsToCanvas(ctx, cells);
+      });
     }
   });
 
   describe("End-to-End: Calculate + Render", () => {
     for (const [name, data] of datasets) {
-      const stats = getDatasetStats(data);
       const cellWidth = 10;
       const cellHeight = 10;
 
@@ -239,20 +229,17 @@ describe("Heatmap Rendering Benchmarks", async () => {
       const colorScale = (value: number) =>
         `rgb(${Math.min(255, value)}, 0, 0)`;
 
-      bench(
-        `${name}`,
-        () => {
-          calculateHeatmapCells({
-            rows: data.rowNames,
-            columns: data.colNames,
-            dataMap,
-            xScale,
-            yScale,
-            colorScale,
-            backgroundColor: "white",
-          });
-        },
-      );
+      bench(`${name}`, () => {
+        calculateHeatmapCells({
+          rows: data.rowNames,
+          columns: data.colNames,
+          dataMap,
+          xScale,
+          yScale,
+          colorScale,
+          backgroundColor: "white",
+        });
+      });
     }
   });
 });

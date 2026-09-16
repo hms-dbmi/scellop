@@ -5,12 +5,12 @@
 
 import type { ScellopData } from "@scellop/data-loading";
 import { beforeAll } from "vitest";
+import { loadAllRealWorldDatasets } from "./fixtures/real-world-datasets";
 import {
   DATASET_CONFIGS,
   generateSyntheticData,
   getDatasetStats,
 } from "./fixtures/synthetic-datasets";
-import { loadAllRealWorldDatasets } from "./fixtures/real-world-datasets";
 
 interface DatasetInfo {
   name: string;
@@ -49,7 +49,6 @@ export function getDatasetInfo(name: string): DatasetInfo | undefined {
   return BENCHMARK_DATASET_STATS.find((info) => info.name === name);
 }
 
-
 // Load or generate benchmark datasets
 export async function getBenchmarkDatasets() {
   if (BENCHMARK_DATASETS.size !== 0) {
@@ -59,7 +58,6 @@ export async function getBenchmarkDatasets() {
   for (const config of DATASET_CONFIGS) {
     const data = generateSyntheticData(config);
     BENCHMARK_DATASETS.set(config.name, data);
-
   }
   // and load real-world datasets
   const realWorldDatasets = await loadAllRealWorldDatasets();
@@ -81,10 +79,9 @@ export async function getBenchmarkDatasets() {
       config: {
         rowCount: data.rowNames.length,
         colCount: data.colNames.length,
-        density: data.countsMatrix.reduce(
-          (acc, curr) => acc + (curr ? 1 : 0),
-          0,
-        ) / (data.rowNames.length * data.colNames.length),
+        density:
+          data.countsMatrix.reduce((acc, curr) => acc + (curr ? 1 : 0), 0) /
+          (data.rowNames.length * data.colNames.length),
         withMetadata: !!data.metadata,
       },
       stats: {
@@ -110,7 +107,6 @@ export async function getBenchmarkDatasets() {
 }
 
 beforeAll(async () => {
-
   // Ensure datasets are loaded and their stats are calculated before benchmarks run
   await getBenchmarkDatasets();
 

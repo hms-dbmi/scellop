@@ -9,9 +9,14 @@ Cell type populations are commonly shown with stacked bar charts. However, scali
 ## Installs
 Scellop is available on [NPM](https://www.npmjs.com/package/scellop) and [PyPI](https://pypi.org/project/scellop/).
 
-
 ```sh
 npm i scellop
+```
+
+If you load data from the HuBMAP portal, also install the HuBMAP loader:
+
+```sh
+npm i @scellop/hubmap-data-loading
 ```
 
 ```sh
@@ -19,14 +24,26 @@ pip install scellop
 ```
 
 ## Demo
-A demo is available [here](https://scellop.netlify.app). How to use the ScellopComponent is shown [here](./demo/demo.tsx).
+A demo is available [here](https://scellop.netlify.app). How to use the ScellopComponent is shown [here](./sites/demo/src/demo.tsx).
 
 The main view and interactions:
 ![Screen shot of scellop with 64 datasets and 61 celltypes.](assets/scellop_example.png)
 
 
+## Repository layout
+This is a pnpm workspace monorepo.
+
+| Path | Package | Published |
+| --- | --- | --- |
+| `packages/scellop` | `scellop` | NPM |
+| `packages/data-loading` | `@scellop/data-loading` | NPM |
+| `packages/hubmap-data-loading` | `@scellop/hubmap-data-loading` | NPM |
+| `sites/demo` | `@scellop/demo` | no (deployed to Netlify) |
+| `python` | `scellop` | PyPI |
+
+
 ## Set-up
-This project uses pnpm. 
+This project uses pnpm.
 
 Install dependencies with:
 ```sh
@@ -37,6 +54,17 @@ Run the demo with:
 ```sh
 pnpm run dev
 ```
+
+Other workspace-wide commands:
+```sh
+pnpm build       # build every package
+pnpm test:run    # run all tests once
+pnpm typecheck   # tsc --noEmit across packages
+pnpm lint:fix    # Biome, auto-fix
+pnpm bench       # performance benchmarks
+```
+
+Releases are managed with [changesets](https://github.com/changesets/changesets). Add one with `pnpm changeset` in any PR that changes a published package.
 
 Instructions for Python package are it's own [contributing guidelines](./python/CONTRIBUTING.md).
 

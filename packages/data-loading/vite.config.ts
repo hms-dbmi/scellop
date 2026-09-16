@@ -9,13 +9,15 @@ export default defineConfig({
       entry: path.resolve(__dirname, "src/index.ts"),
       name: "ScellopDataLoading",
       fileName: (format) => `index.${format}.js`,
+      formats: ["es", "umd"],
     },
-    formats: ["es", "cjs"],
+    sourcemap: true,
   },
-  sourcemap: true,
   plugins: [
     dts({
       insertTypesEntry: true,
+      entryRoot: "src",
+      exclude: ["src/test/**", "src/benchmarks/**"],
     }),
   ],
 });

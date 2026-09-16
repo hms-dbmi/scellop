@@ -13,11 +13,24 @@ export default defineConfig({
       formats: ["es", "umd"],
     },
     rollupOptions: {
-      external: ["react", "react-dom"],
+      external: [
+        "react",
+        "react-dom",
+        "react-dom/client",
+        "react-dom/server",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "zustand",
+      ],
       output: {
         globals: {
           react: "React",
           "react-dom": "ReactDOM",
+          "react-dom/client": "ReactDOM",
+          "react-dom/server": "ReactDOMServer",
+          "react/jsx-runtime": "ReactJSXRuntime",
+          "react/jsx-dev-runtime": "ReactJSXDevRuntime",
+          zustand: "zustand",
         },
       },
     },
@@ -27,6 +40,9 @@ export default defineConfig({
     react(),
     dts({
       insertTypesEntry: true,
+      entryRoot: "src",
+      exclude: ["src/test/**", "src/benchmarks/**"],
+      include: ["src"],
     }),
   ],
 });

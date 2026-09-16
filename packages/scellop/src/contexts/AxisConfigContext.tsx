@@ -6,14 +6,8 @@ export type MetadataValues = Record<string, string | number | undefined>;
 
 export interface AxisConfig {
   label: string;
-  createHref?: (
-    tick: string,
-    metadataValues?: MetadataValues,
-  ) => string;
-  createSubtitle?: (
-    value: string,
-    metadataValues?: MetadataValues,
-  ) => string;
+  createHref?: (tick: string, metadataValues?: MetadataValues) => string;
+  createSubtitle?: (value: string, metadataValues?: MetadataValues) => string;
   icon?: React.ReactElement<unknown>;
   // Plural label for the axis, used in tooltips and other places
   // where the axis label is used in plural form.
@@ -37,16 +31,10 @@ interface InitializedAxisConfig extends AxisConfig {
 interface AxisConfigActions {
   setLabel: (label: string) => void;
   setCreateHref: (
-    createHref: (
-      tick: string,
-      metadataValues?: MetadataValues,
-    ) => string,
+    createHref: (tick: string, metadataValues?: MetadataValues) => string,
   ) => void;
   setCreateSubtitle: (
-    createSubtitle: (
-      value: string,
-      metadataValues?: MetadataValues,
-    ) => string,
+    createSubtitle: (value: string, metadataValues?: MetadataValues) => string,
   ) => void;
   zoomIn: () => void;
   zoomOut: () => void;
@@ -70,10 +58,7 @@ const createAxisConfigStore =
         zoomedBandwidth: initialArgs.zoomedBandwidth ?? 32,
         setLabel: (label: string) => set({ label }),
         setCreateHref: (
-          createHref: (
-            tick: string,
-            metadataValues?: MetadataValues,
-          ) => string,
+          createHref: (tick: string, metadataValues?: MetadataValues) => string,
         ) => set({ createHref }),
         setCreateSubtitle: (
           createSubtitle: (

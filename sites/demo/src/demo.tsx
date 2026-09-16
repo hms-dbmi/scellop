@@ -2,9 +2,8 @@ import ScatterPlot from "@mui/icons-material/ScatterPlot";
 import TableChartIcon from "@mui/icons-material/TableChartRounded";
 import type { ScellopData } from "@scellop/data-loading";
 import { loadHuBMAPData } from "@scellop/hubmap-data-loading";
-import { Scellop } from "@scellop/scellop";
 import { useEffect, useState } from "react";
-import type { GridSizeTuple } from "../../../packages/scellop/dist/scellop/src/contexts/DimensionsContext";
+import { type GridSizeTuple, Scellop } from "scellop";
 import testData from "./hubmapKidney";
 
 function Demo() {

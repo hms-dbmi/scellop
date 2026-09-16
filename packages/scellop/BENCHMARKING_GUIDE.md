@@ -35,7 +35,7 @@ A comprehensive performance benchmarking suite for Scellop with:
 
 ✅ **Documentation**:
 
-- Comprehensive README ([src/benchmarks/README.md](packages/scellop/src/benchmarks/README.md))
+- Comprehensive README ([src/benchmarks/README.md](src/benchmarks/README.md))
 - Real-world dataset integration guide
 - Performance report generator script
 
@@ -44,7 +44,7 @@ A comprehensive performance benchmarking suite for Scellop with:
 ### Quick Start
 
 ```bash
-cd /home/nikolay/projects/cellpop/packages/scellop
+cd packages/scellop
 pnpm run bench
 ```
 

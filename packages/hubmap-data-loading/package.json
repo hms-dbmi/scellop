@@ -16,8 +16,10 @@
       "require": "./dist/index.umd.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
-    "src",
     "dist"
   ],
   "repository": {

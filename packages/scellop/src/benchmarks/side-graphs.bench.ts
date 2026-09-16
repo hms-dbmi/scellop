@@ -15,23 +15,19 @@ describe("Side Graph Benchmarks", async () => {
   const datasets = await getBenchmarkDatasets();
   describe("Data Preparation for Side Graphs", () => {
     for (const [name, data] of datasets) {
+      bench(`${name}`, () => {
+        // Calculate row counts
+        const rowCounts: Record<string, number> = {};
+        data.countsMatrix.forEach(([row, _, value]) => {
+          rowCounts[row] = (rowCounts[row] || 0) + value;
+        });
 
-      bench(
-        `${name}`,
-        () => {
-          // Calculate row counts
-          const rowCounts: Record<string, number> = {};
-          data.countsMatrix.forEach(([row, _, value]) => {
-            rowCounts[row] = (rowCounts[row] || 0) + value;
-          });
-
-          // Calculate fraction dataMap (required for violins)
-          const fractionDataMap: Record<string, number> = {};
-          data.countsMatrix.forEach(([row, col, value]) => {
-            fractionDataMap[`${row}-${col}`] = value / rowCounts[row];
-          });
-        },
-      );
+        // Calculate fraction dataMap (required for violins)
+        const fractionDataMap: Record<string, number> = {};
+        data.countsMatrix.forEach(([row, col, value]) => {
+          fractionDataMap[`${row}-${col}`] = value / rowCounts[row];
+        });
+      });
     }
   });
 
@@ -59,118 +55,101 @@ describe("Side Graph Benchmarks", async () => {
     // This tests the core data aggregation that violins perform
     // The KDE calculation happens on top of this aggregated data
     for (const [name, data] of datasets) {
+      bench(`${name}`, () => {
+        // Calculate row counts (needed for normalization)
+        const rowCounts: Record<string, number> = {};
+        data.countsMatrix.forEach(([row, _, value]) => {
+          rowCounts[row] = (rowCounts[row] || 0) + value;
+        });
 
-      bench(
-        `${name}`,
-        () => {
-          // Calculate row counts (needed for normalization)
-          const rowCounts: Record<string, number> = {};
-          data.countsMatrix.forEach(([row, _, value]) => {
-            rowCounts[row] = (rowCounts[row] || 0) + value;
+        // Calculate fraction dataMap (core data structure for violins)
+        const fractionDataMap: Record<string, number> = {};
+        data.countsMatrix.forEach(([row, col, value]) => {
+          fractionDataMap[`${row}-${col}`] = value / rowCounts[row];
+        });
+
+        // Aggregate data per column (what violins do internally)
+        for (const col of data.colNames) {
+          const violinData: [string, number][] = data.rowNames.map((row) => {
+            const cellKey = `${row}-${col}`;
+            return [row, fractionDataMap[cellKey] || 0];
           });
-
-          // Calculate fraction dataMap (core data structure for violins)
-          const fractionDataMap: Record<string, number> = {};
-          data.countsMatrix.forEach(([row, col, value]) => {
-            fractionDataMap[`${row}-${col}`] = value / rowCounts[row];
-          });
-
-          // Aggregate data per column (what violins do internally)
-          for (const col of data.colNames) {
-            const violinData: [string, number][] = data.rowNames.map((row) => {
-              const cellKey = `${row}-${col}`;
-              return [row, fractionDataMap[cellKey] || 0];
-            });
-            // In real violin calculation, this would go through KDE
-            // which is O(n²) for each violin
-            void violinData; // Demonstrate calculation overhead
-          }
-        },
-      );
+          // In real violin calculation, this would go through KDE
+          // which is O(n²) for each violin
+          void violinData; // Demonstrate calculation overhead
+        }
+      });
     }
   });
 
   describe("Fraction Normalization (Violin Prep)", () => {
     for (const [name, data] of datasets) {
+      bench(`${name}`, () => {
+        const rowCounts: Record<string, number> = {};
+        data.countsMatrix.forEach(([row, _, value]) => {
+          rowCounts[row] = (rowCounts[row] || 0) + value;
+        });
 
-      bench(
-        `${name}`,
-        () => {
-          const rowCounts: Record<string, number> = {};
-          data.countsMatrix.forEach(([row, _, value]) => {
-            rowCounts[row] = (rowCounts[row] || 0) + value;
-          });
-
-          const fractionDataMap: Record<string, number> = {};
-          data.countsMatrix.forEach(([row, col, value]) => {
-            fractionDataMap[`${row}-${col}`] = value / rowCounts[row];
-          });
-        },
-      );
+        const fractionDataMap: Record<string, number> = {};
+        data.countsMatrix.forEach(([row, col, value]) => {
+          fractionDataMap[`${row}-${col}`] = value / rowCounts[row];
+        });
+      });
     }
   });
 
   describe("Bar Stacking Calculations", () => {
     // Test stacking multiple segments for bar charts
     for (const [name, data] of datasets) {
+      bench(`${name} `, () => {
+        // For each column, calculate stacked values
+        for (const col of data.colNames) {
+          let cumulativeHeight = 0;
+          const segments: Array<{ row: string; y: number; height: number }> =
+            [];
 
-      bench(
-        `${name} `,
-        () => {
-          // For each column, calculate stacked values
-          for (const col of data.colNames) {
-            let cumulativeHeight = 0;
-            const segments: Array<{ row: string; y: number; height: number }> =
-              [];
+          for (const row of data.rowNames) {
+            const value =
+              data.countsMatrix.find(([r, c]) => r === row && c === col)?.[2] ||
+              0;
 
-            for (const row of data.rowNames) {
-              const value =
-                data.countsMatrix.find(
-                  ([r, c]) => r === row && c === col,
-                )?.[2] || 0;
+            segments.push({
+              row,
+              y: cumulativeHeight,
+              height: value,
+            });
 
-              segments.push({
-                row,
-                y: cumulativeHeight,
-                height: value,
-              });
-
-              cumulativeHeight += value;
-            }
-            void segments; // Demonstrate stacking calculation
+            cumulativeHeight += value;
           }
-        },
-      );
+          void segments; // Demonstrate stacking calculation
+        }
+      });
     }
   });
 
   describe("Scalability Analysis", () => {
     // Demonstrate O(n×m) scaling for side graphs
     for (const [name, data] of datasets) {
+      bench(`${name}`, () => {
+        const rowCounts: Record<string, number> = {};
+        data.countsMatrix.forEach(([row, _, value]) => {
+          rowCounts[row] = (rowCounts[row] || 0) + value;
+        });
 
-      bench(
-        `${name}`,
-        () => {
-          const rowCounts: Record<string, number> = {};
-          data.countsMatrix.forEach(([row, _, value]) => {
-            rowCounts[row] = (rowCounts[row] || 0) + value;
+        const fractionDataMap: Record<string, number> = {};
+        data.countsMatrix.forEach(([row, col, value]) => {
+          fractionDataMap[`${row}-${col}`] = value / rowCounts[row];
+        });
+
+        // Aggregate per column (violin prep)
+        for (const col of data.colNames) {
+          const violinData: number[] = data.rowNames.map((row) => {
+            const cellKey = `${row}-${col}`;
+            return fractionDataMap[cellKey] || 0;
           });
-
-          const fractionDataMap: Record<string, number> = {};
-          data.countsMatrix.forEach(([row, col, value]) => {
-            fractionDataMap[`${row}-${col}`] = value / rowCounts[row];
-          });
-
-          // Aggregate per column (violin prep)
-          for (const col of data.colNames) {
-            const violinData: number[] = data.rowNames.map((row) => {
-              const cellKey = `${row}-${col}`;
-              return fractionDataMap[cellKey] || 0;
-            });
-            void violinData; // Demonstrate aggregation overhead
-          }
-        },
-      );
+          void violinData; // Demonstrate aggregation overhead
+        }
+      });
     }
   });
 });

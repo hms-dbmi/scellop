@@ -163,7 +163,9 @@ export function generateAllDatasets(): Map<string, ScellopData> {
  */
 export function getDatasetStats(data: ScellopData) {
   const cellCount = data.rowNames.length * data.colNames.length;
-  const nonZeroCells = data.countsMatrix.filter(([, , value]) => value !== 0).length;
+  const nonZeroCells = data.countsMatrix.filter(
+    ([, , value]) => value !== 0,
+  ).length;
   const density = nonZeroCells / cellCount;
 
   // Calculate row sums
@@ -180,7 +182,7 @@ export function getDatasetStats(data: ScellopData) {
     cols: data.colNames.length,
     totalCells: cellCount,
     nonZeroCells,
-    density: (density * 100).toFixed(1) + "%",
+    density: `${(density * 100).toFixed(1)}%`,
     hasMetadata: !!data.metadata,
     rowSums,
   };

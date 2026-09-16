@@ -1,7 +1,7 @@
 import { createRender, useModelState } from "@anywidget/react";
 import { loadDataWithCounts, type ScellopData } from "@scellop/data-loading";
-import { Scellop } from "@scellop/scellop";
 import * as React from "react";
+import { Scellop } from "scellop";
 
 const render = createRender(() => {
   const [dataDict] = useModelState<{

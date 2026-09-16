@@ -7,11 +7,6 @@ import type { ScellopData } from "@scellop/data-loading";
 import { bench, describe } from "vitest";
 import { temporal } from "zundo";
 import { createStore } from "zustand";
-import type { DatasetConfig } from "./fixtures/synthetic-datasets";
-import {
-  generateSyntheticData,
-  getDatasetStats,
-} from "./fixtures/synthetic-datasets";
 import { getBenchmarkDatasets } from "./setup-benchmarks";
 
 // Import the same memoized selectors used in DataContext
@@ -97,31 +92,27 @@ describe("Data Processing Benchmarks", async () => {
   // BENCHMARK_DATASETS is populated by setup-benchmarks.ts beforeAll hook
   // and includes both synthetic and real-world datasets
   const datasets = await getBenchmarkDatasets();
-  console.log(`Running Data Processing Benchmarks on ${datasets.size} datasets`);
+  console.log(
+    `Running Data Processing Benchmarks on ${datasets.size} datasets`,
+  );
 
   describe("DataMap Creation (Raw Counts)", () => {
     for (const [name, data] of datasets) {
-      bench(
-        `${name}`,
-        () => {
-          const store = createDataStore(data);
-          const state = store.getState();
-          calculateDataMap(state);
-        },
-      );
+      bench(`${name}`, () => {
+        const store = createDataStore(data);
+        const state = store.getState();
+        calculateDataMap(state);
+      });
     }
   });
 
   describe("Derived States Calculation", () => {
     for (const [name, data] of datasets) {
-      bench(
-        `${name}`,
-        () => {
-          const store = createDataStore(data);
-          const state = store.getState();
-          calculateDerivedStates(state);
-        },
-      );
+      bench(`${name}`, () => {
+        const store = createDataStore(data);
+        const state = store.getState();
+        calculateDerivedStates(state);
+      });
     }
   });
 
@@ -131,25 +122,19 @@ describe("Data Processing Benchmarks", async () => {
       const state = store.getState();
       const { rowCounts } = calculateDerivedStates(state);
 
-      bench(
-        `${name}`,
-        () => {
-          calculateRowFractionDataMap(state, rowCounts);
-        },
-      );
+      bench(`${name}`, () => {
+        calculateRowFractionDataMap(state, rowCounts);
+      });
     }
   });
 
   describe("Log Normalization", () => {
     for (const [name, data] of datasets) {
-      bench(
-        `${name}`,
-        () => {
-          const store = createDataStore(data);
-          const state = store.getState();
-          calculateLogDataMap(state);
-        },
-      );
+      bench(`${name}`, () => {
+        const store = createDataStore(data);
+        const state = store.getState();
+        calculateLogDataMap(state);
+      });
     }
   });
 

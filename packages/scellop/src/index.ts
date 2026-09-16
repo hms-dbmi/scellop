@@ -4,4 +4,5 @@ export type {
   ScellopData,
   ScellopTheme,
 } from "@scellop/data-loading";
+export type { GridSizeTuple } from "./contexts/DimensionsContext";
 export { Scellop } from "./ScellopComponent";
