@@ -1,0 +1,46 @@
+# One-shot publish for a package name that does not exist on npm yet.
+#
+# npm only accepts a trusted-publisher configuration for a package that already
+# exists, so a brand-new name cannot come from release.yml. Run this once per
+# new package with a short-lived granular token, configure the trusted publisher
+# on npmjs.com, then revoke the token. release.yml handles everything after.
+#
+# This workflow should be deleted once all packages are published.
+name: Bootstrap publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package name to publish for the first time
+        required: true
+        type: choice
+        options:
+          - "@scellop/data-loading"
+          - "@scellop/hubmap-data-loading"
+          - scellop
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    # Gate on an environment so the token is only readable by this workflow and
+    # an approval is required to use it.
+    environment: npm-bootstrap
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - run: pnpm --filter "${{ inputs.package }}" publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
