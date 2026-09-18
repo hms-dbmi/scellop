@@ -1,5 +1,4 @@
-import { styled, type Theme } from "@mui/material/styles";
-import type { CSSProperties } from "@mui/material/styles/createMixins";
+import { type CSSProperties, styled, type Theme } from "@mui/material/styles";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import type { ComponentType, PropsWithChildren } from "react";
 
