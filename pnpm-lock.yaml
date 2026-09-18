@@ -87,8 +87,8 @@ importers:
         specifier: workspace:*
         version: link:../data-loading
       '@vitessce/zarr':
-        specifier: ^3.6.7
-        version: 3.6.7(4cbd6413f6d3a36f0583e656cbf22278)
+        specifier: ^4.0.8
+        version: 4.0.8(4cbd6413f6d3a36f0583e656cbf22278)
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^7.0.1
@@ -236,8 +236,8 @@ importers:
   python:
     dependencies:
       '@anywidget/react':
-        specifier: ^0.0.8
-        version: 0.0.8(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^0.2.2
+        version: 0.2.2(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
@@ -327,16 +327,16 @@ packages:
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
 
-  '@anywidget/react@0.0.8':
-    resolution: {integrity: sha512-obr4EasXgWra485u+G4V3Msn7A1EOnowarvR62FRjpv2Rz6AyOoLMz2B03Z9j3DrWdD0634fMGu5ZAeRyjuV4w==}
+  '@anywidget/react@0.2.2':
+    resolution: {integrity: sha512-MjrbbUimaX72ATL9IrrZeMZL+IHVzeW5lMlgZywDAMj4/zUVQ7MeBSaijq7V9genze7sM3Y0WnUyB+Mc7KnWWw==}
     peerDependencies:
-      '@types/react': ^18.0.0
-      '@types/react-dom': ^18.0.0
-      react: ^18.0.0
-      react-dom: ^18.0.0
+      '@types/react': ^18.0.0 || ^19.0.0
+      '@types/react-dom': ^18.0.0 || ^19.0.0
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
 
-  '@anywidget/types@0.2.0':
-    resolution: {integrity: sha512-+XtK4uwxRd4JpuevUMhirrbvC0V4yCA/i0lEjhmSAtOaxiXIg/vBKzaSonDuoZ1a9LEjUXTW2+m7w+ULgsJYvg==}
+  '@anywidget/types@0.4.0':
+    resolution: {integrity: sha512-Qno/7V0lKHCMq3DJuSKKHMwilFKPSe8wFftL5xWmgaMCc938mNTtv+i19UrvDfpj9cQTnlPqyXy8t3JOgQ8laA==}
 
   '@asamuzakjp/css-color@7.0.0':
     resolution: {integrity: sha512-IxddtGnnoidVSO6O/aiTueptbTThHvi2qGHu9/AWuD1J7i86Ox+jl+Y5SXcDH1RixzQlP2cjH/PjnlImZiAurQ==}
@@ -1235,6 +1235,12 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
+  '@json2csv/formatters@7.0.8':
+    resolution: {integrity: sha512-YYpeZF7qKSX55FMYEl0m7Hn188l050k171/KwDHSMPHLHvWxDbzjmH1qVfXyV7XO7MMpDx1P7xksd/jXqlLxDw==}
+
+  '@json2csv/plainjs@7.0.8':
+    resolution: {integrity: sha512-bxsdb7tcHFyq6SGvDdHrxgSLxc8ScNyX+6B1aT+Anp8PEieZIenf6lPIJ2CnB4MQkrNANfFj6mXJlK9f8Bh5wg==}
+
   '@loaders.gl/3d-tiles@3.4.15':
     resolution: {integrity: sha512-JR67bEfLrD7Lzb6pWyEIRg2L6W3n6y43DKcWofRLpwPqLA7qHuY7SlO7E72Lz7Tniye8VhawqY1wO8gCx8T72Q==}
     peerDependencies:
@@ -2011,6 +2017,9 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
+  '@streamparser/json@0.0.23':
+    resolution: {integrity: sha512-givIVGxVGwP2oh5wiGdjQBKLZAS6LMkvnOxKybKTZDWP9LCO20eAzAL8OkUg8iR7u28cB2Ti7lFfLHnAAZGN6A==}
+
   '@swc/helpers@0.5.17':
     resolution: {integrity: sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==}
 
@@ -2597,50 +2606,58 @@ packages:
       oxc-transform-react:
         optional: true
 
-  '@vitessce/abstract@3.6.7':
-    resolution: {integrity: sha512-em0ei5YbhWeUSEb7MdkCC3RaBlK7ckldrYYhK3SN9WuP3UJy4ej2ZuCkZfEeEQ7OoVZXO3O9q3AgHJhP7zUNqA==}
+  '@vitessce/abstract@4.0.8':
+    resolution: {integrity: sha512-ycWlR8jCpBrT+YLR8JpIKTPU85Rqgfarq6OMf7hfGRKPdHdzKS/7nQiYscA61JBcCeu3JVLzkDmedftO498NOg==}
 
-  '@vitessce/config@3.6.7':
-    resolution: {integrity: sha512-TmdvLkxEzdmmhere+4dN6MUNi1t/O5kgKYxJVJP8zcxgaD2UcRybphDNZ9CXCvfFwCNpqsMoZaUdCpENWBzYHw==}
+  '@vitessce/config@4.0.8':
+    resolution: {integrity: sha512-yVksoOTr4TMK6ULu4s8wHtXSZ2QFHqFOd0zQLr/SAOI0fCEnDKbXiNmviFdQjyPxyK0nJBaEZA0EnzLvOYAb6w==}
 
-  '@vitessce/constants-internal@3.6.7':
-    resolution: {integrity: sha512-Rkz4VkPEBSm/d2ZEqU7bkoyCLYAcynKtJcfQ7DZ9SWu8Qq2U8pQDA4/jUFTJCj8/EtG8sWcE7hU5TeWcuL759w==}
+  '@vitessce/constants-internal@4.0.8':
+    resolution: {integrity: sha512-NnEVgvo7aF0p3x3OU/GWPzUJMwZRkndcVdRCkxq/+T/L/9E/0KMcN0rRel6eSXlil8eeVEBRLa4Ij6yW8X7NAw==}
 
-  '@vitessce/constants@3.6.7':
-    resolution: {integrity: sha512-rRqt7S/yGe8nL47PgoyYOvMxSvwdDb8tkvZtpmrmn5W86wa9y/o7mkLmFnH0cIl4OjmDpLnnGMSBDXwGKAvZUg==}
+  '@vitessce/constants@4.0.8':
+    resolution: {integrity: sha512-pR2RAoasQIa0RAar1yATxRtugIzgnMYY+Yv53en8kgkRYM4ZB6y2ZNdCDmHCGGmGETOecGaTS8rHpE717EUu0A==}
 
-  '@vitessce/gl@3.6.7':
-    resolution: {integrity: sha512-I+YzgyfixLczcDr84IhCSZ0735TJTeepgfYz4f0dxqA90h1EECNS6JPrlcZPHBVTbrozqz4lvwrveU6ytxS50g==}
+  '@vitessce/error@4.0.8':
+    resolution: {integrity: sha512-2apnDqMsBZxmz08G2eFB4WhmWM1QIOX239sLxx25WurWo1+/y9P2T7yoBLVp2s9KPlid+/QzehgAMYppgcoazg==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@vitessce/globals@3.6.7':
-    resolution: {integrity: sha512-gv/tVIYjeht7xHNh+v28mt5uVGgsKUUPRmyrQ59KDyhBynlxrk/mm0tAAeu7uXTXsYl4toMHVw7+KRUPDrKaFg==}
+  '@vitessce/gl@4.0.8':
+    resolution: {integrity: sha512-WwS+e3ULQcIn2CQuEA1ToOshrHnE9otqLzqfh8La4JccEkXsyYOI5nn06/IH0sI60AF/LOKsdaCOQhnHHsk9eQ==}
 
-  '@vitessce/image-utils@3.6.7':
-    resolution: {integrity: sha512-aviuTWInnBM5xY4J6z2bbjtje+gukCeD3jFkICBp0nz6pOMwPrS8CSXNkaU4/N3VWPsKUkxmI1DbZXUlXjrT+A==}
+  '@vitessce/globals@4.0.8':
+    resolution: {integrity: sha512-YHDsdvfORJl2YotUOVonrCUQ4fK6rx2ZcNtqWVIWWnMNmb3bomQX1w9nU3geEZe6zXDQmwGJ3twg4BmPACb8oA==}
 
-  '@vitessce/plugins@3.6.7':
-    resolution: {integrity: sha512-pI2hJeYuXnWe+KOlUFCLECcWOEtHZs4Gq3LnNUwUXrATHr2fYPzQ0CCPbDIPSgbraGk6kMtqWwhyMYjx952UMg==}
+  '@vitessce/image-utils@4.0.8':
+    resolution: {integrity: sha512-vrTW4/BovqxYSTCPA0+GcLSgfa2kT2GD5FKEgjfls+vJSoe26T4vKagpYlspjRAv2+SU9yCIzqdMx9rv/yM+cw==}
 
-  '@vitessce/schemas@3.6.7':
-    resolution: {integrity: sha512-sgo7If+CBuiq8ScoZnSxmAW7Gls1QqVpkzqn2VYjGyXIgaj1Ok09SF6E3O6yupxYgBGFoghxWzEcyUJqq750QQ==}
+  '@vitessce/plugins@4.0.8':
+    resolution: {integrity: sha512-QGStH0CTW8uq5SV/BjnjDW7LM3D9qPJfcRP9MThh8rAiGMFjC2BCFpLoxScTGVJT5FG5gMfoXQOI5z1SQqHomw==}
 
-  '@vitessce/sets-utils@3.6.7':
-    resolution: {integrity: sha512-uk0t6XCEczXT4cJpHQzyODNFZZseFX/WrIUYmnQ7K7xtGM3TjD4vFMOYllC90vBeVxHKgqMn1wrG/FIShvcjAg==}
+  '@vitessce/schemas@4.0.8':
+    resolution: {integrity: sha512-OAGVvi49hhFucroqwovxc4rj+Ond71g2Jh9hICl3vFKCoSajbIJ/+OqHidx5HDp4JfXqYIAWXiQj+kwmwA7AfQ==}
 
-  '@vitessce/spatial-utils@3.6.7':
-    resolution: {integrity: sha512-1eupc29pfd8xq/nRW0fNX7aCIGmibEBPiETYqGY304ZlAbO7jJ4BlZglY96S48eCYesMIGoxVIt2XHlK1PZxNw==}
+  '@vitessce/sets-utils@4.0.8':
+    resolution: {integrity: sha512-1s0yX6GFByMit2QqWaL5h2BuZIqO2WjLTzB9yf56vdMgrvpFHSjH9px2H5TH+s5Smqm56FvcywxM6xJY9pxjIQ==}
 
-  '@vitessce/types@3.6.7':
-    resolution: {integrity: sha512-Ia4TFuTz/aUHheUGn/mO70LBSaLCtYxUUftI/4Y+dbEelLODJjOkc8vTQ/HgtM2q6xIr+JtB9/AgMV6A0qKOgA==}
+  '@vitessce/spatial-utils@4.0.8':
+    resolution: {integrity: sha512-fnxqtmMu9xsiQSbUlz8NDPuos7CXFaVHzgX+KzEE+unBH3IK6e/a3qwELyyuaas2NxaeSHV/bH77fZB6RNkUcA==}
 
-  '@vitessce/utils@3.6.7':
-    resolution: {integrity: sha512-bCs2YKrHumqUFO6PecUh0nhxcl4DMCTWv4dcy/+m0l9npt4+jVohbgBPGJj7iQ5vRFPVfCLs1TQTk8ISIbAr7g==}
+  '@vitessce/types@4.0.8':
+    resolution: {integrity: sha512-L7+QOgZCbYVgDkEXBvfFJYsikxM5hrmaFvHuNgSruogUCowJHQ27DsHEteUczv3ezNZaDzgHqdZxnW/sv2U0mw==}
 
-  '@vitessce/zarr-utils@3.6.7':
-    resolution: {integrity: sha512-W0VdEgA/QeCDb3vjJYizcznWJTQkJ/QZMy+DH4HovXovQlOoV35jO6K1DvorNZsp1KIzQrWwqBmBKEH6hYKQOw==}
+  '@vitessce/utils@4.0.8':
+    resolution: {integrity: sha512-Sc5L2S4k+iNc6ID6J5S6tgU1t4HbbFdnGxojwFa1b/1hhWdvjWt8bKYaq/uVXGHOpqQW5akrNIspp5iCjEfLow==}
 
-  '@vitessce/zarr@3.6.7':
-    resolution: {integrity: sha512-Jq+t/53a9SFUQS3JqPhee1ycDojAGgMLkm6fE/t49yka/NyWNhb9pkEbK/KEC41GAQGC8XGTtw/8jQNXQ7z0yQ==}
+  '@vitessce/workers@4.0.8':
+    resolution: {integrity: sha512-Bx0IM1M7qaJbi68HXBka7sJgwLROPj7lZi3YcEKkTyWQ4M1hNrvYHxb9mLFp7hZWyY09U1mf0O6Wr0RcdiayZA==}
+
+  '@vitessce/zarr-utils@4.0.8':
+    resolution: {integrity: sha512-7K/uPgHG2opjf6Ti8gBwBzhuMkWjCR8adPlMwNQi3XvYiUot9qtHf45Gnyf2SMnsBj1uq3PZx6OhbKqTkQfqBA==}
+
+  '@vitessce/zarr@4.0.8':
+    resolution: {integrity: sha512-gF4wOMaxPFVJYh/MNDrvVyBnohzkRsTwD3oH2O/aCVZebUt+jyviOpbvvfs57H+QeU5fzZijRqJUnJlZDCbABA==}
 
   '@vitest/coverage-v8@4.0.16':
     resolution: {integrity: sha512-2rNdjEIsPRzsdu6/9Eq0AYAzYdpP6Bx9cje9tL3FE5XzXRQF1fNU9pe/1yE8fCrS0HD+fBtt6gLPh6LI57tX7A==}
@@ -2736,8 +2753,8 @@ packages:
       typescript:
         optional: true
 
-  '@zarrita/storage@0.1.1':
-    resolution: {integrity: sha512-6/NUCvpzsIxfxeMv59jRTl/bOZg3GZfMP6iR8EIqrTaaE0S2jLL/ceX1OxcFBKnuA8/Z2YmgX4SFBHwFGrCcsw==}
+  '@zarrita/storage@0.2.0':
+    resolution: {integrity: sha512-855ZXqtnds7spnT8vNvD+MXa3QExP1m2GqShe8yt7uZXHnQLgJHgkpVwFjE1B0KDDRO0ki09hmk6OboTaIfPsQ==}
 
   acorn@7.4.1:
     resolution: {integrity: sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==}
@@ -2908,10 +2925,6 @@ packages:
 
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
-
-  commander@6.2.1:
-    resolution: {integrity: sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==}
-    engines: {node: '>= 6'}
 
   commander@7.2.0:
     resolution: {integrity: sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==}
@@ -3293,6 +3306,9 @@ packages:
       picomatch:
         optional: true
 
+  fetch-jsonp@1.4.0:
+    resolution: {integrity: sha512-SmOI6UshTUzQ1O+1CJDg31AE4VUIfAO4xfVAy/sH03h4Obml3BnuhTopdFaJMI21T94RfRvfTgTIvV0X8GnJ2A==}
+
   fflate@0.8.2:
     resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
 
@@ -3620,21 +3636,11 @@ packages:
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
 
-  json2csv@5.0.7:
-    resolution: {integrity: sha512-YRZbUnyaJZLZUJSRi2G/MqahCyRv9n/ds+4oIetjDF3jWQA7AG7iSeKTiZiCNqtMZM7HDyt0e/W6lEnoGEmMGA==}
-    engines: {node: '>= 10', npm: '>= 6.13.0'}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-    hasBin: true
-
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
 
   jsonfile@6.1.0:
     resolution: {integrity: sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==}
-
-  jsonparse@1.3.1:
-    resolution: {integrity: sha512-POQXvpdL69+CluYsillJ7SUhKvytYjW9vG/GKpnf+xP8UWgYEM/RaMzHHofbALDiKbbP1W8UEYmgGl39WkPZsg==}
-    engines: {'0': node >= 0.2.0}
 
   jsts@2.7.1:
     resolution: {integrity: sha512-x2wSZHEBK20CY+Wy+BPE7MrFQHW6sIsdaGUMEqmGAio+3gFzQaBYPwLRonUfQf9Ak8pBieqj9tUofX1+WtAEIg==}
@@ -3739,10 +3745,6 @@ packages:
 
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
-
-  lodash.get@4.4.2:
-    resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
-    deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
 
   lodash.startcase@4.4.0:
     resolution: {integrity: sha512-+WKqsK294HMSc2jEbNgpHpd0JfIBhp7rEV4aqXWqFr6AlXov+SlcgB1Fv01y2kGe3Gc8nMW7VA0SrGuSkRfIEg==}
@@ -4517,9 +4519,9 @@ packages:
     resolution: {integrity: sha512-5uKD0nqiYVzlmCRs01Fhs2BdkEgBS3SAVP6ndrBsuK42iC2+JHyxM05Rm9G8+5mkmRtzMZGY8Ct5+mliZxU/Ww==}
     engines: {node: '>=18.12.0'}
 
-  unzipit@1.4.3:
-    resolution: {integrity: sha512-gsq2PdJIWWGhx5kcdWStvNWit9FVdTewm4SEG7gFskWs+XCVaULt9+BwuoBtJiRE8eo3L1IPAOrbByNLtLtIlg==}
-    engines: {node: '>=12'}
+  unzipit@2.0.0:
+    resolution: {integrity: sha512-DVeVIWUZCAQPNzm5sB0hpsG1GygTTdBnzNtYYEpInkttx5evkyqRgZi6rTczoySqp8hO5jHVKzrH0f23X8FZLg==}
+    engines: {node: '>=18'}
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -4561,9 +4563,6 @@ packages:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
-
-  uzip-module@1.0.3:
-    resolution: {integrity: sha512-AMqwWZaknLM77G+VPYNZLEruMGWGzyigPK3/Whg99B3S6vGHuqsyl5ZrOv1UUF3paGK1U6PM0cnayioaryg/fA==}
 
   viewport-mercator-project@7.0.4:
     resolution: {integrity: sha512-0jzpL6pIMocCKWg1C3mqi/N4UPgZC3FzwghEm1H+XsUo8hNZAyJc3QR7YqC816ibOR8aWT5pCsV+gCu8/BMJgg==}
@@ -4775,8 +4774,8 @@ packages:
     resolution: {integrity: sha512-v7g3i/NfLEHtGtCEX8zl9b/LMY+8BY7fIYvbNX3nskAhliMCY5mA12jlc8Rbe91hSwL/4Nh2d3fUcVmnthXQkQ==}
     engines: {node: '>=12'}
 
-  zarrita@0.5.2:
-    resolution: {integrity: sha512-BN/miFnvBuVqLLObrI08crkbyi+Oc/HWZpgCmWusrWUNIauIV9vR5zlvpSAnhOjZwjomEKFb728K7ax7FiDgJQ==}
+  zarrita@0.7.5:
+    resolution: {integrity: sha512-ZriOSEne+Wf2iuM0yjDZvUKpHNlug3dO7qJ6mAxXoOgsYV18DPOkAkwB9e0rf21bHcKcOffFuwoZwn5g6pvUeA==}
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
@@ -4811,15 +4810,15 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@anywidget/react@0.0.8(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@anywidget/react@0.2.2(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
-      '@anywidget/types': 0.2.0
+      '@anywidget/types': 0.4.0
       '@types/react': 19.3.0
       '@types/react-dom': 19.3.0(@types/react@19.3.0)
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
 
-  '@anywidget/types@0.2.0': {}
+  '@anywidget/types@0.4.0': {}
 
   '@asamuzakjp/css-color@7.0.0':
     dependencies:
@@ -5662,6 +5661,13 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@json2csv/formatters@7.0.8': {}
+
+  '@json2csv/plainjs@7.0.8':
+    dependencies:
+      '@json2csv/formatters': 7.0.8
+      '@streamparser/json': 0.0.23
 
   '@loaders.gl/3d-tiles@3.4.15(@loaders.gl/core@3.4.15)':
     dependencies:
@@ -6507,6 +6513,8 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
+  '@streamparser/json@0.0.23': {}
+
   '@swc/helpers@0.5.17':
     dependencies:
       tslib: 2.8.1
@@ -7262,26 +7270,36 @@ snapshots:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.3.0(@types/node@26.6.1)(esbuild@0.28.2)(jiti@2.6.1)(tsx@4.21.0)
 
-  '@vitessce/abstract@3.6.7':
+  '@vitessce/abstract@4.0.8(react@17.0.2)':
     dependencies:
-      '@vitessce/globals': 3.6.7
+      '@vitessce/error': 4.0.8(react@17.0.2)
+      '@vitessce/globals': 4.0.8
+      '@vitessce/utils': 4.0.8
+    transitivePeerDependencies:
+      - react
 
-  '@vitessce/config@3.6.7':
+  '@vitessce/config@4.0.8':
     dependencies:
-      '@vitessce/constants-internal': 3.6.7
-      '@vitessce/globals': 3.6.7
-      '@vitessce/utils': 3.6.7
-      '@vitessce/zarr-utils': 3.6.7
-      zarrita: 0.5.2
+      '@vitessce/constants-internal': 4.0.8
+      '@vitessce/globals': 4.0.8
+      '@vitessce/utils': 4.0.8
+      '@vitessce/zarr-utils': 4.0.8
+      '@zarrita/storage': 0.2.0
+      fetch-jsonp: 1.4.0
+      zarrita: 0.7.5
 
-  '@vitessce/constants-internal@3.6.7': {}
+  '@vitessce/constants-internal@4.0.8': {}
 
-  '@vitessce/constants@3.6.7':
+  '@vitessce/constants@4.0.8':
     dependencies:
-      '@vitessce/constants-internal': 3.6.7
-      '@vitessce/globals': 3.6.7
+      '@vitessce/constants-internal': 4.0.8
+      '@vitessce/globals': 4.0.8
 
-  '@vitessce/gl@3.6.7(@loaders.gl/gltf@3.4.15)(@types/react@19.3.0)(gl-matrix@3.4.3)(react-dom@19.3.0(react@17.0.2))(react@17.0.2)':
+  '@vitessce/error@4.0.8(react@17.0.2)':
+    dependencies:
+      react: 17.0.2
+
+  '@vitessce/gl@4.0.8(@loaders.gl/gltf@3.4.15)(@types/react@19.3.0)(gl-matrix@3.4.3)(react-dom@19.3.0(react@17.0.2))(react@17.0.2)':
     dependencies:
       '@deck.gl/aggregation-layers': 8.8.27(@deck.gl/core@8.8.27)(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@luma.gl/core@8.5.21)
       '@deck.gl/core': 8.8.27
@@ -7316,8 +7334,8 @@ snapshots:
       '@turf/invariant': 7.2.0
       '@turf/meta': 7.2.0
       '@turf/union': 7.2.0
-      '@vitessce/globals': 3.6.7
-      '@vitessce/utils': 3.6.7
+      '@vitessce/globals': 4.0.8
+      '@vitessce/utils': 4.0.8
       d3-array: 2.12.1
       deck.gl: 8.8.27(@loaders.gl/core@3.4.15)(@loaders.gl/gltf@3.4.15)(@loaders.gl/images@3.4.15)(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/shadertools@8.5.21)(@luma.gl/webgl@8.5.21)(@math.gl/core@3.6.3)(@types/react@19.3.0)(gl-matrix@3.4.3)(react-dom@19.3.0(react@17.0.2))(react@17.0.2)
       glslify: 7.1.1
@@ -7332,17 +7350,17 @@ snapshots:
       - react
       - react-dom
 
-  '@vitessce/globals@3.6.7':
+  '@vitessce/globals@4.0.8':
     dependencies:
       loglevel: 1.9.2
 
-  '@vitessce/image-utils@3.6.7(4cbd6413f6d3a36f0583e656cbf22278)':
+  '@vitessce/image-utils@4.0.8(4cbd6413f6d3a36f0583e656cbf22278)':
     dependencies:
       '@hms-dbmi/viv': 0.16.1(@deck.gl/core@8.8.27)(@deck.gl/geo-layers@8.8.27(@deck.gl/core@8.8.27)(@deck.gl/extensions@8.8.27(@deck.gl/core@8.8.27)(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(gl-matrix@3.4.3))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/mesh-layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/webgl@8.5.21))(@loaders.gl/core@3.4.15)(@loaders.gl/gltf@3.4.15)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/shadertools@8.5.21)(@luma.gl/webgl@8.5.21))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/react@8.8.27(@deck.gl/core@8.8.27)(@types/react@19.3.0)(react-dom@19.3.0(react@17.0.2))(react@17.0.2))(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/webgl@8.5.21)(react@17.0.2)
-      '@vitessce/globals': 3.6.7
-      '@vitessce/spatial-utils': 3.6.7(@loaders.gl/gltf@3.4.15)(@types/react@19.3.0)(gl-matrix@3.4.3)(react-dom@19.3.0(react@17.0.2))(react@17.0.2)
-      '@vitessce/types': 3.6.7(@deck.gl/core@8.8.27)(@deck.gl/geo-layers@8.8.27(@deck.gl/core@8.8.27)(@deck.gl/extensions@8.8.27(@deck.gl/core@8.8.27)(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(gl-matrix@3.4.3))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/mesh-layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/webgl@8.5.21))(@loaders.gl/core@3.4.15)(@loaders.gl/gltf@3.4.15)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/shadertools@8.5.21)(@luma.gl/webgl@8.5.21))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/react@8.8.27(@deck.gl/core@8.8.27)(@types/react@19.3.0)(react-dom@19.3.0(react@17.0.2))(react@17.0.2))(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/webgl@8.5.21)(react@17.0.2)
-      '@vitessce/utils': 3.6.7
+      '@vitessce/globals': 4.0.8
+      '@vitessce/spatial-utils': 4.0.8(@loaders.gl/gltf@3.4.15)(@types/react@19.3.0)(gl-matrix@3.4.3)(react-dom@19.3.0(react@17.0.2))(react@17.0.2)
+      '@vitessce/types': 4.0.8(@deck.gl/core@8.8.27)(@deck.gl/geo-layers@8.8.27(@deck.gl/core@8.8.27)(@deck.gl/extensions@8.8.27(@deck.gl/core@8.8.27)(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(gl-matrix@3.4.3))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/mesh-layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/webgl@8.5.21))(@loaders.gl/core@3.4.15)(@loaders.gl/gltf@3.4.15)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/shadertools@8.5.21)(@luma.gl/webgl@8.5.21))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/react@8.8.27(@deck.gl/core@8.8.27)(@types/react@19.3.0)(react-dom@19.3.0(react@17.0.2))(react@17.0.2))(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/webgl@8.5.21)(react@17.0.2)
+      '@vitessce/utils': 4.0.8
     transitivePeerDependencies:
       - '@deck.gl/core'
       - '@deck.gl/geo-layers'
@@ -7358,51 +7376,54 @@ snapshots:
       - react
       - react-dom
 
-  '@vitessce/plugins@3.6.7':
+  '@vitessce/plugins@4.0.8':
     dependencies:
       zod: 3.25.76
 
-  '@vitessce/schemas@3.6.7':
+  '@vitessce/schemas@4.0.8':
     dependencies:
       '@types/lodash-es': 4.17.12
       '@types/semver': 7.7.0
       '@types/uuid': 9.0.8
-      '@vitessce/constants': 3.6.7
-      '@vitessce/constants-internal': 3.6.7
-      '@vitessce/globals': 3.6.7
-      '@vitessce/plugins': 3.6.7
-      '@vitessce/utils': 3.6.7
+      '@vitessce/constants': 4.0.8
+      '@vitessce/constants-internal': 4.0.8
+      '@vitessce/globals': 4.0.8
+      '@vitessce/plugins': 4.0.8
+      '@vitessce/utils': 4.0.8
       lodash-es: 4.17.21
       semver: 7.7.3
       uuid: 9.0.1
       zod: 3.25.76
 
-  '@vitessce/sets-utils@3.6.7':
+  '@vitessce/sets-utils@4.0.8':
     dependencies:
+      '@json2csv/plainjs': 7.0.8
       '@turf/centroid': 7.2.0
       '@turf/helpers': 7.2.0
-      '@vitessce/globals': 3.6.7
-      '@vitessce/schemas': 3.6.7
-      '@vitessce/utils': 3.6.7
+      '@vitessce/globals': 4.0.8
+      '@vitessce/schemas': 4.0.8
+      '@vitessce/utils': 4.0.8
+      '@vitessce/workers': 4.0.8
       concaveman: 1.2.1
       d3-dsv: 1.2.0
       internmap: 2.0.3
-      json2csv: 5.0.7
       lodash-es: 4.17.21
       tinycolor2: 1.6.0
       uuid: 9.0.1
 
-  '@vitessce/spatial-utils@3.6.7(@loaders.gl/gltf@3.4.15)(@types/react@19.3.0)(gl-matrix@3.4.3)(react-dom@19.3.0(react@17.0.2))(react@17.0.2)':
+  '@vitessce/spatial-utils@4.0.8(@loaders.gl/gltf@3.4.15)(@types/react@19.3.0)(gl-matrix@3.4.3)(react-dom@19.3.0(react@17.0.2))(react@17.0.2)':
     dependencies:
-      '@vitessce/constants-internal': 3.6.7
-      '@vitessce/gl': 3.6.7(@loaders.gl/gltf@3.4.15)(@types/react@19.3.0)(gl-matrix@3.4.3)(react-dom@19.3.0(react@17.0.2))(react@17.0.2)
-      '@vitessce/globals': 3.6.7
-      '@vitessce/utils': 3.6.7
-      '@vitessce/zarr-utils': 3.6.7
+      '@vitessce/constants-internal': 4.0.8
+      '@vitessce/error': 4.0.8(react@17.0.2)
+      '@vitessce/gl': 4.0.8(@loaders.gl/gltf@3.4.15)(@types/react@19.3.0)(gl-matrix@3.4.3)(react-dom@19.3.0(react@17.0.2))(react@17.0.2)
+      '@vitessce/globals': 4.0.8
+      '@vitessce/utils': 4.0.8
+      '@vitessce/zarr-utils': 4.0.8
+      internmap: 2.0.3
       lodash-es: 4.17.21
       math.gl: 3.6.3
       mathjs: 9.5.2
-      zarrita: 0.5.2
+      zarrita: 0.7.5
     transitivePeerDependencies:
       - '@loaders.gl/gltf'
       - '@types/react'
@@ -7410,10 +7431,10 @@ snapshots:
       - react
       - react-dom
 
-  '@vitessce/types@3.6.7(@deck.gl/core@8.8.27)(@deck.gl/geo-layers@8.8.27(@deck.gl/core@8.8.27)(@deck.gl/extensions@8.8.27(@deck.gl/core@8.8.27)(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(gl-matrix@3.4.3))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/mesh-layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/webgl@8.5.21))(@loaders.gl/core@3.4.15)(@loaders.gl/gltf@3.4.15)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/shadertools@8.5.21)(@luma.gl/webgl@8.5.21))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/react@8.8.27(@deck.gl/core@8.8.27)(@types/react@19.3.0)(react-dom@19.3.0(react@17.0.2))(react@17.0.2))(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/webgl@8.5.21)(react@17.0.2)':
+  '@vitessce/types@4.0.8(@deck.gl/core@8.8.27)(@deck.gl/geo-layers@8.8.27(@deck.gl/core@8.8.27)(@deck.gl/extensions@8.8.27(@deck.gl/core@8.8.27)(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(gl-matrix@3.4.3))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/mesh-layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/webgl@8.5.21))(@loaders.gl/core@3.4.15)(@loaders.gl/gltf@3.4.15)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/shadertools@8.5.21)(@luma.gl/webgl@8.5.21))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/react@8.8.27(@deck.gl/core@8.8.27)(@types/react@19.3.0)(react-dom@19.3.0(react@17.0.2))(react@17.0.2))(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/webgl@8.5.21)(react@17.0.2)':
     dependencies:
       '@hms-dbmi/viv': 0.16.1(@deck.gl/core@8.8.27)(@deck.gl/geo-layers@8.8.27(@deck.gl/core@8.8.27)(@deck.gl/extensions@8.8.27(@deck.gl/core@8.8.27)(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(gl-matrix@3.4.3))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/mesh-layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/webgl@8.5.21))(@loaders.gl/core@3.4.15)(@loaders.gl/gltf@3.4.15)(@loaders.gl/images@3.4.15)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/gltools@8.5.21)(@luma.gl/shadertools@8.5.21)(@luma.gl/webgl@8.5.21))(@deck.gl/layers@8.8.27(@deck.gl/core@8.8.27)(@loaders.gl/core@3.4.15)(@luma.gl/core@8.5.21))(@deck.gl/react@8.8.27(@deck.gl/core@8.8.27)(@types/react@19.3.0)(react-dom@19.3.0(react@17.0.2))(react@17.0.2))(@luma.gl/constants@8.5.21)(@luma.gl/core@8.5.21)(@luma.gl/engine@8.5.21)(@luma.gl/webgl@8.5.21)(react@17.0.2)
-      zarrita: 0.5.2
+      zarrita: 0.7.5
     transitivePeerDependencies:
       - '@deck.gl/core'
       - '@deck.gl/geo-layers'
@@ -7425,37 +7446,42 @@ snapshots:
       - '@luma.gl/webgl'
       - react
 
-  '@vitessce/utils@3.6.7':
+  '@vitessce/utils@4.0.8':
     dependencies:
-      '@vitessce/globals': 3.6.7
+      '@vitessce/globals': 4.0.8
       bowser: 2.11.0
       d3-array: 2.12.1
       lodash-es: 4.17.21
       lz-string: 1.5.0
       pluralize: 8.0.0
 
-  '@vitessce/zarr-utils@3.6.7':
+  '@vitessce/workers@4.0.8':
     dependencies:
-      '@vitessce/globals': 3.6.7
-      '@zarrita/storage': 0.1.1
-      zarrita: 0.5.2
+      lodash-es: 4.17.21
 
-  '@vitessce/zarr@3.6.7(4cbd6413f6d3a36f0583e656cbf22278)':
+  '@vitessce/zarr-utils@4.0.8':
     dependencies:
-      '@vitessce/abstract': 3.6.7
-      '@vitessce/config': 3.6.7
-      '@vitessce/constants-internal': 3.6.7
-      '@vitessce/globals': 3.6.7
-      '@vitessce/image-utils': 3.6.7(4cbd6413f6d3a36f0583e656cbf22278)
-      '@vitessce/sets-utils': 3.6.7
-      '@vitessce/utils': 3.6.7
-      '@vitessce/zarr-utils': 3.6.7
+      '@vitessce/globals': 4.0.8
+      '@zarrita/storage': 0.2.0
+      zarrita: 0.7.5
+
+  '@vitessce/zarr@4.0.8(4cbd6413f6d3a36f0583e656cbf22278)':
+    dependencies:
+      '@vitessce/abstract': 4.0.8(react@17.0.2)
+      '@vitessce/config': 4.0.8
+      '@vitessce/constants-internal': 4.0.8
+      '@vitessce/error': 4.0.8(react@17.0.2)
+      '@vitessce/globals': 4.0.8
+      '@vitessce/image-utils': 4.0.8(4cbd6413f6d3a36f0583e656cbf22278)
+      '@vitessce/sets-utils': 4.0.8
+      '@vitessce/utils': 4.0.8
+      '@vitessce/zarr-utils': 4.0.8
       apache-arrow: 17.0.0
       d3-array: 2.12.1
       lodash-es: 4.17.21
       ol: 10.6.1
       parquet-wasm: 0.6.1
-      zarrita: 0.5.2
+      zarrita: 0.7.5
     transitivePeerDependencies:
       - '@deck.gl/core'
       - '@deck.gl/geo-layers'
@@ -7623,10 +7649,10 @@ snapshots:
     optionalDependencies:
       typescript: 7.0.2
 
-  '@zarrita/storage@0.1.1':
+  '@zarrita/storage@0.2.0':
     dependencies:
       reference-spec-reader: 0.2.0
-      unzipit: 1.4.3
+      unzipit: 2.0.0
 
   acorn@7.4.1: {}
 
@@ -7793,8 +7819,6 @@ snapshots:
       typical: 7.3.0
 
   commander@2.20.3: {}
-
-  commander@6.2.1: {}
 
   commander@7.2.0: {}
 
@@ -8283,6 +8307,8 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.7
 
+  fetch-jsonp@1.4.0: {}
+
   fflate@0.8.2: {}
 
   fill-range@7.1.1:
@@ -8637,12 +8663,6 @@ snapshots:
   json-schema-traverse@1.0.0:
     optional: true
 
-  json2csv@5.0.7:
-    dependencies:
-      commander: 6.2.1
-      jsonparse: 1.3.1
-      lodash.get: 4.4.2
-
   jsonfile@4.0.0:
     optionalDependencies:
       graceful-fs: 4.2.11
@@ -8653,8 +8673,6 @@ snapshots:
     optionalDependencies:
       graceful-fs: 4.2.11
     optional: true
-
-  jsonparse@1.3.1: {}
 
   jsts@2.7.1: {}
 
@@ -8728,8 +8746,6 @@ snapshots:
   lodash-es@4.17.21: {}
 
   lodash.camelcase@4.3.0: {}
-
-  lodash.get@4.4.2: {}
 
   lodash.startcase@4.4.0: {}
 
@@ -9514,9 +9530,7 @@ snapshots:
       picomatch: 4.0.7
       webpack-virtual-modules: 0.6.2
 
-  unzipit@1.4.3:
-    dependencies:
-      uzip-module: 1.0.3
+  unzipit@2.0.0: {}
 
   uri-js@4.4.1:
     dependencies:
@@ -9548,8 +9562,6 @@ snapshots:
   uuid@7.0.3: {}
 
   uuid@9.0.1: {}
-
-  uzip-module@1.0.3: {}
 
   viewport-mercator-project@7.0.4:
     dependencies:
@@ -9702,9 +9714,9 @@ snapshots:
       numcodecs: 0.2.2
       p-queue: 7.4.1
 
-  zarrita@0.5.2:
+  zarrita@0.7.5:
     dependencies:
-      '@zarrita/storage': 0.1.1
+      '@zarrita/storage': 0.2.0
       numcodecs: 0.3.2
 
   zod@3.25.76: {}
