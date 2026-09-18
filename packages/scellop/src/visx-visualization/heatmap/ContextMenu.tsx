@@ -449,7 +449,13 @@ const SortDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
                     cursor: "pointer",
                   }}
                 >
-                  <Stack alignItems="center" direction="row" spacing={1}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{
+                      alignItems: "center",
+                    }}
+                  >
                     <Restore />
                     <Typography>Revalidate Sorts</Typography>
                   </Stack>
@@ -478,9 +484,19 @@ const SortDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
                     cursor: isInvalidated ? "default" : "pointer",
                   }}
                 >
-                  <Stack alignItems="center" direction="row" width="100%">
+                  <Stack
+                    direction="row"
+                    sx={{
+                      alignItems: "center",
+                      width: "100%",
+                    }}
+                  >
                     <Box>
-                      <Typography display="inline-block">
+                      <Typography
+                        sx={{
+                          display: "inline-block",
+                        }}
+                      >
                         {index + 1}: {getFieldDisplayName(sort.key)}{" "}
                       </Typography>
                     </Box>
@@ -491,7 +507,11 @@ const SortDimension = ({ dimension }: { dimension: "Row" | "Column" }) => {
                       <ArrowDownward />
                     )}
 
-                    <Box ml="auto">
+                    <Box
+                      sx={{
+                        ml: "auto",
+                      }}
+                    >
                       <Close />
                     </Box>
                   </Stack>

@@ -12,17 +12,21 @@ export default function YAxisLabel() {
 
   return (
     <Typography
-      display="flex"
       variant="caption"
       color="textSecondary"
-      textAlign="center"
       noWrap
       sx={{
+        display: "flex",
+        textAlign: "center",
+
         // Fixed width for axis label
         width: 24,
+
         flexShrink: 0,
+
         // Rotate the label to align with Y axis
         writingMode: "vertical-rl",
+
         transform: "rotate(180deg)",
         zIndex: "100 !important",
         alignItems: "center",

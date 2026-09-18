@@ -37,6 +37,7 @@ const ItemStyles = ({ theme }: { theme: Theme }) =>
     paddingLeft: theme.spacing(3),
     userSelect: "none",
     outline: "none",
+
     "&[data-disabled]": {
       color: theme.palette.text.disabled,
       pointerEvents: "none",
@@ -44,10 +45,12 @@ const ItemStyles = ({ theme }: { theme: Theme }) =>
         color: theme.palette.text.disabled,
       },
     },
+
     '&[data-state="open"]': {
       backgroundColor: theme.palette.primary.main,
       color: theme.palette.primary.contrastText,
     },
+
     "&[data-highlighted]": {
       backgroundColor: theme.palette.primary.main,
       color: theme.palette.primary.contrastText,

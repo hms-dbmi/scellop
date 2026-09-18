@@ -7,7 +7,12 @@ export function TemporalControls() {
   const { undo, canUndo, redo, canRedo, restoreToDefault } =
     useTemporalControls();
   return (
-    <Box display="inline-flex" gap={1}>
+    <Box
+      sx={{
+        display: "inline-flex",
+        gap: 1,
+      }}
+    >
       <Tooltip title="Reset the visualization to its initial state">
         <Button
           onClick={restoreToDefault}
@@ -22,7 +27,6 @@ export function TemporalControls() {
         <IconButton
           onClick={undo}
           aria-label="Undo"
-          component={IconButton}
           disabled={!canUndo}
           sx={{
             minWidth: 0,
@@ -37,7 +41,6 @@ export function TemporalControls() {
         <IconButton
           onClick={redo}
           aria-label="Redo"
-          component={IconButton}
           disabled={!canRedo}
           sx={{
             minWidth: 0,

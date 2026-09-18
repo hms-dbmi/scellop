@@ -99,7 +99,14 @@ export default function TopGraph() {
   const { height } = usePanelDimensions("center_top");
 
   return (
-    <Stack direction="column" width="100%" height={height} overflow="hidden">
+    <Stack
+      direction="column"
+      sx={{
+        width: "100%",
+        height: height,
+        overflow: "hidden",
+      }}
+    >
       <XAxisLabel />
       <HeatmapXAxis />
       {violins ? <TopViolin /> : <TopBar />}

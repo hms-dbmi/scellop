@@ -127,6 +127,7 @@ export default function HeatmapXAxis() {
               fill: theme.palette.text.primary,
               className: "x-axis-tick-label",
               fontFamily: theme.typography.fontFamily,
+
               onMouseOver: (e) => {
                 const metadataValues = lookupMetadata(
                   t,
@@ -146,7 +147,9 @@ export default function HeatmapXAxis() {
                   e.clientY,
                 );
               },
+
               onMouseOut: closeTooltip,
+
               onClick: () => {
                 const metadataValues = lookupMetadata(
                   t,

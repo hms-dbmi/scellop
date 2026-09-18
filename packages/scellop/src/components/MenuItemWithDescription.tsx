@@ -25,8 +25,8 @@ const MenuItemWithDescription = forwardRef(function MenuItemWithDescription(
         </Typography>
         <Typography
           variant="caption"
-          color="text.secondary"
           sx={{
+            color: "text.secondary",
             fontSize: "0.75rem",
             textTransform: "none",
             whiteSpace: "normal",

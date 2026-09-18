@@ -12,25 +12,30 @@ export default function XAxisLabel() {
 
   return (
     <Typography
-      display="block"
-      textAlign={"center"}
-      width="100%"
       variant="caption"
       color="textSecondary"
       noWrap
       sx={{
+        display: "block",
+        textAlign: "center",
+        width: "100%",
+
         // Fixed height for axis label
         height: 24,
+
         flexShrink: 0,
+
         // Necessary for the axis zoom control to be positioned over the axis
         zIndex: "100 !important",
       }}
     >
       <Stack
         direction="row"
-        justifyContent="center"
-        alignItems="center"
         spacing={1}
+        sx={{
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
         <Box>{xAxisLabel}</Box>
         <AxisZoomControl

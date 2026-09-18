@@ -9,7 +9,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Button,
   Divider,
   FormControl,
   IconButton,
@@ -236,7 +235,13 @@ function FilterItem({
 
   return (
     <Stack key={filter.key} spacing={1}>
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: "center",
+        }}
+      >
         <Typography variant="subtitle1" noWrap sx={{ flexShrink: 0 }}>
           Filter By
         </Typography>
@@ -247,9 +252,8 @@ function FilterItem({
             </MenuItem>
           ))}
         </Select>
-        <Button
+        <IconButton
           aria-label={`Remove ${filter.key}`}
-          component={IconButton}
           onClick={remove}
           sx={{
             minWidth: 0,
@@ -258,13 +262,16 @@ function FilterItem({
           }}
         >
           <Close />
-        </Button>
+        </IconButton>
       </Stack>
       <Stack
         direction="row"
-        alignItems="center"
         spacing={1}
-        sx={{ pl: 2, pr: 6 }}
+        sx={{
+          alignItems: "center",
+          pl: 2,
+          pr: 6,
+        }}
       >
         <Typography variant="body2" noWrap sx={{ flexShrink: 0 }}>
           {"Values"}
