@@ -1,13 +1,14 @@
 import { createContext, useContext } from "../utils/context";
 
 const OuterContainerRefContext =
-  createContext<React.RefObject<HTMLDivElement> | null>(
+  createContext<React.RefObject<HTMLDivElement | null> | null>(
     "Outer Container Context",
   );
 
-const ParentRefContext = createContext<React.RefObject<HTMLDivElement> | null>(
-  "Visualization Container Context",
-);
+const ParentRefContext =
+  createContext<React.RefObject<HTMLDivElement | null> | null>(
+    "Visualization Container Context",
+  );
 
 export function useOuterContainerRef() {
   return useContext(OuterContainerRefContext);

@@ -3,7 +3,7 @@ import type { MappedPanelSection } from "./types";
 
 const PanelRefContext =
   createContext<
-    Record<MappedPanelSection, React.RefObject<HTMLDivElement> | null>
+    Record<MappedPanelSection, React.RefObject<HTMLDivElement | null> | null>
   >("Panel Ref Context");
 
 export function usePanelRefContext() {
