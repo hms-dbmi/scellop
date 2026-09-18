@@ -39,6 +39,85 @@ interface BenchmarkResults {
   };
 }
 
+/**
+ * Shape written by Vitest's JSON reporter, which `pnpm bench` uses since Vitest 5
+ * removed `--outputJson` and the dedicated benchmark reporters.
+ */
+interface VitestReport {
+  numTotalTestSuites: number;
+  numPassedTestSuites: number;
+  numFailedTestSuites: number;
+  numPendingTestSuites: number;
+  numTotalTests: number;
+  numPassedTests: number;
+  numFailedTests: number;
+  numPendingTests: number;
+  testResults: {
+    name: string;
+    assertionResults: {
+      ancestorTitles: string[];
+      title: string;
+      benchmarks?: {
+        tasks: {
+          name: string;
+          rank: number;
+          period: number;
+          latency: Record<string, number>;
+          throughput: Record<string, number>;
+        }[];
+      }[];
+    }[];
+  }[];
+}
+
+/** Flattens the reporter's output into the files/groups/benchmarks shape the report generator reads. */
+function normalizeResults(
+  raw: VitestReport | BenchmarkResults,
+): BenchmarkResults {
+  if ("files" in raw) {
+    return raw;
+  }
+
+  return {
+    files: raw.testResults.map((file) => ({
+      filepath: file.name,
+      groups: file.assertionResults.flatMap((assertion) =>
+        (assertion.benchmarks ?? []).map((benchmark) => ({
+          fullName: [...assertion.ancestorTitles, assertion.title].join(" > "),
+          benchmarks: benchmark.tasks.map((task) => ({
+            name: task.name,
+            rank: task.rank,
+            period: task.period,
+            hz: task.throughput.mean,
+            mean: task.latency.mean,
+            sd: task.latency.sd,
+            rme: task.latency.rme,
+            variance: task.latency.variance,
+            min: task.latency.min,
+            max: task.latency.max,
+            p75: task.latency.p75,
+            p99: task.latency.p99,
+            p995: task.latency.p995,
+            p999: task.latency.p999,
+            median: task.latency.p50,
+            sampleCount: task.latency.samplesCount,
+          })),
+        })),
+      ),
+    })),
+    testResults: {
+      numTotalTestSuites: raw.numTotalTestSuites,
+      numPassedTestSuites: raw.numPassedTestSuites,
+      numFailedTestSuites: raw.numFailedTestSuites,
+      numPendingTestSuites: raw.numPendingTestSuites,
+      numTotalTests: raw.numTotalTests,
+      numPassedTests: raw.numPassedTests,
+      numFailedTests: raw.numFailedTests,
+      numPendingTests: raw.numPendingTests,
+    },
+  };
+}
+
 /** Shape of one entry in benchmark-dataset-stats.json, written by setup-benchmarks.ts */
 interface DetailedDatasetStats {
   name: string;
@@ -176,7 +255,9 @@ function addMetadataToResults(
 try {
   const inputPath = process.argv[2] || resolve("benchmark-results.json");
   const resultsJson = readFileSync(inputPath, "utf-8");
-  const results = JSON.parse(resultsJson) as BenchmarkResults;
+  const results = normalizeResults(
+    JSON.parse(resultsJson) as VitestReport | BenchmarkResults,
+  );
 
   const enhanced = addMetadataToResults(results);
 

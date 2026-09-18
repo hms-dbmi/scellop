@@ -4,10 +4,10 @@
  */
 
 import type { ScellopData } from "@scellop/data-loading";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 import { temporal } from "zundo";
 import { createStore } from "zustand";
-import { getBenchmarkDatasets } from "./setup-benchmarks";
+import { benchGroup, getBenchmarkDatasets } from "./setup-benchmarks";
 
 // Import the same memoized selectors used in DataContext
 // We'll recreate them here for benchmarking
@@ -96,79 +96,84 @@ describe("Data Processing Benchmarks", async () => {
     `Running Data Processing Benchmarks on ${datasets.size} datasets`,
   );
 
-  describe("DataMap Creation (Raw Counts)", () => {
-    for (const [name, data] of datasets) {
-      bench(`${name}`, () => {
+  test("DataMap Creation (Raw Counts)", ({ bench }) =>
+    benchGroup(bench, (add) => {
+      for (const [name, data] of datasets) {
+        add(`${name}`, () => {
+          const store = createDataStore(data);
+          const state = store.getState();
+          calculateDataMap(state);
+        });
+      }
+    }));
+
+  test("Derived States Calculation", ({ bench }) =>
+    benchGroup(bench, (add) => {
+      for (const [name, data] of datasets) {
+        add(`${name}`, () => {
+          const store = createDataStore(data);
+          const state = store.getState();
+          calculateDerivedStates(state);
+        });
+      }
+    }));
+
+  test("Row Fraction Normalization", ({ bench }) =>
+    benchGroup(bench, (add) => {
+      for (const [name, data] of datasets) {
         const store = createDataStore(data);
         const state = store.getState();
-        calculateDataMap(state);
-      });
-    }
-  });
+        const { rowCounts } = calculateDerivedStates(state);
 
-  describe("Derived States Calculation", () => {
-    for (const [name, data] of datasets) {
-      bench(`${name}`, () => {
-        const store = createDataStore(data);
-        const state = store.getState();
-        calculateDerivedStates(state);
-      });
-    }
-  });
+        add(`${name}`, () => {
+          calculateRowFractionDataMap(state, rowCounts);
+        });
+      }
+    }));
 
-  describe("Row Fraction Normalization", () => {
-    for (const [name, data] of datasets) {
-      const store = createDataStore(data);
-      const state = store.getState();
-      const { rowCounts } = calculateDerivedStates(state);
+  test("Log Normalization", ({ bench }) =>
+    benchGroup(bench, (add) => {
+      for (const [name, data] of datasets) {
+        add(`${name}`, () => {
+          const store = createDataStore(data);
+          const state = store.getState();
+          calculateLogDataMap(state);
+        });
+      }
+    }));
 
-      bench(`${name}`, () => {
-        calculateRowFractionDataMap(state, rowCounts);
-      });
-    }
-  });
+  test("Metadata Processing", ({ bench }) =>
+    benchGroup(bench, (add) => {
+      for (const [name, data] of datasets) {
+        if (!data.metadata) continue;
 
-  describe("Log Normalization", () => {
-    for (const [name, data] of datasets) {
-      bench(`${name}`, () => {
-        const store = createDataStore(data);
-        const state = store.getState();
-        calculateLogDataMap(state);
-      });
-    }
-  });
+        add(`Extract row metadata keys - ${name}`, () => {
+          const metadataValues = Object.values(data.metadata?.rows || {});
+          const set = metadataValues.reduce<Set<string>>(
+            (acc: Set<string>, curr: object) => {
+              Object.keys(curr).forEach((key) => {
+                acc.add(key);
+              });
+              return acc;
+            },
+            new Set<string>(),
+          );
+          Array.from(set);
+        });
 
-  describe("Metadata Processing", () => {
-    for (const [name, data] of datasets) {
-      if (!data.metadata) continue;
-
-      bench(`Extract row metadata keys - ${name}`, () => {
-        const metadataValues = Object.values(data.metadata?.rows || {});
-        const set = metadataValues.reduce<Set<string>>(
-          (acc: Set<string>, curr: object) => {
-            Object.keys(curr).forEach((key) => {
-              acc.add(key);
-            });
-            return acc;
-          },
-          new Set<string>(),
-        );
-        Array.from(set);
-      });
-
-      bench(`Extract column metadata keys - ${name}`, () => {
-        const metadataValues = Object.values(data.metadata?.cols || {});
-        const set = metadataValues.reduce<Set<string>>(
-          (acc: Set<string>, curr: object) => {
-            Object.keys(curr).forEach((key) => {
-              acc.add(key);
-            });
-            return acc;
-          },
-          new Set<string>(),
-        );
-        Array.from(set);
-      });
-    }
-  });
+        add(`Extract column metadata keys - ${name}`, () => {
+          const metadataValues = Object.values(data.metadata?.cols || {});
+          const set = metadataValues.reduce<Set<string>>(
+            (acc: Set<string>, curr: object) => {
+              Object.keys(curr).forEach((key) => {
+                acc.add(key);
+              });
+              return acc;
+            },
+            new Set<string>(),
+          );
+          Array.from(set);
+        });
+      }
+    }));
 });
