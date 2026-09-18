@@ -126,18 +126,6 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@18.3.1)
-      '@emotion/react':
-        specifier: ^11.14.0
-        version: 11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1)
-      '@emotion/styled':
-        specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1)
-      '@mui/icons-material':
-        specifier: ^9.4.0
-        version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.23)(react@18.3.1)
-      '@mui/material':
-        specifier: ^9.4.0
-        version: 9.4.0(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-context-menu':
         specifier: ^2.2.15
         version: 2.2.16(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -172,6 +160,18 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0(zustand@5.0.9(@types/react@18.3.23)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1)))
     devDependencies:
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1)
+      '@emotion/styled':
+        specifier: ^11.14.1
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1)
+      '@mui/icons-material':
+        specifier: ^9.4.0
+        version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.23)(react@18.3.1)
+      '@mui/material':
+        specifier: ^9.4.0
+        version: 9.4.0(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -229,6 +229,18 @@ importers:
       '@anywidget/react':
         specifier: ^0.0.8
         version: 0.0.8(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1)
+      '@emotion/styled':
+        specifier: ^11.14.1
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1)
+      '@mui/icons-material':
+        specifier: ^9.4.0
+        version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.23)(react@18.3.1)
+      '@mui/material':
+        specifier: ^9.4.0
+        version: 9.4.0(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@scellop/data-loading':
         specifier: workspace:*
         version: link:../packages/data-loading
@@ -257,6 +269,12 @@ importers:
 
   sites/demo:
     dependencies:
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1)
+      '@emotion/styled':
+        specifier: ^11.14.1
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1)
       '@mui/icons-material':
         specifier: ^9.4.0
         version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react@18.3.1)(supports-color@8.1.1))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.23)(react@18.3.1)

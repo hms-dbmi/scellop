@@ -6,14 +6,14 @@
   "description": "Scalable visualization for single-cell data - interactive heatmaps with metadata",
   "homepage": "https://github.com/hms-dbmi/scellop#readme",
   "type": "module",
-  "main": "./dist/index.umd.js",
+  "main": "./dist/index.cjs.js",
   "module": "./dist/index.es.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js"
+      "require": "./dist/index.cjs.js"
     }
   },
   "files": [
@@ -58,10 +58,6 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^9.4.0",
-    "@mui/material": "^9.4.0",
     "@radix-ui/react-context-menu": "^2.2.15",
     "@scellop/data-loading": "workspace:*",
     "@visx/axis": "^3.12.0",
@@ -75,11 +71,19 @@
     "zundo": "^2.3.0"
   },
   "peerDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.4.0",
+    "@mui/material": "^9.4.0",
     "react": "^18.3.1 || ^19.0.0",
     "react-dom": "^18.3.1 || ^19.0.0",
     "zustand": "^4 || ^5"
   },
   "devDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.4.0",
+    "@mui/material": "^9.4.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@types/d3": "^7.4.3",
