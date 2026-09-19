@@ -4,11 +4,8 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
-      "@scellop/data-loading": path.resolve(
-        import.meta.dirname,
-        "../data-loading/src",
-      ),
-      "@demo": path.resolve(import.meta.dirname, "../../sites/demo/src"),
+      "@scellop/data-loading": path.resolve(__dirname, "../data-loading/src"),
+      "@demo": path.resolve(__dirname, "../../sites/demo/src"),
     },
   },
   test: {

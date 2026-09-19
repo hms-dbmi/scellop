@@ -6,13 +6,13 @@ import { defineConfig } from "vite";
 // Production builds deliberately go through the published `dist` output, which
 // makes the Netlify deploy preview a real packaging smoke test.
 const sourceAliases = {
-  scellop: path.resolve(import.meta.dirname, "../../packages/scellop/src"),
+  scellop: path.resolve(__dirname, "../../packages/scellop/src"),
   "@scellop/data-loading": path.resolve(
-    import.meta.dirname,
+    __dirname,
     "../../packages/data-loading/src",
   ),
   "@scellop/hubmap-data-loading": path.resolve(
-    import.meta.dirname,
+    __dirname,
     "../../packages/hubmap-data-loading/src",
   ),
 };
