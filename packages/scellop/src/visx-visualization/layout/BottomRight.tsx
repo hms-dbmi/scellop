@@ -11,10 +11,15 @@ function BottomRightPanel(
     <VisualizationPanel
       {...props}
       ref={ref}
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
+      sx={[
+        {
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
+      ]}
     >
       <ControlsModalTrigger />
     </VisualizationPanel>

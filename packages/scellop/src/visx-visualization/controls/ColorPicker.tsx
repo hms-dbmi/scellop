@@ -161,7 +161,12 @@ export function ColorPicker({
                   },
                 }}
               >
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                  }}
+                >
                   Click to choose
                 </Typography>
               </Box>
@@ -181,7 +186,14 @@ export function ColorPicker({
             <Typography variant="caption" sx={{ mb: 0.5, display: "block" }}>
               Preset Colors
             </Typography>
-            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+            <Stack
+              direction="row"
+              spacing={0.5}
+              useFlexGap
+              sx={{
+                flexWrap: "wrap",
+              }}
+            >
               {COLOR_PALETTE.map((paletteColor) => (
                 <Box
                   key={paletteColor}

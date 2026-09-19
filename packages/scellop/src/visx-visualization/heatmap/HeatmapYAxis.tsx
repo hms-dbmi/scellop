@@ -111,6 +111,7 @@ export default function HeatmapYAxis() {
               fontFamily: theme.typography.fontFamily,
               style: tickLabelStyle,
               dy: "0.25em",
+
               onMouseOver: (e) => {
                 const metadataValues = lookupMetadata(
                   t,
@@ -130,7 +131,9 @@ export default function HeatmapYAxis() {
                   e.clientY,
                 );
               },
+
               onMouseOut: closeTooltip,
+
               onClick: () => {
                 const metadataValues = lookupMetadata(
                   t,

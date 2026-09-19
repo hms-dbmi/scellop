@@ -12,7 +12,7 @@ function MiddleLeftPanel(
   const { tickLabelSize, setTickLabelSize } = useYScale();
 
   return (
-    <VisualizationPanel {...props} ref={ref} overflow="none">
+    <VisualizationPanel {...props} ref={ref}>
       <LeftGraph />
       <AxisResizer
         orientation="Y"

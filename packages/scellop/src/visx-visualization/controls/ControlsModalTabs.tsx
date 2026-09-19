@@ -41,14 +41,25 @@ function TabPanel(props: TabPanelProps) {
     <Box
       role="tabpanel"
       hidden={value !== index}
-      flexGrow={1}
-      display={value === index ? "block" : "none"}
-      width="100%"
-      height="100%"
       {...other}
+      sx={[
+        {
+          flexGrow: 1,
+          display: value === index ? "block" : "none",
+          width: "100%",
+          height: "100%",
+        },
+        ...(Array.isArray(other.sx) ? other.sx : [other.sx]),
+      ]}
     >
       {value === index && (
-        <Box p={2} pl={0} flexGrow={1}>
+        <Box
+          sx={{
+            p: 2,
+            pl: 0,
+            flexGrow: 1,
+          }}
+        >
           {children}
         </Box>
       )}
@@ -195,20 +206,22 @@ export default function ControlsModalTabs({
         xs: "column",
         md: orientation === "vertical" ? "row" : "column",
       }}
-      flexGrow={1}
-      maxHeight={{
-        // accounting for the DialogActions and header heights, plus sub-items in horizontal mode
-        xs:
-          currentSubItems.length > 0
-            ? "calc(100% - 88px)"
-            : "calc(100% - 48px)",
-        md: "calc(100% - 64px)",
-      }}
       sx={{
+        flexGrow: 1,
+
+        maxHeight: {
+          // accounting for the DialogActions and header heights, plus sub-items in horizontal mode
+          xs:
+            currentSubItems.length > 0
+              ? "calc(100% - 88px)"
+              : "calc(100% - 48px)",
+          md: "calc(100% - 64px)",
+        },
+
+        position: "relative",
+        top: 0,
         overflowX: "hidden",
       }}
-      position="relative"
-      top={0}
     >
       <Stack
         direction="column"
@@ -298,8 +311,20 @@ export default function ControlsModalTabs({
           />
         )}
       </Stack>
-      <Box display="flex" flexDirection="column" flexGrow={1} minWidth={0}>
-        <Box flexGrow={1} overflow="auto">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: 1,
+          minWidth: 0,
+        }}
+      >
+        <Box
+          sx={{
+            flexGrow: 1,
+            overflow: "auto",
+          }}
+        >
           <TabPanel
             value={value}
             index={0}
@@ -307,11 +332,13 @@ export default function ControlsModalTabs({
             aria-labelledby="plot-settings-tab"
           >
             <Stack
-              px={2}
               spacing={2}
-              alignItems="start"
-              flexGrow={1}
-              height="100%"
+              sx={{
+                px: 2,
+                alignItems: "start",
+                flexGrow: 1,
+                height: "100%",
+              }}
             >
               <ThemeControl />
               <ViewTypeControl />
@@ -348,7 +375,14 @@ export default function ControlsModalTabs({
             id="export-settings-panel"
             aria-labelledby="export-settings-tab"
           >
-            <Stack px={2} spacing={2} alignItems="start" flexGrow={1}>
+            <Stack
+              spacing={2}
+              sx={{
+                px: 2,
+                alignItems: "start",
+                flexGrow: 1,
+              }}
+            >
               <ExportControls />
             </Stack>
           </TabPanel>

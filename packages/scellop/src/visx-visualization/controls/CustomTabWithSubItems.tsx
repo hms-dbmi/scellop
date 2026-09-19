@@ -9,6 +9,7 @@ import {
   ListItemText,
   styled,
   Tab,
+  type TabProps,
 } from "@mui/material";
 import React, { type MouseEvent, useCallback, useState } from "react";
 
@@ -207,6 +208,11 @@ export function CustomTabWithSubItems({
 }: CustomTabWithSubItemsProps) {
   const [expanded, setExpanded] = useState(false);
 
+  // Tabs injects `selected` via cloneElement and Tab consumes it at runtime, but
+  // MUI keeps it out of the public prop types. v9 needs it: without it the tab
+  // never claims the roving tabindex and becomes unreachable by keyboard.
+  const selectedProp = { selected } as Partial<TabProps>;
+
   const isVertical = orientation === "vertical";
   const hasSubItems = subItems.length > 0 && isVertical && showSubItems;
 
@@ -262,6 +268,7 @@ export function CustomTabWithSubItems({
       <Tab
         label={label}
         onClick={onClick}
+        {...selectedProp}
         sx={{
           justifyContent: isVertical ? "flex-start" : "center",
           textAlign: isVertical ? "left" : "center",
@@ -287,6 +294,7 @@ export function CustomTabWithSubItems({
           </TabContentContainer>
         }
         onClick={handleTabClick}
+        {...selectedProp}
         {...tabProps}
       />
 

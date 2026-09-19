@@ -63,7 +63,9 @@ interface ColorBoxProps {
   color: string;
 }
 
-const ColorBox = styled(Box)<ColorBoxProps>(({ theme, color }) => ({
+const ColorBox = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "color",
+})<ColorBoxProps>(({ theme, color }) => ({
   width: theme.spacing(1.5),
   height: theme.spacing(1.5),
   backgroundColor: color,
@@ -92,7 +94,13 @@ function ThemePreview({
   const zeroColor = muiTheme.palette.background.default;
 
   return (
-    <Stack direction="row" spacing={2} alignItems="center">
+    <Stack
+      direction="row"
+      spacing={2}
+      sx={{
+        alignItems: "center",
+      }}
+    >
       <Typography sx={{ textTransform: "capitalize", minWidth: 80 }}>
         {theme}
       </Typography>
@@ -124,8 +132,21 @@ export function HeatmapThemeControl() {
   });
 
   return (
-    <Stack direction="column" spacing={1} width="100%">
-      <Stack direction="row" spacing={2} alignItems="center" flexWrap={"wrap"}>
+    <Stack
+      direction="column"
+      spacing={1}
+      sx={{
+        width: "100%",
+      }}
+    >
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
         <FormControl sx={{ flex: 1 }}>
           <InputLabel id="heatmap-theme-select-label">
             Heatmap Themes
@@ -158,7 +179,13 @@ export function HeatmapThemeControl() {
             <Checkbox checked={isInverted} onChange={handleInvertChange} />
           }
           label={
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                alignItems: "center",
+              }}
+            >
               <Box>Invert</Box>
             </Stack>
           }
@@ -221,7 +248,13 @@ export function LeftGraphTypeControl() {
   }
 
   return (
-    <Stack direction="column" spacing={1} width="100%">
+    <Stack
+      direction="column"
+      spacing={1}
+      sx={{
+        width: "100%",
+      }}
+    >
       <FormControl fullWidth>
         <InputLabel id={id}>Left Graph Type</InputLabel>
         <Select
@@ -268,7 +301,13 @@ export function TopGraphTypeControl() {
   }
 
   return (
-    <Stack direction="column" spacing={1} width="100%">
+    <Stack
+      direction="column"
+      spacing={1}
+      sx={{
+        width: "100%",
+      }}
+    >
       <FormControl fullWidth>
         <InputLabel id={id}>Top Graph Type</InputLabel>
         <Select
@@ -312,7 +351,13 @@ export function NormalizationControl() {
   }
 
   return (
-    <Stack direction="column" spacing={1} width="100%">
+    <Stack
+      direction="column"
+      spacing={1}
+      sx={{
+        width: "100%",
+      }}
+    >
       <FormControl fullWidth>
         <InputLabel id={id}>Heatmap Normalization</InputLabel>
         <Select
@@ -325,12 +370,14 @@ export function NormalizationControl() {
           sx={{ textTransform: "capitalize", minWidth: 200 }}
           renderValue={(value) => value as string}
           MenuProps={{
-            PaperProps: {
-              sx: {
-                maxWidth: 400,
-                "& .MuiMenuItem-root": {
-                  whiteSpace: "normal",
-                  wordWrap: "break-word",
+            slotProps: {
+              paper: {
+                sx: {
+                  maxWidth: 400,
+                  "& .MuiMenuItem-root": {
+                    whiteSpace: "normal",
+                    wordWrap: "break-word",
+                  },
                 },
               },
             },
@@ -394,7 +441,13 @@ function ZoomBandwidthFormControl({
         >
           {label}
         </Typography>
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            alignItems: "center",
+          }}
+        >
           <Checkbox
             checked={zoomed}
             onChange={toggleZoom}
@@ -427,7 +480,12 @@ export function ZoomBandwidthControl() {
   const colConfig = useColumnConfig();
 
   return (
-    <Stack width={"100%"} spacing={2}>
+    <Stack
+      spacing={2}
+      sx={{
+        width: "100%",
+      }}
+    >
       <ZoomBandwidthFormControl
         axisConfig={rowConfig}
         label="Column Width Zoom"
@@ -453,7 +511,13 @@ export function TransposeControl() {
   const currentColumnConfig = isTransposed ? columnConfig : rowConfig;
 
   return (
-    <Stack direction="column" spacing={1} width="100%">
+    <Stack
+      direction="column"
+      spacing={1}
+      sx={{
+        width: "100%",
+      }}
+    >
       <Button
         variant="outlined"
         onClick={handleTranspose}
@@ -500,7 +564,13 @@ export function ViewTypeControl() {
   const id = useId();
 
   return (
-    <Stack direction="column" spacing={1} width="100%">
+    <Stack
+      direction="column"
+      spacing={1}
+      sx={{
+        width: "100%",
+      }}
+    >
       <FormControl fullWidth>
         <InputLabel id={id}>View Type</InputLabel>
         <Select

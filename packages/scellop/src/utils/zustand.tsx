@@ -135,7 +135,7 @@ export function createStoreContext<T, CreateStoreArgs>(
     ...props
   }: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>) {
     // Keep the store in a ref so it is only created once per instance of the provider
-    const store = useRef<StoreType>();
+    const store = useRef<StoreType | undefined>(undefined);
     // Store props in a ref to track changes without triggering re-renders
     const propsRef = useRef(props);
     propsRef.current = props;
@@ -185,7 +185,7 @@ export function createTemporalStoreContext<T, CreateStoreArgs>(
     ...props
   }: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>) {
     // Keep the store in a ref so it is only created once per instance of the provider
-    const store = useRef<StoreType>();
+    const store = useRef<StoreType | undefined>(undefined);
     // Store props in a ref to track changes without triggering re-renders
     const propsRef = useRef(props);
     propsRef.current = props;
@@ -233,7 +233,7 @@ export function createTemporalStoreContext<T, CreateStoreArgs>(
 export function createStoreContextWithRef<T, CreateStoreArgs, RefType>(
   createStore: (
     initialArgs: CreateStoreArgs,
-    ref: RefObject<RefType>,
+    ref: RefObject<RefType | null>,
   ) => StoreApi<T>,
   displayName: string,
 ) {
@@ -248,7 +248,7 @@ export function createStoreContextWithRef<T, CreateStoreArgs, RefType>(
     ...props
   }: PropsWithChildren<CreateStoreArgs>) {
     // Keep the store in a ref so it is only created once per instance of the provider
-    const store = useRef<StoreType>();
+    const store = useRef<StoreType | undefined>(undefined);
     const ref = useRef<RefType>(null);
     if (!store.current) {
       store.current = createStore(props as CreateStoreArgs, ref);

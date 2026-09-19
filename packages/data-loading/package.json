@@ -47,15 +47,15 @@
     "lint:fix": "biome check --write .",
     "clean": "rm -rf dist"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.9.1",
-    "@types/node": "^25.0.3",
-    "@vitest/ui": "^4.0.16",
-    "jsdom": "^27.3.0",
-    "typescript": "^5.8.3",
-    "vite": "^7.0.5",
-    "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.0.16"
+    "@testing-library/jest-dom": "^7.0.1",
+    "@types/node": "^26.6.1",
+    "@typescript/typescript6": "^6.0.2",
+    "@vitest/ui": "^5.0.1",
+    "jsdom": "^30.1.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.6",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^5.0.1"
   }
 }

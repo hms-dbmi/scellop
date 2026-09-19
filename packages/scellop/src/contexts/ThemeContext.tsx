@@ -1,4 +1,9 @@
-import { type Theme, ThemeProvider } from "@mui/material/styles";
+import {
+  createTheme,
+  type Theme,
+  type ThemeOptions,
+  ThemeProvider,
+} from "@mui/material/styles";
 import type { ScellopTheme } from "@scellop/data-loading";
 import { type PropsWithChildren, useMemo } from "react";
 import { temporal } from "zundo";
@@ -53,7 +58,10 @@ export function ScellopThemeProvider({
   children,
   theme: initialTheme,
   customTheme,
-}: PropsWithChildren<{ theme: ScellopTheme; customTheme?: Theme }>) {
+}: PropsWithChildren<{
+  theme: ScellopTheme;
+  customTheme?: Theme | ThemeOptions;
+}>) {
   const themeIsDisabled = useThemeControlIsDisabled();
   return (
     <ThemeSetterContextProvider
@@ -68,11 +76,12 @@ export function ScellopThemeProvider({
 function MuiThemeProvider({
   children,
   customTheme,
-}: PropsWithChildren<{ customTheme?: Theme }>) {
+}: PropsWithChildren<{ customTheme?: Theme | ThemeOptions }>) {
   const { currentTheme } = useSetTheme();
   const theme = useMemo(() => {
     if (customTheme) {
-      return { ...getTheme(currentTheme), ...customTheme };
+      // Deep merge: a spread would replace the whole palette, dropping the mode.
+      return createTheme(getTheme(currentTheme), customTheme as ThemeOptions);
     }
     return getTheme(currentTheme);
   }, [currentTheme, customTheme]);

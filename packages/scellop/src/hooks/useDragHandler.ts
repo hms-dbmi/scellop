@@ -137,7 +137,7 @@ export class MetadataBarPositionResolver
 
 // Main drag handler options
 export interface UnifiedDragHandlerOptions<T> {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
   positionResolver: PositionResolver<T>;
   onReorder: (draggedItem: T, targetItem: T) => void;
   onDragMove?: (draggedItem: T, targetItem: T) => void;
@@ -406,7 +406,7 @@ export function useBarsDragHandler({
   scrollOffset = 0,
   isZoomed = false,
 }: {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
   scale: ScaleBand<string>;
   orientation: "rows" | "columns";
   onReorder: (draggedValue: string, targetValue: string) => void;
@@ -447,7 +447,7 @@ export function useViolinDragHandler({
   scrollOffset = 0,
   disabled = false,
 }: {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
   scale: ScaleBand<string>;
   side: "top" | "left";
   onReorder: (draggedValue: string, targetValue: string) => void;
@@ -490,7 +490,7 @@ export function useCanvasDragHandler({
   xZoomed = false,
   yZoomed = false,
 }: {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
   xScale: ScaleBand<string>;
   yScale: ScaleBand<string>;
   onReorder: (
@@ -550,7 +550,7 @@ export function useMetadataValueBarDragHandler({
   scrollOffset = 0,
   isZoomed = false,
 }: {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
   bars: BarSegment[];
   axis: "X" | "Y";
   onSegmentReorder: (draggedKeys: string[], targetKeys: string[]) => void;

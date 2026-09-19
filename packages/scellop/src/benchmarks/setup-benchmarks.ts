@@ -4,7 +4,7 @@
  */
 
 import type { ScellopData } from "@scellop/data-loading";
-import { beforeAll } from "vitest";
+import { type Bench, beforeAll } from "vitest";
 import { loadAllRealWorldDatasets } from "./fixtures/real-world-datasets";
 import {
   DATASET_CONFIGS,
@@ -125,3 +125,19 @@ beforeAll(async () => {
     JSON.stringify(BENCHMARK_DATASET_STATS, null, 2),
   );
 });
+
+/**
+ * Vitest 5 creates benchmarks inside a test and runs them together, which does
+ * not fit the loops these files build their cases with. Collects everything a
+ * group registers, then runs the group as one comparison.
+ */
+export async function benchGroup(
+  bench: Bench,
+  register: (add: (name: string, fn: () => void) => void) => void,
+) {
+  const queued: ReturnType<Bench>[] = [];
+  register((name, fn) => {
+    queued.push(bench(name, fn));
+  });
+  await bench.compare(...queued);
+}

@@ -219,13 +219,14 @@ function DraggableDialogContent({
       {/* Draggable handle - the title area */}
       <Stack
         direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        pr={2}
         {...listeners}
         {...attributes}
         sx={{
+          justifyContent: "space-between",
+          alignItems: "center",
+          pr: 2,
           cursor: "move",
+
           "&:active": {
             cursor: "grabbing",
           },
@@ -396,9 +397,11 @@ export function ControlsModal() {
         {fullScreen && (
           <Stack
             direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            pr={2}
+            sx={{
+              justifyContent: "space-between",
+              alignItems: "center",
+              pr: 2,
+            }}
           >
             <DialogTitle>Settings</DialogTitle>
             <TemporalControls />

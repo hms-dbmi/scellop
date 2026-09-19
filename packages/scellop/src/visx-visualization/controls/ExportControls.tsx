@@ -979,12 +979,23 @@ export default function ExportControls() {
   }, [exportFormat, exportAsPNG, exportAsSVG]);
 
   return (
-    <Stack spacing={3} alignItems="start" width="100%">
+    <Stack
+      spacing={3}
+      sx={{
+        alignItems: "start",
+        width: "100%",
+      }}
+    >
       <Typography variant="h6" component="h3">
         Export Visualization
       </Typography>
 
-      <Typography variant="body2" color="text.secondary">
+      <Typography
+        variant="body2"
+        sx={{
+          color: "text.secondary",
+        }}
+      >
         Export the heatmap as a high-quality PNG or scalable SVG file.
       </Typography>
 
@@ -1017,8 +1028,21 @@ export default function ExportControls() {
       </FormControl>
 
       {/* Filename Configuration */}
-      <Stack direction="column" spacing={2} width="100%">
-        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+      <Stack
+        direction="column"
+        spacing={2}
+        sx={{
+          width: "100%",
+        }}
+      >
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
           <TextField
             label="Filename"
             value={filename}
@@ -1071,8 +1095,18 @@ export default function ExportControls() {
             <Typography variant="subtitle2">Advanced Settings</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Stack spacing={2} width="100%">
-              <Typography variant="body2" color="text.secondary">
+            <Stack
+              spacing={2}
+              sx={{
+                width: "100%",
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "text.secondary",
+                }}
+              >
                 Fine-tune the SVG export layout and sizing parameters.
               </Typography>
 
@@ -1285,7 +1319,13 @@ export default function ExportControls() {
 
       {/* Resolution Configuration - only for PNG */}
       {exportFormat === "png" && (
-        <Stack direction="column" spacing={2} width="100%">
+        <Stack
+          direction="column"
+          spacing={2}
+          sx={{
+            width: "100%",
+          }}
+        >
           <FormControl fullWidth>
             <Typography variant="body2" gutterBottom>
               Export Resolution: {resolution}x
@@ -1311,7 +1351,11 @@ export default function ExportControls() {
         </Stack>
       )}
 
-      <Box width="100%">
+      <Box
+        sx={{
+          width: "100%",
+        }}
+      >
         <Button
           variant="contained"
           onClick={handleExport}
