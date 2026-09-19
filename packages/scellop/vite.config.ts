@@ -7,12 +7,12 @@ import dts from "vite-plugin-dts";
 export default defineConfig({
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/index.ts"),
+      entry: path.resolve(import.meta.dirname, "src/index.ts"),
       name: "scellop",
       fileName: (format) => `index.${format}.js`,
       formats: ["es", "cjs"],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: [
         /^react($|\/)/,
         /^react-dom($|\/)/,
