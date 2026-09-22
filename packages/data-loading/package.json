@@ -1,6 +1,6 @@
 {
   "name": "@scellop/data-loading",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "author": "Thomas Smits",
   "description": "Data loading utilities for Scellop - supports HuBMAP and generic data formats",

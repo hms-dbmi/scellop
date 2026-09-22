@@ -1,5 +1,11 @@
 # @scellop/data-loading
 
+## 0.2.1
+
+### Patch Changes
+
+- 4dfce13: Toolchain-only release. The package is built with Vite 8 and TypeScript 7 now, so the emitted bundle and declarations differ from the previous release, but there is no source or API change.
+
 ## 0.2.0
 
 ### Minor Changes
