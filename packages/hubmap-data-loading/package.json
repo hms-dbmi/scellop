@@ -1,6 +1,6 @@
 {
   "name": "@scellop/hubmap-data-loading",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "author": "Thomas Smits",
   "description": "HuBMAP-specific data loading utilities for Scellop - loads data from HuBMAP portal via Zarr",
