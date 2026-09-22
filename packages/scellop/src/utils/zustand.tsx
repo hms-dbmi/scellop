@@ -7,31 +7,26 @@ import {
   useRef,
 } from "react";
 import type { TemporalState } from "zundo";
-import type { StoreApi } from "zustand";
-import { shallow } from "zustand/shallow";
-import { useStoreWithEqualityFn } from "zustand/traditional";
+import { type StoreApi, useStore } from "zustand";
+import { useShallow } from "zustand/shallow";
 import { createContext, useContext } from "./context";
 
 export type ExtractState<S> = S extends { getState: () => infer X } ? X : never;
 
 /**
  * A curried version of the `useStore` hook from zustand; this hook is bound to a store instance in a context.
+ * Selector results are compared shallowly.
  * @param selector A selector function which takes the store state and returns a value
- * @param equalityFn An optional equality function which takes the previous and new values and returns a boolean
  */
 export interface CurriedUseStore<T extends StoreApi<unknown>> {
   (): ExtractState<T>;
   <U>(selector: (state: ExtractState<T>) => U): U;
-  <U>(
-    selector: (state: ExtractState<T>) => U,
-    equalityFn?: (state: U, newState: U) => boolean,
-  ): U;
 }
 
 /**
  * Helper function for creating a `useStore` hook for a context-bound zustand store.
  * @param storeContext the Context object to create the hook for
- * @returns A `useStore` hook for the passed context which can be called with a selector and equality function
+ * @returns A `useStore` hook for the passed context which can be called with a selector
  */
 export function createTemporalStoreContextHook<MyState>(
   storeContext: Context<
@@ -43,12 +38,7 @@ export function createTemporalStoreContextHook<MyState>(
     selector: (state: TemporalState<MyState>) => TemporalState<T>,
   ): T;
   function useTemporalStore<T>(
-    selector: (state: TemporalState<MyState>) => TemporalState<T>,
-    equality: (a: TemporalState<T>, b: TemporalState<T>) => boolean,
-  ): T;
-  function useTemporalStore<T>(
     selector?: (state: TemporalState<MyState>) => TemporalState<T>,
-    equality?: (a: TemporalState<T>, b: TemporalState<T>) => boolean,
   ) {
     const store = useContext(storeContext);
     if (!store?.temporal) {
@@ -56,10 +46,9 @@ export function createTemporalStoreContextHook<MyState>(
         "Temporal store is not available in this context. This should never happen.",
       );
     }
-    return useStoreWithEqualityFn(
+    return useStore(
       store.temporal,
-      selector ?? ((state) => state as unknown as TemporalState<T>),
-      equality,
+      useShallow(selector ?? ((state) => state as unknown as TemporalState<T>)),
     );
   }
   return useTemporalStore;
@@ -70,7 +59,7 @@ type TemporalStore<S> = ReturnType<typeof createTemporalStoreContextHook<S>>;
 /**
  * Helper function for creating a `useStore` hook for a context-bound zustand store.
  * @param storeContext the Context object to create the hook for
- * @returns A `useStore` hook for the passed context which can be called with a selector and equality function
+ * @returns A `useStore` hook for the passed context which can be called with a selector
  */
 export function createStoreContextHook<T, S extends StoreApi<T>>(
   storeContext: Context<S | undefined>,
@@ -78,10 +67,9 @@ export function createStoreContextHook<T, S extends StoreApi<T>>(
   function useCurriedZustandContext<U>(selector: (state: T) => U): U;
   function useCurriedZustandContext<U>(
     selector: (state: T) => U = (state: T) => state as unknown as U,
-    equalityFn: ((state: U, newState: U) => boolean) | undefined = shallow,
   ): U {
     const store = useContext<S | undefined>(storeContext);
-    return useStoreWithEqualityFn(store, selector, equalityFn);
+    return useStore(store, useShallow(selector));
   }
   return useCurriedZustandContext as CurriedUseStore<S>;
 }
@@ -135,7 +123,7 @@ export function createStoreContext<T, CreateStoreArgs>(
     ...props
   }: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>) {
     // Keep the store in a ref so it is only created once per instance of the provider
-    const store = useRef<StoreType>();
+    const store = useRef<StoreType | undefined>(undefined);
     // Store props in a ref to track changes without triggering re-renders
     const propsRef = useRef(props);
     propsRef.current = props;
@@ -185,7 +173,7 @@ export function createTemporalStoreContext<T, CreateStoreArgs>(
     ...props
   }: PropsWithChildren<CreateStoreArgs & ProviderEnhancements>) {
     // Keep the store in a ref so it is only created once per instance of the provider
-    const store = useRef<StoreType>();
+    const store = useRef<StoreType | undefined>(undefined);
     // Store props in a ref to track changes without triggering re-renders
     const propsRef = useRef(props);
     propsRef.current = props;
@@ -233,7 +221,7 @@ export function createTemporalStoreContext<T, CreateStoreArgs>(
 export function createStoreContextWithRef<T, CreateStoreArgs, RefType>(
   createStore: (
     initialArgs: CreateStoreArgs,
-    ref: RefObject<RefType>,
+    ref: RefObject<RefType | null>,
   ) => StoreApi<T>,
   displayName: string,
 ) {
@@ -248,7 +236,7 @@ export function createStoreContextWithRef<T, CreateStoreArgs, RefType>(
     ...props
   }: PropsWithChildren<CreateStoreArgs>) {
     // Keep the store in a ref so it is only created once per instance of the provider
-    const store = useRef<StoreType>();
+    const store = useRef<StoreType | undefined>(undefined);
     const ref = useRef<RefType>(null);
     if (!store.current) {
       store.current = createStore(props as CreateStoreArgs, ref);

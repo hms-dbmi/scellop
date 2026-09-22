@@ -28,10 +28,22 @@ export default function LabelledSwitch({
 }: LabelledSwitchProps) {
   const switchId = useId();
   return (
-    <Stack direction="column" gap={1} alignItems="start">
+    <Stack
+      direction="column"
+      sx={{
+        gap: 1,
+        alignItems: "start",
+      }}
+    >
       <FormControlLabel
         control={
-          <Stack direction="row" gap={1} alignItems="center">
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+              alignItems: "center",
+            }}
+          >
             <Typography component="label" variant="body2" htmlFor={switchId}>
               {leftLabel}
             </Typography>

@@ -301,7 +301,13 @@ function SortItem({ sort, index }: { sort: SortOrder<string>; index: number }) {
 
   return (
     <Stack key={sort.key} style={style} ref={setNodeRef}>
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: "center",
+        }}
+      >
         <Icon
           component={DragHandle}
           {...attributes}
@@ -324,9 +330,8 @@ function SortItem({ sort, index }: { sort: SortOrder<string>; index: number }) {
             </MenuItem>
           ))}
         </Select>
-        <Button
+        <IconButton
           aria-label={`Remove ${sort.key}`}
-          component={IconButton}
           onClick={remove}
           disabled={sortIsInvalidated}
           sx={{
@@ -336,7 +341,7 @@ function SortItem({ sort, index }: { sort: SortOrder<string>; index: number }) {
           }}
         >
           <Close />
-        </Button>
+        </IconButton>
       </Stack>
       <FormControl disabled={sortIsInvalidated}>
         <RadioGroup onChange={onRadioChange} value={sort.direction}>
@@ -344,7 +349,13 @@ function SortItem({ sort, index }: { sort: SortOrder<string>; index: number }) {
             value="asc"
             control={<Radio />}
             label={
-              <Stack alignItems="center" direction="row" spacing={1}>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  alignItems: "center",
+                }}
+              >
                 <ArrowUpwardRounded />
                 <Typography variant="body2">Ascending</Typography>
               </Stack>
@@ -354,7 +365,13 @@ function SortItem({ sort, index }: { sort: SortOrder<string>; index: number }) {
             value="desc"
             control={<Radio />}
             label={
-              <Stack alignItems="center" direction="row" spacing={1}>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  alignItems: "center",
+                }}
+              >
                 <ArrowDownwardRounded />
                 <Typography variant="body2">Descending</Typography>
               </Stack>

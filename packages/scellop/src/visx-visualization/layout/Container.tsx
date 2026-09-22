@@ -53,7 +53,7 @@ const usePanelProps = (id: string) => {
   return useMemo(() => {
     const panelPropList: Array<{
       id: string;
-      ref: RefObject<HTMLDivElement>;
+      ref: RefObject<HTMLDivElement | null>;
       section: MappedPanelSection;
       Component: PanelComponent;
     }> = [
@@ -114,15 +114,15 @@ const usePanelProps = (id: string) => {
     ];
     const panelRefMap: Record<
       MappedPanelSection,
-      RefObject<HTMLDivElement>
+      RefObject<HTMLDivElement | null>
     > = panelPropList.reduce<
-      Record<MappedPanelSection, RefObject<HTMLDivElement>>
+      Record<MappedPanelSection, RefObject<HTMLDivElement | null>>
     >(
       (acc, { section, ref }) => {
         acc[section] = ref;
         return acc;
       },
-      {} as Record<MappedPanelSection, RefObject<HTMLDivElement>>,
+      {} as Record<MappedPanelSection, RefObject<HTMLDivElement | null>>,
     );
     return { panelPropList, panelRefMap };
   }, [id]);

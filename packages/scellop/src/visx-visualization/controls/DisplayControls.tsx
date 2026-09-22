@@ -211,31 +211,37 @@ function StickyColumnHeader({
 }: StickyColumnHeaderProps) {
   return (
     <Box
-      gridRow={gridRow}
-      gridColumn={gridColumn}
       aria-label={ariaLabel}
-      position="sticky"
-      top={topOffset}
-      sx={(theme) => ({
-        background: `linear-gradient(to bottom, ${theme.palette.background.paper} 75%, transparent 100%)`,
-        backdropFilter: "blur(10px)",
-        pb: 1,
-        minHeight: "40px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: textCenter ? "center" : "flex-start",
-      })}
-      zIndex={1}
+      sx={[
+        {
+          gridRow: gridRow,
+          gridColumn: gridColumn,
+          position: "sticky",
+          top: topOffset,
+          zIndex: 1,
+        },
+        (theme) => ({
+          background: `linear-gradient(to bottom, ${theme.palette.background.paper} 75%, transparent 100%)`,
+          backdropFilter: "blur(10px)",
+          pb: 1,
+          minHeight: "40px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: textCenter ? "center" : "flex-start",
+        }),
+      ]}
     >
       <Typography
         component="label"
         variant="caption"
         role="columnheader"
-        display="flex"
-        alignItems="center"
-        gap={0.5}
-        fontWeight={600}
-        fontSize="0.75rem"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 0.5,
+          fontWeight: 600,
+          fontSize: "0.75rem",
+        }}
       >
         {children}
       </Typography>
@@ -376,17 +382,33 @@ export function DisplayControls() {
       <AccordionDetails>
         <Box
           ref={topStickySectionRef}
-          position="sticky"
-          top={0}
-          zIndex={1}
-          sx={(theme) => ({
-            backgroundColor: theme.palette.background.paper,
-          })}
+          sx={[
+            {
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+            },
+            (theme) => ({
+              backgroundColor: theme.palette.background.paper,
+            }),
+          ]}
         >
-          <Typography variant="body2" mb={2}>
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 2,
+            }}
+          >
             {description}
           </Typography>
-          <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
             <FormControl sx={{ flex: 1 }}>
               <TextField
                 placeholder="Search"
@@ -448,7 +470,13 @@ export function DisplayControls() {
               >
                 <Icon component={DragHandle} sx={{ opacity: 0.3, mr: 0.5 }} />
                 {pluralItemLabel} ({filteredItems.length} / {items.length})
-                <Stack direction="row" spacing={0.5} mx={1}>
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  sx={{
+                    mx: 1,
+                  }}
+                >
                   <Tooltip title="Set all to visible">
                     <span>
                       <IconButton
@@ -723,14 +751,14 @@ function DisplayItem({ item }: DisplayItemProps) {
         </Box>
       </Box>
       <Box
-        gridColumn={2}
+        role="cell"
         sx={{
+          gridColumn: 2,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           minHeight: "40px",
         }}
-        role="cell"
       >
         <Switch
           name={item}
@@ -741,14 +769,14 @@ function DisplayItem({ item }: DisplayItemProps) {
         />
       </Box>
       <Box
-        gridColumn={3}
+        role="cell"
         sx={{
+          gridColumn: 3,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           minHeight: "40px",
         }}
-        role="cell"
       >
         <ColorPicker
           color={getItemColor(item)}
@@ -759,14 +787,14 @@ function DisplayItem({ item }: DisplayItemProps) {
       </Box>
       {canBeExpanded && (
         <Box
-          gridColumn={4}
+          role="cell"
           sx={{
+            gridColumn: 4,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             minHeight: "40px",
           }}
-          role="cell"
         >
           <Switch
             name={item}

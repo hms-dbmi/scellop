@@ -1,4 +1,4 @@
-import type { Theme } from "@mui/material";
+import type { Theme, ThemeOptions } from "@mui/material";
 import type { ScellopData, ScellopTheme } from "@scellop/data-loading";
 import type { PropsWithChildren } from "react";
 import type { GraphType } from "../utils/graph-types";
@@ -45,7 +45,7 @@ interface ScellopConfigProps extends PropsWithChildren {
   topGraphType?: GraphType;
   selectedValues?: string[];
   normalization?: "Row" | "Column" | "Log";
-  customTheme?: Theme;
+  customTheme?: Theme | ThemeOptions;
   disabledControls?: DisableableControls[];
   initialProportions?: [GridSizeTuple, GridSizeTuple];
   fieldDisplayNames?: Record<string, string>;

@@ -1,4 +1,4 @@
-import type { Theme } from "@mui/material";
+import type { Theme, ThemeOptions } from "@mui/material";
 import Skeleton from "@mui/material/Skeleton";
 import type { ScellopData, ScellopTheme } from "@scellop/data-loading";
 import {
@@ -20,7 +20,7 @@ interface ScellopConfig {
   onClick?: (e: React.MouseEvent) => void;
   dimensions?: Dimensions;
   theme?: ScellopTheme;
-  customTheme?: Theme;
+  customTheme?: Theme | ThemeOptions;
   disabledControls?: DisableableControls[];
   initialProportions?: [GridSizeTuple, GridSizeTuple];
   fieldDisplayNames?: Record<string, string>;

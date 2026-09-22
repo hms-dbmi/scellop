@@ -7,32 +7,19 @@ import dts from "vite-plugin-dts";
 export default defineConfig({
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/index.ts"),
+      entry: path.resolve(import.meta.dirname, "src/index.ts"),
       name: "scellop",
       fileName: (format) => `index.${format}.js`,
-      formats: ["es", "umd"],
+      formats: ["es", "cjs"],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: [
-        "react",
-        "react-dom",
-        "react-dom/client",
-        "react-dom/server",
-        "react/jsx-runtime",
-        "react/jsx-dev-runtime",
+        /^react($|\/)/,
+        /^react-dom($|\/)/,
         "zustand",
+        /^@mui\//,
+        /^@emotion\//,
       ],
-      output: {
-        globals: {
-          react: "React",
-          "react-dom": "ReactDOM",
-          "react-dom/client": "ReactDOM",
-          "react-dom/server": "ReactDOMServer",
-          "react/jsx-runtime": "ReactJSXRuntime",
-          "react/jsx-dev-runtime": "ReactJSXDevRuntime",
-          zustand: "zustand",
-        },
-      },
     },
     sourcemap: true,
   },

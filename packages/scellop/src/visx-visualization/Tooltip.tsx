@@ -74,7 +74,11 @@ export default function Tooltip() {
         zIndex: 9999,
       }}
     >
-      <Stack gap={0.25}>
+      <Stack
+        sx={{
+          gap: 0.25,
+        }}
+      >
         <Typography variant="subtitle1">{tooltipData?.title}</Typography>
         <Divider />
         {tooltipData?.data && (
